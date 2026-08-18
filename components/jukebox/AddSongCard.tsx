@@ -12,7 +12,7 @@ export function AddSongCard() {
   return (
     <section className="border border-sats/50 bg-sats/8 p-5 shadow-[4px_4px_0_var(--color-magenta)] sm:p-7">
       <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-sats">
-        {"//"} request_track
+        {"//"} drop_in_the_hold
       </p>
       <h2 className="mt-2 font-display text-2xl font-bold uppercase tracking-tight sm:text-3xl">
         Add a song — {JUKEBOX_PRICE_SATS} sats

@@ -3,8 +3,8 @@ import { JUKEBOX_PRICE_SATS } from "@/lib/jukebox";
 const steps = [
   {
     n: "01",
-    title: "Hit the button",
-    body: "Open the live jukebox. Pick any track. Do not ask a DJ.",
+    title: "Board the deck",
+    body: "Open the live jukebox or Telegram. Pick any track. Do not ask a captain.",
   },
   {
     n: "02",
@@ -14,7 +14,7 @@ const steps = [
   {
     n: "03",
     title: "Own the queue",
-    body: "Your song lands in the global buffer. The whole coast hears it.",
+    body: "Your song hits the hold. The whole ship hears it. No flag required.",
   },
 ];
 
@@ -22,7 +22,7 @@ export function HowItWorks() {
   return (
     <section className="panel p-5 sm:p-7">
       <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
-        {"//"} how_it_works
+        {"//"} standing_orders
       </p>
       <ol className="mt-5 space-y-5">
         {steps.map((step) => (

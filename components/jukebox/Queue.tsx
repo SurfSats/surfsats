@@ -6,7 +6,7 @@ export function Queue({ tracks }: { tracks: JukeboxTrack[] }) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
-            {"//"} current_queue
+            {"//"} the_hold
           </p>
           <h2 className="mt-1 font-display text-2xl font-bold uppercase tracking-tight">
             Current queue

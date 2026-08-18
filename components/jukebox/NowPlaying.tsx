@@ -5,7 +5,7 @@ export function NowPlaying({ track }: { track: JukeboxTrack | null }) {
     <section className="panel p-5 sm:p-7">
       <div className="flex items-center justify-between gap-3">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-sats">
-          now_playing
+          on_deck
         </p>
         <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-magenta">
           on_air

@@ -7,7 +7,7 @@ export function LiveStream() {
     <section>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <TerminalLabel>noderunners_radio · zap.stream</TerminalLabel>
+          <TerminalLabel>the_deck · noderunners_radio</TerminalLabel>
           <h2 className="mt-2 font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">
             Listen live
           </h2>
@@ -19,7 +19,7 @@ export function LiveStream() {
 
       <div className="panel mt-5 overflow-hidden">
         <div className="flex items-center justify-between border-b border-cyan/20 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-          <span className="text-cyan">crt://stream</span>
+          <span className="text-cyan">deck://radio</span>
           <span>noderunnersradio</span>
         </div>
         <iframe
