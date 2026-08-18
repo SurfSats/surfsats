@@ -13,7 +13,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-cyan/20 bg-background/90">
+    <header className="border-b border-cyan/20 bg-background/90">
       <div className="border-b border-magenta/25 bg-black/60">
         <Container className="flex h-7 items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-cyan/80">
           <span>sys.surfsats // online // no kyc</span>
