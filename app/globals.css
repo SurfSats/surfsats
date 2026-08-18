@@ -410,6 +410,143 @@ body {
   box-shadow: 3px 3px 0 var(--magenta);
 }
 
+.graffiti-wall {
+  position: relative;
+  min-height: 440px;
+  overflow: hidden;
+  background-color: #2a2a26;
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(80, 90, 70, 0.18), transparent 40%),
+    radial-gradient(ellipse at 80% 90%, rgba(20, 40, 20, 0.25), transparent 45%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.015) 0 2px,
+      transparent 2px 7px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.08) 0 1px,
+      transparent 1px 5px
+    );
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.55);
+}
+
+@media (min-width: 640px) {
+  .graffiti-wall {
+    min-height: 560px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .graffiti-wall {
+    min-height: 640px;
+  }
+}
+
+.graffiti-wall::before,
+.graffiti-wall::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.graffiti-wall::before {
+  left: 0;
+  top: 0;
+  width: 18%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(8, 20, 10, 0.45), transparent);
+}
+
+.graffiti-wall::after {
+  right: 0;
+  bottom: 0;
+  width: 36%;
+  height: 34%;
+  background: radial-gradient(ellipse at 100% 100%, rgba(12, 28, 12, 0.55), transparent 70%);
+}
+
+.graf {
+  position: absolute;
+  max-width: 38%;
+  line-height: 0.9;
+  word-break: break-word;
+  user-select: none;
+}
+
+.graf-center {
+  left: 50%;
+  top: 50%;
+  max-width: 80%;
+  transform: translate(-50%, -52%) rotate(-3deg);
+  z-index: 5;
+  text-align: center;
+}
+
+.graf-temp {
+  z-index: 4;
+}
+
+.graf-bold {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.graf-tag {
+  font-family: var(--font-graf-tag), var(--font-display), sans-serif;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.graf-bubble {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  -webkit-text-stroke: 2px #05080d;
+  paint-order: stroke fill;
+}
+
+.graf-stencil {
+  font-family: var(--font-mono), monospace;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.graf-glitch {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  text-shadow:
+    2px 0 #3dfff3,
+    -2px 0 #ff2ec4;
+}
+
+.graf-drip {
+  font-family: var(--font-graf-drip), var(--font-display), sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  text-shadow:
+    0 6px 0 currentColor,
+    1px 14px 0 currentColor,
+    -1px 22px 0 currentColor;
+}
+
+.graf-color-cyan { color: #3dfff3; }
+.graf-color-magenta { color: #ff2ec4; }
+.graf-color-sats { color: #ff7a18; }
+.graf-color-acid { color: #c8ff00; }
+.graf-color-white { color: #f4f1ea; }
+.graf-color-black {
+  color: #111111;
+  -webkit-text-stroke: 1px #f4f1ea;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flicker,
   .panel-hover,

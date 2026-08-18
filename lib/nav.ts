@@ -9,4 +9,5 @@ export const navLinks: NavLink[] = [
   { href: "/lineup", label: "Lineup" },
   { href: "/jukebox", label: "Jukebox" },
   { href: "/tools", label: "Tools" },
+  { href: "/graffiti", label: "Graffiti" },
 ];
