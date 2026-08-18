@@ -34,7 +34,7 @@ export function Footer() {
             © {new Date().getFullYear()} surfsats · ride the swell · stack the
             sats
           </p>
-          <p className="text-magenta">lightning: coming_soon.exe</p>
+          <p className="text-magenta">jukebox: 21_sats</p>
         </Container>
       </div>
     </footer>

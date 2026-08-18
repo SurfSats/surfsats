@@ -191,6 +191,52 @@ body {
   animation: flicker 6s steps(2, end) infinite;
 }
 
+@keyframes cta-pulse {
+  0%,
+  100% {
+    box-shadow:
+      3px 3px 0 var(--magenta),
+      0 0 0 0 rgba(255, 122, 24, 0.45);
+  }
+  50% {
+    box-shadow:
+      3px 3px 0 var(--magenta),
+      0 0 22px 3px rgba(255, 122, 24, 0.28);
+  }
+}
+
+.btn-pulse {
+  animation: cta-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes scan-sweep {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(220%);
+  }
+}
+
+.scan-sweep {
+  animation: scan-sweep 2.4s linear infinite;
+}
+
+@keyframes signal-blip {
+  0%,
+  70%,
+  100% {
+    opacity: 0.25;
+  }
+  80% {
+    opacity: 1;
+  }
+}
+
+.signal-blip {
+  animation: signal-blip 1.8s steps(2, end) infinite;
+}
+
 .input-terminal {
   width: 100%;
   border: 1px solid var(--line);
@@ -214,7 +260,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .flicker,
   .panel-hover,
-  .btn {
+  .btn,
+  .btn-pulse,
+  .scan-sweep,
+  .signal-blip {
     animation: none;
     transition: none;
   }

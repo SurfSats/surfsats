@@ -3,9 +3,14 @@ import type { JukeboxTrack } from "@/lib/types";
 export function Queue({ tracks }: { tracks: JukeboxTrack[] }) {
   return (
     <section>
-      <h2 className="font-display text-2xl font-bold uppercase tracking-tight">
-        Up next
-      </h2>
+      <div className="flex items-end justify-between gap-4">
+        <h2 className="font-display text-2xl font-bold uppercase tracking-tight">
+          Current queue
+        </h2>
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+          {tracks.length} in_buffer
+        </p>
+      </div>
       <ol className="panel mt-4 divide-y divide-cyan/15 overflow-hidden">
         {tracks.map((track, index) => (
           <li
@@ -21,7 +26,10 @@ export function Queue({ tracks }: { tracks: JukeboxTrack[] }) {
             </div>
             <div className="hidden text-right font-mono text-[11px] uppercase text-muted sm:block">
               <p>{track.requestedBy ?? "anon"}</p>
-              <p>{track.duration}</p>
+              <p>
+                {track.duration}
+                {track.satsPaid ? ` · ${track.satsPaid}` : ""}
+              </p>
             </div>
           </li>
         ))}

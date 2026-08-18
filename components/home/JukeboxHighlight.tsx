@@ -14,15 +14,14 @@ export function JukeboxHighlight() {
           <div>
             <TerminalLabel>global_jukebox</TerminalLabel>
             <h2 className="mt-3 font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">
-              One queue. The whole coast. {JUKEBOX_PRICE_SATS} sats a song.
+              Pay {JUKEBOX_PRICE_SATS} sats. Be the DJ.
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
-              Drop a track into a shared playlist heard around the world.
-              Lightning payments come next — the jukebox is already warming
-              up.
+              One queue. The whole coast. Drop any track into the Global
+              Jukebox and let Lightning do the talking.
             </p>
             <ButtonLink href="/jukebox" className="mt-8">
-              [ pay_{JUKEBOX_PRICE_SATS}_sats ]
+              [ open_jukebox ]
             </ButtonLink>
           </div>
 
@@ -30,10 +29,18 @@ export function JukeboxHighlight() {
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-magenta">
               now_playing
             </p>
-            <p className="mt-3 font-display text-2xl font-bold uppercase">
-              {current.title}
-            </p>
-            <p className="mt-1 font-mono text-sm text-cyan">{current.artist}</p>
+            {current ? (
+              <>
+                <p className="mt-3 font-display text-2xl font-bold uppercase">
+                  {current.title}
+                </p>
+                <p className="mt-1 font-mono text-sm text-cyan">{current.artist}</p>
+              </>
+            ) : (
+              <p className="mt-3 font-display text-2xl font-bold uppercase text-cyan">
+                Connecting to the signal…
+              </p>
+            )}
             {upcoming ? (
               <p className="mt-6 border-t border-dashed border-cyan/20 pt-4 font-mono text-xs text-muted">
                 up_next:{" "}

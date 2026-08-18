@@ -2,16 +2,36 @@ import type { JukeboxTrack } from "./types";
 
 export const JUKEBOX_PRICE_SATS = 21;
 
-export const nowPlaying: JukeboxTrack = {
-  id: "np-1",
-  title: "Better Days",
-  artist: "Stick Figure",
-  requestedBy: "maui.sats",
-  duration: "4:12",
-  satsPaid: 21,
+// Live Lightning Jukebox (Noderunners / jukebox.lighting).
+// Song requests and invoices currently happen here — the SurfSats page is
+// the custom frontend. Swap this URL if the room or backend changes.
+export const JUKEBOX_LIVE_URL =
+  "https://jukebox.lighting/jukebox/web/-1001672416970";
+
+export const JUKEBOX_BACKEND_NAME = "Lightning Jukebox / Noderunners";
+
+// Cosmetic status until a real node/queue API exists.
+export const JUKEBOX_SIGNAL = {
+  strength: 78,
+  bars: 4,
+  litBars: 3,
+  nodesConnected: 21,
 };
 
-export const jukeboxQueue: JukeboxTrack[] = [
+/**
+ * Live now-playing is not wired yet.
+ * Later: fetch from the Lightning Jukebox / a SurfSats queue API and
+ * return the current track, or null while connecting.
+ */
+export function getNowPlaying(): JukeboxTrack | null {
+  return null;
+}
+
+/**
+ * Placeholder queue so the page feels alive.
+ * Later: replace this list with the live queue from the same backend.
+ */
+const cachedQueue: JukeboxTrack[] = [
   {
     id: "q-1",
     title: "Badfish",
@@ -44,12 +64,16 @@ export const jukeboxQueue: JukeboxTrack[] = [
     duration: "4:38",
     satsPaid: 21,
   },
+  {
+    id: "q-5",
+    title: "Better Days",
+    artist: "Stick Figure",
+    requestedBy: "maui.sats",
+    duration: "4:12",
+    satsPaid: 21,
+  },
 ];
 
-export function getNowPlaying() {
-  return nowPlaying;
-}
-
 export function getQueue() {
-  return jukeboxQueue;
+  return cachedQueue;
 }

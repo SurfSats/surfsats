@@ -6,6 +6,7 @@ type ButtonLinkProps = {
   children: React.ReactNode;
   variant?: "solid" | "ghost";
   className?: string;
+  external?: boolean;
 };
 
 export function ButtonLink({
@@ -13,12 +14,20 @@ export function ButtonLink({
   children,
   variant = "solid",
   className,
+  external = false,
 }: ButtonLinkProps) {
+  const classes = cn("btn", variant === "ghost" && "btn-ghost", className);
+
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className={classes}>
+        {children}
+      </a>
+    );
+  }
+
   return (
-    <Link
-      href={href}
-      className={cn("btn", variant === "ghost" && "btn-ghost", className)}
-    >
+    <Link href={href} className={classes}>
       {children}
     </Link>
   );
