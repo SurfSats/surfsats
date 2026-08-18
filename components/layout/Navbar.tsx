@@ -24,7 +24,7 @@ export function Navbar() {
       <Container className="flex h-14 items-center justify-between sm:h-16">
         <Logo />
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-4 lg:gap-6 md:flex" aria-label="Primary">
           {navLinks.map((link) => {
             const active =
               link.href === "/"

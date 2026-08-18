@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { useTimechainSnapshot } from "@/components/timechain/useTimechainSnapshot";
 import {
   type TimechainSnapshot,
-  emptySnapshot,
   formatBlockAge,
   formatChange,
   formatDifficulty,
@@ -17,52 +17,14 @@ import {
 
 type TimechainStatsProps = {
   initial?: TimechainSnapshot | null;
-  variant?: "home" | "page";
+  variant?: "home" | "page" | "compact";
 };
 
 export function TimechainStats({
   initial = null,
   variant = "page",
 }: TimechainStatsProps) {
-  const [snapshot, setSnapshot] = useState<TimechainSnapshot>(
-    initial ?? emptySnapshot,
-  );
-  const [status, setStatus] = useState<"live" | "loading" | "error">(
-    initial && hasLiveData(initial) ? "live" : "loading",
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function pull() {
-      try {
-        const response = await fetch("/api/timechain", { cache: "no-store" });
-        if (!response.ok) throw new Error("bad status");
-        const next = (await response.json()) as TimechainSnapshot;
-        if (cancelled) return;
-        setSnapshot(next);
-        setStatus(hasLiveData(next) ? "live" : "error");
-      } catch {
-        if (!cancelled) {
-          setStatus(hasLiveData(snapshot) ? "live" : "error");
-        }
-      }
-    }
-
-    if (!initial || !hasLiveData(initial)) {
-      void pull();
-    }
-
-    const id = window.setInterval(() => {
-      void pull();
-    }, 30_000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(id);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- poll on mount only
-  }, []);
+  const { snapshot, status } = useTimechainSnapshot(initial);
 
   const change = snapshot.priceChangePct;
   const direction = snapshot.priceDirection;
@@ -73,21 +35,23 @@ export function TimechainStats({
       data-price-direction={direction ?? "unknown"}
       data-price-change={change ?? ""}
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
-            {"//"} timechain · mempool.space
+      {variant !== "compact" ? (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
+              {"//"} timechain · mempool.space
+            </p>
+            <h2 className="mt-1 font-display text-2xl font-bold uppercase tracking-tight sm:text-3xl">
+              {variant === "page" ? "Readout" : "Timechain"}
+            </h2>
+          </div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+            {status === "loading" && "syncing"}
+            {status === "live" && "live · 30s"}
+            {status === "error" && "signal lost"}
           </p>
-          <h2 className="mt-1 font-display text-2xl font-bold uppercase tracking-tight sm:text-3xl">
-            {variant === "page" ? "Readout" : "Timechain"}
-          </h2>
         </div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-          {status === "loading" && "syncing"}
-          {status === "live" && "live · 30s"}
-          {status === "error" && "signal lost"}
-        </p>
-      </div>
+      ) : null}
 
       {status === "error" && !hasLiveData(snapshot) ? (
         <div className="panel mt-5 px-4 py-6 font-mono text-sm text-muted">
@@ -146,48 +110,60 @@ export function TimechainStats({
             label="last_block"
             value={<BlockAge timestamp={snapshot.lastBlockTimestamp} />}
           />
-          <Stat
-            label="hashrate"
-            value={formatMaybe(snapshot.hashrateEh, formatHashrate)}
-          />
-          <Stat
-            label="difficulty"
-            value={
-              snapshot.difficulty !== null
-                ? `${formatDifficulty(snapshot.difficulty)}${
-                    snapshot.difficultyChangePct !== null
-                      ? ` · ${formatChange(snapshot.difficultyChangePct)}`
-                      : ""
-                  }`
-                : "—"
-            }
-          />
-          <Stat
-            label="to_retarget"
-            value={
-              snapshot.remainingBlocksToRetarget !== null
-                ? `${formatInteger(snapshot.remainingBlocksToRetarget)} blocks`
-                : "—"
-            }
-          />
-          <Stat
-            label="to_halving"
-            value={
-              snapshot.blocksToHalving !== null
-                ? `${formatInteger(snapshot.blocksToHalving)} blocks`
-                : "—"
-            }
-          />
-          <Stat
-            label="fees"
-            value={
-              snapshot.fastestFee !== null
-                ? `${snapshot.fastestFee} sat/vB`
-                : "—"
-            }
-            hint={snapshot.feeLabel ?? undefined}
-            wide
-          />
+          {variant !== "compact" ? (
+            <Stat
+              label="hashrate"
+              value={formatMaybe(snapshot.hashrateEh, formatHashrate)}
+            />
+          ) : null}
+          {variant !== "compact" ? (
+            <>
+              <Stat
+                label="difficulty"
+                value={
+                  snapshot.difficulty !== null
+                    ? `${formatDifficulty(snapshot.difficulty)}${
+                        snapshot.difficultyChangePct !== null
+                          ? ` · ${formatChange(snapshot.difficultyChangePct)}`
+                          : ""
+                      }`
+                    : "—"
+                }
+              />
+              <Stat
+                label="to_retarget"
+                value={
+                  snapshot.remainingBlocksToRetarget !== null
+                    ? `${formatInteger(snapshot.remainingBlocksToRetarget)} blocks`
+                    : "—"
+                }
+              />
+              <Stat
+                label="to_halving"
+                value={
+                  snapshot.blocksToHalving !== null
+                    ? `${formatInteger(snapshot.blocksToHalving)} blocks`
+                    : "—"
+                }
+              />
+              <Stat
+                label="fees"
+                value={
+                  snapshot.fastestFee !== null
+                    ? `${snapshot.fastestFee} sat/vB`
+                    : "—"
+                }
+                hint={snapshot.feeLabel ?? undefined}
+                wide
+              />
+            </>
+          ) : (
+            <Stat
+              label="hashrate"
+              value={formatMaybe(snapshot.hashrateEh, formatHashrate)}
+              wide
+            />
+          )}
         </div>
       )}
 
@@ -198,11 +174,11 @@ export function TimechainStats({
         >
           full_readout -&gt;
         </Link>
-      ) : (
+      ) : variant === "page" ? (
         <p className="mt-4 font-mono text-[11px] text-muted">
-          source: mempool.space · 24h swell drives the future wave pool
+          source: mempool.space · 24h swell drives the wave pool
         </p>
-      )}
+      ) : null}
     </section>
   );
 }
