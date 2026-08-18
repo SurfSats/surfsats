@@ -8,6 +8,10 @@ export const JUKEBOX_PRICE_SATS = 21;
 export const JUKEBOX_LIVE_URL =
   "https://jukebox.lighting/jukebox/web/-1001672416970";
 
+// Noderunners Radio on zap.stream. Many hosts block iframe embeds —
+// keep STREAM_LIVE_URL as the new-tab fallback if the player is blank.
+export const STREAM_LIVE_URL = "https://zap.stream/noderunnersradio";
+
 export const JUKEBOX_BACKEND_NAME = "Lightning Jukebox / Noderunners";
 
 // Cosmetic status until a real node/queue API exists.

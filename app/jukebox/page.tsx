@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AddSongCard } from "@/components/jukebox/AddSongCard";
 import { HowItWorks } from "@/components/jukebox/HowItWorks";
+import { LiveStream } from "@/components/jukebox/LiveStream";
 import { NowPlaying } from "@/components/jukebox/NowPlaying";
 import { Queue } from "@/components/jukebox/Queue";
 import { SignalStatus } from "@/components/jukebox/SignalStatus";
@@ -50,14 +51,19 @@ export default function JukeboxPage() {
           <div className="mt-6">
             <SignalStatus />
           </div>
-          <ButtonLink
-            href={JUKEBOX_LIVE_URL}
-            external
-            className="btn-pulse mt-8 px-6 py-4 text-sm"
-          >
-            add a song — {JUKEBOX_PRICE_SATS} sats
-          </ButtonLink>
         </section>
+
+        <div className="mt-10">
+          <LiveStream />
+        </div>
+
+        <ButtonLink
+          href={JUKEBOX_LIVE_URL}
+          external
+          className="btn-pulse mt-8 w-full px-6 py-4 text-sm sm:w-auto"
+        >
+          add a song — {JUKEBOX_PRICE_SATS} sats
+        </ButtonLink>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <NowPlaying track={current} />
