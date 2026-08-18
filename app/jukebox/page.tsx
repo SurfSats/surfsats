@@ -19,9 +19,9 @@ import {
 } from "@/lib/jukebox";
 
 export const metadata: Metadata = {
-  title: "The Ship",
+  title: "The Jukebox",
   description:
-    "The Global Jukebox sails international waters. Pay 21 sats. Be the DJ. No masters on this deck.",
+    "The Global Jukebox. Pay 21 sats. Be the DJ. Located on a pirate ship sailing in international waters.",
 };
 
 export default function JukeboxPage() {
@@ -33,7 +33,7 @@ export default function JukeboxPage() {
     <div className="relative">
       <div className="jukebox-hero-art pointer-events-none" aria-hidden="true">
         <Image
-          src="/jukebox-ship-ref.png"
+          src="/jukebox-ship.png"
           alt=""
           fill
           priority
@@ -44,20 +44,22 @@ export default function JukeboxPage() {
 
       <Container className="relative z-[1] py-14 sm:py-20">
         <section>
-          <TerminalLabel>international_waters · no flag · no kyc</TerminalLabel>
+          <TerminalLabel>global_jukebox · permissionless audio</TerminalLabel>
           <h1
-            data-text="The Ship"
+            data-text="The Jukebox"
             className="glitch-title flicker mt-4 max-w-4xl font-display text-4xl font-extrabold uppercase leading-[0.9] tracking-tight sm:text-6xl lg:text-7xl"
           >
-            The Ship
+            The Jukebox
           </h1>
+          <p className="mt-3 max-w-xl text-xs leading-relaxed text-muted sm:text-sm">
+            located on a pirate ship sailing in international waters
+          </p>
           <p className="mt-5 font-display text-xl font-semibold uppercase tracking-wide text-sats sm:text-2xl">
-            No masters on this deck.
+            Pay {JUKEBOX_PRICE_SATS} sats. Be the DJ.
           </p>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-foreground/90 sm:text-base">
-            The Global Jukebox sails outside the system. Same as Bitcoin: no
-            borders, no committee, no permission. Drop {JUKEBOX_PRICE_SATS}{" "}
-            sats and you are the DJ on international waters.
+            One shared queue. No borders, no committee, no permission. Same as
+            Bitcoin. Drop {JUKEBOX_PRICE_SATS} sats and the whole ship hears it.
           </p>
           <div className="mt-6">
             <SignalStatus />
@@ -103,7 +105,7 @@ export default function JukeboxPage() {
         </div>
 
         <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-          powered by {JUKEBOX_BACKEND_NAME} · flagged for no nation
+          powered by {JUKEBOX_BACKEND_NAME}
         </p>
       </Container>
     </div>
