@@ -21,6 +21,23 @@ export type NewsLink = {
   blurb: string;
 };
 
+export type HandpickedItem = NewsLink & {
+  featured?: boolean;
+};
+
+export type FeedItem = {
+  id: string;
+  title: string;
+  url: string;
+  source: string;
+  date: string;
+};
+
+export type FeedSourceStatus = {
+  name: string;
+  ok: boolean;
+};
+
 export type JukeboxTrack = {
   id: string;
   title: string;
