@@ -24,7 +24,7 @@ export function Navbar() {
       <Container className="flex h-14 items-center justify-between sm:h-16">
         <Logo />
 
-        <nav className="hidden items-center gap-4 lg:gap-6 md:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-3 xl:gap-5 lg:flex" aria-label="Primary">
           {navLinks.map((link) => {
             const active =
               link.href === "/"
@@ -51,14 +51,14 @@ export function Navbar() {
 
         <Link
           href="/jukebox"
-          className="btn hidden px-3 py-2 text-[10px] md:inline-flex"
+          className="btn hidden px-3 py-2 text-[10px] lg:inline-flex"
         >
           [ drop_21_sats ]
         </Link>
 
         <button
           type="button"
-          className="inline-flex size-10 items-center justify-center border border-cyan/40 text-cyan md:hidden"
+          className="inline-flex size-10 items-center justify-center border border-cyan/40 text-cyan lg:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen((value) => !value)}
@@ -87,7 +87,7 @@ export function Navbar() {
       {open ? (
         <div
           id="mobile-nav"
-          className="border-t border-cyan/20 bg-background md:hidden"
+          className="border-t border-cyan/20 bg-background lg:hidden"
         >
           <Container className="flex flex-col gap-1 py-3">
             {navLinks.map((link) => {

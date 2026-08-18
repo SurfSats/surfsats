@@ -6,5 +6,6 @@ export const navLinks: NavLink[] = [
   { href: "/news", label: "Signal" },
   { href: "/timechain", label: "Timechain" },
   { href: "/wavepool", label: "Wave" },
+  { href: "/lineup", label: "Lineup" },
   { href: "/jukebox", label: "Jukebox" },
 ];
