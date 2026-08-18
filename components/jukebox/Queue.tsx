@@ -3,14 +3,20 @@ import type { JukeboxTrack } from "@/lib/types";
 export function Queue({ tracks }: { tracks: JukeboxTrack[] }) {
   return (
     <section>
-      <div className="flex items-end justify-between gap-4">
-        <h2 className="font-display text-2xl font-bold uppercase tracking-tight">
-          Current queue
-        </h2>
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-          {tracks.length} in_buffer
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
+            {"//"} current_queue
+          </p>
+          <h2 className="mt-1 font-display text-2xl font-bold uppercase tracking-tight">
+            Current queue
+          </h2>
+        </div>
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-sats">
+          preview_mode · {tracks.length} samples
         </p>
       </div>
+
       <ol className="panel mt-4 divide-y divide-cyan/15 overflow-hidden">
         {tracks.map((track, index) => (
           <li
@@ -34,6 +40,10 @@ export function Queue({ tracks }: { tracks: JukeboxTrack[] }) {
           </li>
         ))}
       </ol>
+
+      <p className="mt-3 font-mono text-[11px] leading-relaxed text-muted">
+        Example queue · live queue data coming when we run our own instance.
+      </p>
     </section>
   );
 }

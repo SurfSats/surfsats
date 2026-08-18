@@ -37,13 +37,18 @@ export function JukeboxHighlight() {
                 <p className="mt-1 font-mono text-sm text-cyan">{current.artist}</p>
               </>
             ) : (
-              <p className="mt-3 font-display text-2xl font-bold uppercase text-cyan">
-                Connecting to the signal…
-              </p>
+              <>
+                <p className="mt-3 font-display text-2xl font-bold uppercase text-cyan">
+                  Live on Noderunners Radio
+                </p>
+                <p className="mt-2 font-mono text-xs uppercase tracking-[0.12em] text-muted">
+                  track data coming soon · stream is live
+                </p>
+              </>
             )}
             {upcoming ? (
               <p className="mt-6 border-t border-dashed border-cyan/20 pt-4 font-mono text-xs text-muted">
-                up_next:{" "}
+                sample_next:{" "}
                 <span className="text-foreground">
                   {upcoming.title} — {upcoming.artist}
                 </span>
