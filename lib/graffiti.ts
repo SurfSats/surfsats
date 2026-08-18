@@ -1,8 +1,11 @@
 export const GRAFFITI_PRICE_SATS = 21;
+export const GRAFFITI_TTL_HOURS = 21;
 export const GRAFFITI_MAX_CHARS = 100;
-export const GRAFFITI_TTL_MS = 24 * 60 * 60 * 1000;
-export const GRAFFITI_STORAGE_KEY = "surfsats.graffiti.v2";
+export const GRAFFITI_TTL_MS = GRAFFITI_TTL_HOURS * 60 * 60 * 1000;
+export const GRAFFITI_STORAGE_KEY = "surfsats.graffiti.v3";
 export const GRAFFITI_CENTER = "Bitcoin Is Hope";
+/** Keep tags below the hero title band (~first 26% of the wall). */
+export const GRAFFITI_HERO_BAND = 26;
 
 export const graffitiStyles = [
   { id: "tag", label: "classic tag" },
@@ -72,9 +75,9 @@ export function isActiveMark(mark: GraffitiMark, now = Date.now()) {
 
 export function placeMark() {
   for (let attempt = 0; attempt < 24; attempt += 1) {
-    const top = 3 + Math.random() * 84;
+    const top = GRAFFITI_HERO_BAND + Math.random() * 64;
     const left = 1 + Math.random() * 76;
-    const hitsCenter = top > 30 && top < 70 && left > 16 && left < 64;
+    const hitsCenter = top > 34 && top < 68 && left > 16 && left < 64;
     if (!hitsCenter) {
       return {
         top,
@@ -84,7 +87,7 @@ export function placeMark() {
       };
     }
   }
-  return { top: 6, left: 4, rotate: -8, scale: 0.9 };
+  return { top: 30, left: 4, rotate: -8, scale: 0.9 };
 }
 
 export function createMark(
@@ -112,9 +115,9 @@ export const seedMarks: GraffitiMark[] = [
     style: "blockbuster",
     color: "bone",
     createdAt: new Date(Date.now() - 3_600_000).toISOString(),
-    expiresAt: new Date(Date.now() + 20 * 3_600_000).toISOString(),
-    top: 6,
-    left: 5,
+    expiresAt: new Date(Date.now() + 18 * 3_600_000).toISOString(),
+    top: 34,
+    left: 4,
     rotate: -11,
     scale: 1.15,
   },
@@ -124,8 +127,8 @@ export const seedMarks: GraffitiMark[] = [
     style: "tag",
     color: "pink",
     createdAt: new Date(Date.now() - 8_000_000).toISOString(),
-    expiresAt: new Date(Date.now() + 16 * 3_600_000).toISOString(),
-    top: 12,
+    expiresAt: new Date(Date.now() + 14 * 3_600_000).toISOString(),
+    top: 30,
     left: 68,
     rotate: 9,
     scale: 0.95,
@@ -136,7 +139,7 @@ export const seedMarks: GraffitiMark[] = [
     style: "drip",
     color: "ice",
     createdAt: new Date(Date.now() - 2_000_000).toISOString(),
-    expiresAt: new Date(Date.now() + 22 * 3_600_000).toISOString(),
+    expiresAt: new Date(Date.now() + 19 * 3_600_000).toISOString(),
     top: 78,
     left: 8,
     rotate: -6,
@@ -148,7 +151,7 @@ export const seedMarks: GraffitiMark[] = [
     style: "throwup",
     color: "banana",
     createdAt: new Date(Date.now() - 5_000_000).toISOString(),
-    expiresAt: new Date(Date.now() + 18 * 3_600_000).toISOString(),
+    expiresAt: new Date(Date.now() + 16 * 3_600_000).toISOString(),
     top: 76,
     left: 62,
     rotate: 5,

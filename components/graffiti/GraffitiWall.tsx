@@ -1,4 +1,4 @@
-import { cn } from "@/lib/cn";
+import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
 import { GRAFFITI_CENTER, type GraffitiMark } from "@/lib/graffiti";
 
 export function GraffitiWall({ marks }: { marks: GraffitiMark[] }) {
@@ -20,15 +20,12 @@ export function GraffitiWall({ marks }: { marks: GraffitiMark[] }) {
             transform: `rotate(${mark.rotate}deg) scale(${mark.scale})`,
           }}
         >
-          <p
-            className={cn(
-              `graf-${mark.style}`,
-              `graf-color-${mark.color}`,
-              "text-xl sm:text-3xl",
-            )}
-          >
-            {mark.text}
-          </p>
+          <GraffitiTag
+            text={mark.text}
+            style={mark.style}
+            color={mark.color}
+            className="text-xl sm:text-3xl"
+          />
         </div>
       ))}
     </div>

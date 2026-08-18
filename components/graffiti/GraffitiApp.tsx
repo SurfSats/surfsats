@@ -5,6 +5,7 @@ import { Anton, Bangers, Permanent_Marker, Rubik_Dirt, Rubik_Glitch } from "next
 import { GraffitiForm } from "@/components/graffiti/GraffitiForm";
 import { GraffitiWall } from "@/components/graffiti/GraffitiWall";
 import {
+  GRAFFITI_HERO_BAND,
   GRAFFITI_STORAGE_KEY,
   type GraffitiColor,
   type GraffitiMark,
@@ -78,7 +79,9 @@ export function GraffitiApp() {
     () =>
       marks.filter(
         (mark) =>
-          isActiveMark(mark, now) && typeof mark.scale === "number",
+          isActiveMark(mark, now) &&
+          typeof mark.scale === "number" &&
+          mark.top >= GRAFFITI_HERO_BAND,
       ),
     [marks, now],
   );
