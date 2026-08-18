@@ -1,0 +1,221 @@
+@import "tailwindcss";
+
+:root {
+  --background: #08080b;
+  --foreground: #eceae4;
+  --panel: #111116;
+  --cyan: #3dfff3;
+  --magenta: #ff2ec4;
+  --sats: #ff7a18;
+  --sats-hot: #ff9a3c;
+  --muted: #8b8d99;
+  --line: rgba(61, 255, 243, 0.22);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-panel: var(--panel);
+  --color-cyan: var(--cyan);
+  --color-magenta: var(--magenta);
+  --color-sats: var(--sats);
+  --color-sats-hot: var(--sats-hot);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --font-sans: var(--font-mono);
+  --font-mono: var(--font-mono);
+  --font-display: var(--font-display);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+::selection {
+  background: var(--magenta);
+  color: #08080b;
+}
+
+:focus-visible {
+  outline: 1px dashed var(--cyan);
+  outline-offset: 3px;
+}
+
+/* CRT + grain — light enough that copy stays readable */
+.crt-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 2px,
+      rgba(0, 0, 0, 0.16) 2px,
+      rgba(0, 0, 0, 0.16) 3px
+    ),
+    radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.35) 100%);
+  opacity: 0.28;
+  mix-blend-mode: multiply;
+}
+
+.noise-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 81;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.hero-glow {
+  background:
+    radial-gradient(ellipse 55% 40% at 90% 0%, rgba(255, 46, 196, 0.16), transparent 55%),
+    radial-gradient(ellipse 50% 45% at 0% 20%, rgba(61, 255, 243, 0.12), transparent 55%),
+    radial-gradient(ellipse 40% 30% at 60% 110%, rgba(255, 122, 24, 0.14), transparent 55%);
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.55);
+}
+
+.panel-hover {
+  transition:
+    transform 120ms steps(2, end),
+    box-shadow 120ms steps(2, end),
+    border-color 120ms linear;
+}
+
+.panel-hover:hover {
+  border-color: var(--cyan);
+  box-shadow: 5px 5px 0 var(--magenta);
+  transform: translate(-2px, -2px);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.15rem;
+  border: 1px solid var(--sats);
+  background: var(--sats);
+  color: #08080b;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--magenta);
+  transition:
+    transform 100ms steps(2, end),
+    box-shadow 100ms steps(2, end),
+    background-color 100ms linear;
+}
+
+.btn:hover {
+  background: var(--sats-hot);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--cyan);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 3px 3px 0 rgba(61, 255, 243, 0.2);
+}
+
+.btn-ghost:hover {
+  background: rgba(61, 255, 243, 0.08);
+  color: var(--cyan);
+  box-shadow: 5px 5px 0 var(--magenta);
+}
+
+.glitch-hover:hover {
+  text-shadow:
+    2px 0 var(--magenta),
+    -2px 0 var(--cyan);
+}
+
+.glitch-title {
+  position: relative;
+  text-shadow:
+    0 0 18px rgba(61, 255, 243, 0.18),
+    0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.glitch-title::before,
+.glitch-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.glitch-title::before {
+  color: var(--cyan);
+  transform: translate(2px, -1px);
+  opacity: 0.45;
+  clip-path: inset(0 0 58% 0);
+}
+
+.glitch-title::after {
+  color: var(--magenta);
+  transform: translate(-2px, 1px);
+  opacity: 0.4;
+  clip-path: inset(55% 0 0 0);
+}
+
+@keyframes flicker {
+  0%,
+  97%,
+  100% {
+    opacity: 1;
+  }
+  98% {
+    opacity: 0.82;
+  }
+}
+
+.flicker {
+  animation: flicker 6s steps(2, end) infinite;
+}
+
+.input-terminal {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #08080b;
+  color: var(--cyan);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  outline: none;
+}
+
+.input-terminal::placeholder {
+  color: rgba(139, 141, 153, 0.7);
+}
+
+.input-terminal:focus {
+  border-color: var(--cyan);
+  box-shadow: 3px 3px 0 var(--magenta);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flicker,
+  .panel-hover,
+  .btn {
+    animation: none;
+    transition: none;
+  }
+}
