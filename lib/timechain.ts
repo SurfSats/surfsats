@@ -17,8 +17,13 @@ export type TimechainSnapshot = {
   difficulty: number | null;
   difficultyChangePct: number | null;
   remainingBlocksToRetarget: number | null;
+  difficultyProgressPercent: number | null;
   blocksToHalving: number | null;
   nextHalvingHeight: number | null;
+  halvingProgressPercent: number | null;
+  supplyIssued: number | null;
+  supplyPercent: number | null;
+  blocksLast24h: number | null;
   fastestFee: number | null;
   hourFee: number | null;
   feeLabel: string | null;
@@ -37,8 +42,13 @@ export const emptySnapshot: TimechainSnapshot = {
   difficulty: null,
   difficultyChangePct: null,
   remainingBlocksToRetarget: null,
+  difficultyProgressPercent: null,
   blocksToHalving: null,
   nextHalvingHeight: null,
+  halvingProgressPercent: null,
+  supplyIssued: null,
+  supplyPercent: null,
+  blocksLast24h: null,
   fastestFee: null,
   hourFee: null,
   feeLabel: null,
@@ -94,11 +104,22 @@ export async function getTimechainSnapshot(): Promise<TimechainSnapshot> {
     difficulty: num(hashrate?.currentDifficulty),
     difficultyChangePct: num(difficulty?.difficultyChange),
     remainingBlocksToRetarget: num(difficulty?.remainingBlocks),
+    difficultyProgressPercent: num(difficulty?.progressPercent),
     blocksToHalving:
       blockHeight !== null && nextHalvingHeight !== null
         ? nextHalvingHeight - blockHeight
         : null,
     nextHalvingHeight,
+    halvingProgressPercent:
+      blockHeight !== null
+        ? ((blockHeight % HALVING_INTERVAL) / HALVING_INTERVAL) * 100
+        : null,
+    supplyIssued: blockHeight !== null ? issuedSupply(blockHeight) : null,
+    supplyPercent:
+      blockHeight !== null
+        ? (issuedSupply(blockHeight) / 21_000_000) * 100
+        : null,
+    blocksLast24h: estimateBlocksLast24h(num(difficulty?.timeAvg)),
     fastestFee,
     hourFee: num(fees?.hourFee),
     feeLabel: feeEnvironment(fastestFee),
@@ -159,6 +180,8 @@ type BlockSummary = { height?: number; timestamp?: number };
 type DifficultyResponse = {
   difficultyChange?: number;
   remainingBlocks?: number;
+  progressPercent?: number;
+  timeAvg?: number;
 };
 type HashrateResponse = {
   currentHashrate?: number;
@@ -180,6 +203,24 @@ function feeEnvironment(fastest: number | null) {
   if (fastest <= 25) return "building";
   if (fastest <= 60) return "heavy";
   return "storm";
+}
+
+function issuedSupply(height: number) {
+  let reward = 50;
+  let issued = 0;
+  let remaining = height;
+  while (remaining > 0 && reward > 0) {
+    const era = Math.min(remaining, HALVING_INTERVAL);
+    issued += era * reward;
+    remaining -= era;
+    reward /= 2;
+  }
+  return issued;
+}
+
+function estimateBlocksLast24h(timeAvgMs: number | null) {
+  if (!timeAvgMs || timeAvgMs <= 0) return null;
+  return Math.round(86_400_000 / timeAvgMs);
 }
 
 function num(value: unknown) {
