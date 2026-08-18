@@ -2,6 +2,7 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import {
   JUKEBOX_LIVE_URL,
   JUKEBOX_PRICE_SATS,
+  JUKEBOX_TELEGRAM_URL,
 } from "@/lib/jukebox";
 
 // Live requests + invoices happen on the Lightning Jukebox.
@@ -18,15 +19,29 @@ export function AddSongCard() {
       </h2>
       <p className="mt-3 text-sm leading-relaxed text-muted">
         No account. No playlist committee. Pay {JUKEBOX_PRICE_SATS} sats over
-        Lightning and you are the DJ. The live request desk opens in a new tab.
+        Lightning and you are the DJ.
       </p>
-      <ButtonLink
-        href={JUKEBOX_LIVE_URL}
-        external
-        className="btn-pulse mt-6 w-full px-5 py-4 text-sm"
-      >
-        add a song — {JUKEBOX_PRICE_SATS} sats
-      </ButtonLink>
+      <div className="mt-6 flex flex-col gap-3">
+        <ButtonLink
+          href={JUKEBOX_LIVE_URL}
+          external
+          className="btn-pulse w-full px-5 py-4 text-sm"
+        >
+          add a song — {JUKEBOX_PRICE_SATS} sats
+        </ButtonLink>
+        <ButtonLink
+          href={JUKEBOX_TELEGRAM_URL}
+          external
+          variant="ghost"
+          className="w-full px-5 py-4 text-sm"
+        >
+          add via telegram
+        </ButtonLink>
+      </div>
+      <p className="mt-4 text-sm leading-relaxed text-muted">
+        The web desk can be sluggish. Telegram is usually the more reliable way
+        to get a track in the queue.
+      </p>
     </section>
   );
 }

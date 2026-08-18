@@ -8,6 +8,10 @@ export const JUKEBOX_PRICE_SATS = 21;
 export const JUKEBOX_LIVE_URL =
   "https://jukebox.lighting/jukebox/web/-1001672416970";
 
+// Direct Telegram add-song entry (official Lightning Jukebox bot).
+// Radio hangout: https://t.me/noderunnersradio
+export const JUKEBOX_TELEGRAM_URL = "https://t.me/Jukebox_Lightning_bot";
+
 // Noderunners Radio on zap.stream. Many hosts block iframe embeds —
 // keep STREAM_LIVE_URL as the new-tab fallback if the player is blank.
 export const STREAM_LIVE_URL = "https://zap.stream/noderunnersradio";

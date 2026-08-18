@@ -12,6 +12,7 @@ import {
   JUKEBOX_BACKEND_NAME,
   JUKEBOX_LIVE_URL,
   JUKEBOX_PRICE_SATS,
+  JUKEBOX_TELEGRAM_URL,
   getNowPlaying,
   getQueue,
 } from "@/lib/jukebox";
@@ -57,13 +58,26 @@ export default function JukeboxPage() {
           <LiveStream />
         </div>
 
-        <ButtonLink
-          href={JUKEBOX_LIVE_URL}
-          external
-          className="btn-pulse mt-8 w-full px-6 py-4 text-sm sm:w-auto"
-        >
-          add a song — {JUKEBOX_PRICE_SATS} sats
-        </ButtonLink>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <ButtonLink
+            href={JUKEBOX_LIVE_URL}
+            external
+            className="btn-pulse w-full px-6 py-4 text-sm sm:w-auto"
+          >
+            add a song — {JUKEBOX_PRICE_SATS} sats
+          </ButtonLink>
+          <ButtonLink
+            href={JUKEBOX_TELEGRAM_URL}
+            external
+            variant="ghost"
+            className="w-full px-6 py-4 text-sm sm:w-auto"
+          >
+            add via telegram
+          </ButtonLink>
+        </div>
+        <p className="mt-3 max-w-xl text-sm text-muted">
+          Web can stall. Telegram is usually faster for requests.
+        </p>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <NowPlaying track={current} />
