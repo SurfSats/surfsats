@@ -2,11 +2,32 @@ import type { Article } from "./types";
 
 const articles: Article[] = [
   {
+    slug: "its-always-darkest-before-dawn-strikes",
+    title: "ITS ALWAYS DARKEST BEFORE DAWN STRIKES",
+    excerpt:
+      "Fiat is a mind virus. Bitcoin is the Doom Destroyer. A raw dispatch on Cantillonaires, doomscrolling, and the radical hope of separating money from state.",
+    date: "2026-01-14",
+    author: "SurfPorn",
+    category: "Essay",
+    readingTime: "7 min",
+    originalPublication: "Stackchain Magazine",
+    originalUrl:
+      "https://www.stackchainmagazine.net/its-always-darkest-before-dawn-strikes/",
+    signoff: "A whimsical children's story by SurfPorn",
+    paragraphs: [
+      "How do I describe our existing monetary system? Imagine fiat currency, that grotesque turd pinched from the bowels of our central bank cartel overlords, birthed during the bleak days of the Great Depression, the shit smell still lingering but cleverly disguised like a scratch and sniff sticker. It's a mind virus, a Keynesian relic spreading its wealth destruction through generations, like an STD from the silent film era attached to a zombie horde of cucks who love getting fucked by the man. Printing worthless tickets to a show of smoke and mirrors where the rich play magicians making wealth disappear from everyone in attendance. Every bill printed fueling the eternal fire of inflation, burning holes through pockets and piggy banks with reckless abandonment. \"real G's move in silence like lasagna\" and this Grotesque parade marches on, like Walter White in a super-lab cooking up a turd lasagna, and nobody realizes it's there. \"Truth is, the game was rigged from the start.\"",
+      "Who benefits from this wretched system? Mainly Cantillonaires, these backroom dealing psychopaths, suffering from a terminal case of erectile dystopia dysfunction which renders them incapable of actual production. So instead, they plunder and loot the spoils of an empire built before them by honest men, condemning unborn generations to the grim reaper of debt through their time-theft of money. It's hard to see the truth behind their Botox-stiffened cheeks and pinned up eyebrows like a message in your cell phone's notification bar. These leathery gargoyles sit perched atop a temple of the seven deadly sins, doomed as decaying showpieces to their lust for post-brunch liposuction sessions to offset their insatiable greed for more and more short-term satisfaction, completely oblivious to the wake of destruction that follows them.",
+      "What the fuck is this article even about? Glad I have your attention. It's about Hope, lurking beneath this darkly written imagery and gang bang of analogies. Around every corner, there's a doomsday prophet foaming at the mouth that Armageddon's coming and the apocalypse hotline is busy with everyone's own flavor of impending catastrophe. Even the barista with the nose ring is convinced we're one missile away from kissing they/them/their ass goodbye, while the rancher prepares his bunker for when our reptilian rulers de-mask and drop the charade. Grandma has turned into a vault dweller, stockpiling iodine pills for when mushroom clouds hang over the nation like a giant radioactive pinata, ready to burst open in a fallout of confetti. Welcome to the American apocalypse, a place where doomscrolling is our national sport and World War III is but a screen refresh away. The truth is when the entire system is insolvent, the lie must go on forever or else the \"by decree\" world does collapse. The greatest magic trick was convincing everyone to point their fears elsewhere.",
+      "Ok you seriously lost me; how does this chaotic tale connect to hope? Enter Bitcoin, the Doom Destroyer. Backed by a legion of heroes endlessly saving today in hopes of a brighter tomorrow. Especially the real toxic maxi plebs who bought this loosely sealed magazine and had the brass cojones to rip it open, flip through its glossy pages with Cheeto-dusted fingers, rather than hide it from the light of day like some vampire dragon's treasure chest of seed phrases, praying that rarity alone funds their escape to some tropical tax haven. You're not just a hero but a fucking legend. Our laser-eyed cult of zealots with a messianic belief in Satoshi runs so deep we're capable of linking the mating habits of sea turtles and the decline of Western civilization to Bitcoin as the solution, prompted by nothing more than a casual comment about the weather from a normie. Sure, I could have penned a sane piece about the importance of linking the digital world to the real world though proof of work which outsources part of the governance preventing over-centralization of the network to the laws of physics through electricity generating processes which exist globally, endlessly unlockable through nature by the permissionless and homogenous state of electrons…. But why dwell on intellectually sound arguments when our true power may lie in our largely unconscious ability to weave hope into the fabric of our ramblings. In this bleak circus of despair where even clowns have lost their laughter, hope is a rogue virus, highly contagious, spreading wildly a blazing inferno in the damp, dark corners of our collective nightmare. Bitcoin isn't just a technology; it's a lifeline thrown into the stormy seas of our time, offering not just rescue but redemption of our souls from the perpetual chaos of fiat.",
+      "It's always darkest before dawn strikes. Realize the hope Bitcoin demands of us when we dream of a world where Currency is separated from State. Bitcoin's only Achilles heel is irrelevance, so dream on you toxic fucking lunatic. In the wasteland of fiat, fringe heroes emerge from the psilocybin citadel not with capes but with TI-80 looking ColdCards and piercing laser eyes cutting through FUD like cake on your wife's boyfriends' birthday. So, grab that Molotov cocktail of radical hope and brighten this dark world like a napalm strike against a tree line because apocalypse now, hyper-bitcoinization tomorrow.",
+    ],
+  },
+  {
     slug: "21-sats-one-song",
     title: "21 Sats, One Song",
     excerpt:
       "The Global Jukebox is a shared soundtrack anyone can feed — one Lightning payment at a time.",
-    date: "2026-08-16",
+    date: "2025-12-10",
     author: "Maya Costa",
     category: "Jukebox",
     readingTime: "4 min",
@@ -22,7 +43,7 @@ const articles: Article[] = [
     title: "Dawn Patrol, Hard Money",
     excerpt:
       "Surfers and Bitcoiners share the same muscle: show up early, ignore the noise, wait for the set.",
-    date: "2026-08-10",
+    date: "2025-11-20",
     author: "Kai Nakamura",
     category: "Culture",
     readingTime: "5 min",
@@ -38,7 +59,7 @@ const articles: Article[] = [
     title: "Salt, Sand, and Self-Custody",
     excerpt:
       "How a beach-town node, a cheap UPS, and a little salt-air paranoia keep the keys offline.",
-    date: "2026-08-04",
+    date: "2025-10-28",
     author: "Lina Voss",
     category: "Guides",
     readingTime: "7 min",
@@ -54,7 +75,7 @@ const articles: Article[] = [
     title: "The Lightning Lineup",
     excerpt:
       "Instant payments at surf camps, ding-repair stalls, and the taco stand that finally ditched the tip jar.",
-    date: "2026-07-22",
+    date: "2025-09-14",
     author: "Diego Alvarez",
     category: "Lightning",
     readingTime: "6 min",
@@ -70,7 +91,7 @@ const articles: Article[] = [
     title: "Orange Pill, Blue Water",
     excerpt:
       "A field guide to talking Bitcoin in the lineup without becoming the person everyone paddles away from.",
-    date: "2026-07-08",
+    date: "2025-08-02",
     author: "Riley Chen",
     category: "Culture",
     readingTime: "5 min",

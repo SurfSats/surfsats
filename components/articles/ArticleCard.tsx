@@ -16,12 +16,18 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
         featured && "sm:p-7",
       )}
     >
-      <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cyan">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-[0.16em] text-cyan">
         <span>{article.category}</span>
         <span className="text-magenta">/</span>
         <time dateTime={article.date} className="text-muted">
           {formatDate(article.date)}
         </time>
+        {article.originalPublication ? (
+          <>
+            <span className="text-magenta">/</span>
+            <span className="text-sats">via {article.originalPublication}</span>
+          </>
+        ) : null}
       </div>
 
       <h3

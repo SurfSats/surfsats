@@ -7,6 +7,9 @@ export type Article = {
   category: string;
   readingTime: string;
   paragraphs: string[];
+  signoff?: string;
+  originalPublication?: string;
+  originalUrl?: string;
 };
 
 export type NewsLink = {

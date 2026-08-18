@@ -60,11 +60,59 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {article.readingTime}
         </p>
 
-        <div className="mt-10 max-w-2xl space-y-6 border-l-2 border-cyan/30 pl-5 text-sm leading-8 text-foreground/90 sm:text-base">
-          {article.paragraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
+        {article.originalPublication && article.originalUrl ? (
+          <aside className="panel mt-8 max-w-2xl p-4">
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-magenta">
+              originally published
+            </p>
+            <a
+              href={article.originalUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-block font-mono text-sm text-cyan glitch-hover hover:text-sats"
+            >
+              {article.originalPublication} -&gt;
+            </a>
+            <p className="mt-2 break-all font-mono text-[11px] text-muted">
+              {article.originalUrl}
+            </p>
+          </aside>
+        ) : null}
+
+        <div className="mt-10 max-w-2xl space-y-8 border-l-2 border-cyan/30 pl-5 text-sm leading-8 text-foreground/90 sm:text-[1.05rem] sm:leading-8">
+          {article.paragraphs.map((paragraph, index) => (
+            <p key={`${article.slug}-${index}`}>{paragraph}</p>
           ))}
         </div>
+
+        {article.signoff ? (
+          <p className="mt-12 max-w-2xl font-mono text-sm italic text-sats">
+            {article.signoff}
+          </p>
+        ) : null}
+
+        {article.originalPublication && article.originalUrl ? (
+          <p className="mt-10 max-w-2xl border-t border-dashed border-cyan/20 pt-6 font-mono text-xs leading-relaxed text-muted">
+            First published in{" "}
+            <a
+              href={article.originalUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-cyan glitch-hover hover:text-sats"
+            >
+              {article.originalPublication}
+            </a>
+            . Read the original:{" "}
+            <a
+              href={article.originalUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="break-all text-cyan hover:text-sats"
+            >
+              {article.originalUrl}
+            </a>
+          </p>
+        ) : null}
       </Container>
     </article>
   );
