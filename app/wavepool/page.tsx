@@ -31,9 +31,9 @@ export default async function WavePoolPage() {
           {WAVE_POOL_GOAL_SATS} sats. One shared set.
         </p>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
-          Zap into the pool. If Bitcoin is up on the day, you get a barrel. If
-          it is down, the closeout eats the lineup. No committee. Just tide and
-          Lightning.
+          Shared pool. Goal is {WAVE_POOL_GOAL_SATS} sats. Bitcoin up on the
+          day: a barrel. Down: a closeout that wants to eat you. Hit the
+          number and the set unlocks.
         </p>
 
         <div className="mt-10">

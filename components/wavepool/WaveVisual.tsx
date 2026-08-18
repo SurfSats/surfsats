@@ -1,8 +1,9 @@
 import { cn } from "@/lib/cn";
 import type { PriceDirection } from "@/lib/timechain";
+import { formatChange, formatUsd } from "@/lib/timechain";
 import { WAVE_POOL_GOAL_SATS, poolProgress } from "@/lib/wavepool";
 
-type WaveMode = "barrel" | "closeout" | "chop" | "complete";
+export type WaveMode = "barrel" | "closeout" | "chop" | "complete";
 
 export function waveModeFromDirection(
   direction: PriceDirection | null,
@@ -18,70 +19,119 @@ export function waveModeFromDirection(
 export function WaveVisual({
   total,
   direction,
+  changePct,
+  priceUsd,
   complete,
 }: {
   total: number;
   direction: PriceDirection | null;
+  changePct: number | null;
+  priceUsd: number | null;
   complete: boolean;
 }) {
   const mode = waveModeFromDirection(direction, complete);
   const progress = poolProgress(total);
-  const fill = 22 + progress * 58;
-  const energy = 0.35 + progress * 0.65;
+  const fill = 18 + progress * 64;
+  const charged = Math.round(progress * 100);
 
   return (
     <div
       className={cn(
         "relative overflow-hidden border bg-black",
-        mode === "barrel" && "border-cyan/45",
-        mode === "closeout" && "border-magenta/50",
-        mode === "chop" && "border-sats/40",
+        mode === "barrel" && "border-cyan/55",
+        mode === "closeout" && "border-magenta/60",
+        mode === "chop" && "border-sats/45",
         mode === "complete" && "border-sats",
       )}
       data-wave-mode={mode}
+      data-price-direction={direction ?? "unknown"}
       data-wave-progress={progress.toFixed(3)}
     >
-      <div className="flex items-center justify-between border-b border-white/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em]">
         <span className="text-cyan">crt://wave</span>
         <span
           className={cn(
+            "font-semibold",
             mode === "barrel" && "text-cyan",
             mode === "closeout" && "text-magenta",
             mode === "chop" && "text-sats",
             mode === "complete" && "text-sats",
           )}
         >
-          {mode === "barrel" && "barrel · rising tide"}
-          {mode === "closeout" && "closeout · wipeout"}
-          {mode === "chop" && "chop · sideways"}
-          {mode === "complete" && "set unlocked"}
+          {mode === "barrel" && "24h up · barrel forming"}
+          {mode === "closeout" && "24h down · closeout incoming"}
+          {mode === "chop" && "24h flat · sideways chop"}
+          {mode === "complete" && "2100 locked · set unlocked"}
         </span>
       </div>
 
-      <div className="relative h-[300px] sm:h-[400px] lg:h-[460px]">
+      <div
+        className={cn(
+          "flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2",
+          mode === "barrel" && "border-cyan/25 bg-cyan/8",
+          mode === "closeout" && "border-magenta/30 bg-magenta/10",
+          mode === "chop" && "border-sats/25 bg-sats/8",
+          mode === "complete" && "border-sats/40 bg-sats/12",
+        )}
+      >
+        <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+          btc 24h swell
+        </p>
+        <p
+          className={cn(
+            "font-display text-xl font-bold uppercase",
+            mode === "barrel" && "text-cyan",
+            mode === "closeout" && "text-magenta",
+            mode === "chop" && "text-sats",
+            mode === "complete" && "text-sats",
+          )}
+        >
+          {changePct !== null ? formatChange(changePct) : "awaiting print"}
+          {priceUsd !== null ? ` · ${formatUsd(priceUsd)}` : ""}
+        </p>
+      </div>
+
+      <div className="relative h-[320px] sm:h-[420px] lg:h-[480px]">
         <svg
           viewBox="0 0 1000 500"
-          className="absolute inset-0 h-full w-full"
+          className={cn(
+            "absolute inset-0 h-full w-full",
+            mode === "complete" && "wave-unlock",
+          )}
           preserveAspectRatio="xMidYMid slice"
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#05060c" />
-              <stop offset="70%" stopColor="#0a1220" />
-              <stop offset="100%" stopColor="#061018" />
-            </linearGradient>
-            <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={mode === "closeout" ? "#5b1a44" : "#0e3d4f"} />
+            <linearGradient id="wp-sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#04050a" />
               <stop offset="100%" stopColor="#05080d" />
             </linearGradient>
-            <linearGradient id="face" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor={mode === "closeout" ? "#ff2ec4" : "#3dfff3"} />
-              <stop offset="55%" stopColor={mode === "complete" ? "#ff7a18" : "#1a8a9c"} />
-              <stop offset="100%" stopColor="#071018" />
+            <linearGradient id="wp-sea" x1="0" y1="0" x2="0" y2="1">
+              <stop
+                offset="0%"
+                stopColor={
+                  mode === "closeout"
+                    ? "#4a1028"
+                    : mode === "complete"
+                      ? "#3a1a08"
+                      : "#0a3040"
+                }
+              />
+              <stop offset="100%" stopColor="#05080d" />
             </linearGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="6" result="b" />
+            <linearGradient id="wp-face" x1="0" y1="0" x2="1" y2="1">
+              <stop
+                offset="0%"
+                stopColor={mode === "closeout" ? "#ff2ec4" : "#3dfff3"}
+              />
+              <stop
+                offset="55%"
+                stopColor={mode === "complete" ? "#ff7a18" : "#0d5c6a"}
+              />
+              <stop offset="100%" stopColor="#05080d" />
+            </linearGradient>
+            <filter id="wp-glow">
+              <feGaussianBlur stdDeviation="5" result="b" />
               <feMerge>
                 <feMergeNode in="b" />
                 <feMergeNode in="SourceGraphic" />
@@ -89,100 +139,65 @@ export function WaveVisual({
             </filter>
           </defs>
 
-          <rect width="1000" height="500" fill="url(#sky)" />
-
+          <rect width="1000" height="500" fill="url(#wp-sky)" />
           <rect
             x="0"
-            y={500 - fill * 4.2}
+            y={500 - fill * 4.4}
             width="1000"
-            height={fill * 4.2 + 40}
-            fill="url(#sea)"
-            opacity={0.55 + progress * 0.35}
+            height={fill * 4.4 + 50}
+            fill="url(#wp-sea)"
+            opacity={0.5 + progress * 0.45}
           />
 
           <g
-            className={mode === "closeout" ? "wave-crash" : "wave-swell"}
-            style={{ opacity: energy }}
+            className={
+              mode === "closeout"
+                ? "wave-slam"
+                : mode === "complete"
+                  ? "wave-unlock"
+                  : "wave-swell"
+            }
           >
             <path
-              d="M-40 360 C 80 330, 180 390, 320 350 C 460 308, 560 400, 700 340 C 820 296, 920 360, 1040 330 L 1040 520 L -40 520 Z"
-              fill="url(#sea)"
-              opacity="0.85"
+              d="M-40 370 C 90 320, 200 410, 340 350 C 480 290, 580 420, 720 330 C 840 270, 930 370, 1060 320 L 1060 530 L -40 530 Z"
+              fill="url(#wp-sea)"
             />
 
-            {mode === "closeout" ? (
-              <>
-                <path
-                  d="M420 330 C 520 210, 640 120, 760 90 C 820 180, 860 250, 900 330 C 780 300, 620 360, 420 330 Z"
-                  fill="url(#face)"
-                  filter="url(#glow)"
-                />
-                <path
-                  d="M700 95 C 780 40, 860 70, 930 160"
-                  fill="none"
-                  stroke="#ff2ec4"
-                  strokeWidth="6"
-                  opacity="0.8"
-                />
-                <circle className="foam-pop" cx="780" cy="70" r="8" fill="#eceae4" />
-                <circle className="foam-pop" cx="830" cy="110" r="5" fill="#ff2ec4" />
-                <circle className="foam-pop" cx="880" cy="150" r="7" fill="#eceae4" />
-                <circle className="foam-pop" cx="740" cy="130" r="4" fill="#ff7a18" />
-              </>
-            ) : (
-              <>
-                <path
-                  d="M380 340 C 500 250, 560 160, 620 130 C 690 100, 760 130, 810 210 C 780 250, 730 270, 690 250 C 650 228, 630 250, 610 300 C 540 350, 450 360, 380 340 Z"
-                  fill="url(#face)"
-                  filter="url(#glow)"
-                />
-                <ellipse
-                  className="tube-glow"
-                  cx="690"
-                  cy="210"
-                  rx="42"
-                  ry="28"
-                  fill="#05080d"
-                  stroke={mode === "complete" ? "#ff7a18" : "#3dfff3"}
-                  strokeWidth="4"
-                />
-                <path
-                  d="M560 150 C 640 90, 740 90, 820 170"
-                  fill="none"
-                  stroke={mode === "complete" ? "#ff7a18" : "#3dfff3"}
-                  strokeWidth="5"
-                  opacity="0.75"
-                />
-                <circle className="foam-pop" cx="800" cy="150" r="6" fill="#eceae4" />
-                <circle className="foam-pop" cx="760" cy="120" r="4" fill="#3dfff3" />
-              </>
-            )}
+            {mode === "closeout" ? <CloseoutShape /> : <BarrelShape complete={mode === "complete"} />}
           </g>
-
-          {mode === "complete" ? (
-            <path
-              d="M500 70 L520 140 H590 L535 180 L555 250 L500 205 L445 250 L465 180 L410 140 H480 Z"
-              fill="#ff7a18"
-              opacity="0.9"
-              filter="url(#glow)"
-            />
-          ) : null}
         </svg>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 sm:p-5">
-          <div className="flex items-end justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.14em]">
-            <span className="text-cyan">
-              {Math.round(progress * 100)}% charged
-            </span>
-            <span className="text-sats">
-              {Math.min(total, WAVE_POOL_GOAL_SATS)} / {WAVE_POOL_GOAL_SATS} sats
-            </span>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 sm:p-5">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+                pool energy
+              </p>
+              <p className="font-display text-3xl font-bold uppercase tracking-tight text-sats sm:text-4xl">
+                {Math.min(total, WAVE_POOL_GOAL_SATS)}
+                <span className="text-lg text-muted sm:text-xl">
+                  {" "}
+                  / {WAVE_POOL_GOAL_SATS}
+                </span>
+              </p>
+            </div>
+            <p
+              className={cn(
+                "font-display text-3xl font-bold",
+                mode === "closeout" ? "text-magenta" : "text-cyan",
+              )}
+            >
+              {charged}%
+            </p>
           </div>
-          <div className="mt-2 h-2 overflow-hidden border border-cyan/25 bg-black/60">
+          <div className="mt-3 h-3 overflow-hidden border border-white/15 bg-black">
             <div
               className={cn(
-                "h-full",
-                mode === "closeout" ? "bg-magenta" : "bg-sats",
+                "h-full transition-[width] duration-500",
+                mode === "closeout" && "bg-magenta",
+                mode === "barrel" && "bg-cyan",
+                mode === "chop" && "bg-sats",
+                mode === "complete" && "bg-sats",
               )}
               style={{ width: `${progress * 100}%` }}
             />
@@ -190,5 +205,76 @@ export function WaveVisual({
         </div>
       </div>
     </div>
+  );
+}
+
+function BarrelShape({ complete }: { complete: boolean }) {
+  return (
+    <>
+      <path
+        d="M340 360 L420 250 L500 160 L590 110 L680 90 L760 110 L820 180 L800 240 L740 270 L700 240 L660 230 L630 290 L560 350 L450 370 Z"
+        fill="url(#wp-face)"
+        stroke="#05080d"
+        strokeWidth="8"
+        filter="url(#wp-glow)"
+      />
+      <path
+        d="M340 360 L420 250 L500 160 L590 110 L680 90 L760 110 L820 180"
+        fill="none"
+        stroke={complete ? "#ff7a18" : "#3dfff3"}
+        strokeWidth="4"
+      />
+      <ellipse
+        className="tube-glow"
+        cx="700"
+        cy="200"
+        rx="48"
+        ry="30"
+        fill="#05080d"
+        stroke={complete ? "#ff7a18" : "#3dfff3"}
+        strokeWidth="5"
+      />
+      <path
+        d="M620 130 L650 70 L670 130"
+        fill={complete ? "#ff7a18" : "#3dfff3"}
+      />
+      <path
+        d="M700 95 L730 50 L750 110"
+        fill={complete ? "#ff7a18" : "#3dfff3"}
+      />
+      {complete ? (
+        <path
+          d="M500 40 L518 118 H590 L532 162 L552 240 L500 190 L448 240 L468 162 L410 118 H482 Z"
+          fill="#ff7a18"
+          filter="url(#wp-glow)"
+        />
+      ) : null}
+    </>
+  );
+}
+
+function CloseoutShape() {
+  return (
+    <>
+      <path
+        d="M380 360 L500 200 L620 90 L740 40 L820 70 L880 160 L900 280 L820 250 L700 320 L560 380 Z"
+        fill="url(#wp-face)"
+        stroke="#05080d"
+        strokeWidth="8"
+        filter="url(#wp-glow)"
+      />
+      <path
+        d="M620 90 L700 10 L760 80 L840 20 L900 110"
+        fill="none"
+        stroke="#ff2ec4"
+        strokeWidth="6"
+      />
+      <path d="M680 70 L710 0 L735 75" fill="#ff7a18" />
+      <path d="M760 55 L800 -10 L830 70" fill="#ff2ec4" />
+      <path d="M820 90 L870 20 L900 105" fill="#eceae4" />
+      <circle className="foam-pop" cx="790" cy="50" r="7" fill="#ff2ec4" />
+      <circle className="foam-pop" cx="850" cy="90" r="5" fill="#eceae4" />
+      <circle className="foam-pop" cx="720" cy="40" r="6" fill="#ff7a18" />
+    </>
   );
 }

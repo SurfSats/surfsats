@@ -44,13 +44,13 @@ export function FeaturedTools() {
           title="The machines"
           description="Not a blog with a tip jar. Three things you can actually use."
         />
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+        <div className="mt-10 grid items-stretch gap-4 lg:grid-cols-3">
           {tools.map((tool) => (
             <Link
               key={tool.href}
               href={tool.href}
               className={cn(
-                "panel panel-hover group flex flex-col p-5 sm:p-6",
+                "panel panel-hover group flex min-w-0 flex-col p-5 sm:p-6",
                 tool.accent === "cyan" && "hover:border-cyan/60",
                 tool.accent === "magenta" && "hover:border-magenta/60",
                 tool.accent === "sats" && "hover:border-sats/60",

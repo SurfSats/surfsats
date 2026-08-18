@@ -38,7 +38,7 @@ export default function RootLayout({
         <div className="crt-overlay" aria-hidden="true" />
         <div className="noise-overlay" aria-hidden="true" />
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main className="relative z-0 min-w-0 flex-1">{children}</main>
         <Footer />
       </body>
     </html>

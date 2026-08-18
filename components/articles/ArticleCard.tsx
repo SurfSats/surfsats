@@ -12,7 +12,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
   return (
     <article
       className={cn(
-        "panel panel-hover group flex h-full flex-col p-5",
+        "panel panel-hover group flex w-full min-w-0 flex-col p-5",
         featured && "sm:p-7",
       )}
     >
@@ -32,7 +32,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
 
       <h3
         className={cn(
-          "mt-4 font-display font-bold uppercase tracking-tight text-foreground glitch-hover",
+          "mt-4 break-words font-display font-bold uppercase tracking-tight text-foreground glitch-hover",
           featured ? "text-2xl sm:text-3xl" : "text-xl",
         )}
       >

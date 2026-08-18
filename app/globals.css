@@ -287,7 +287,39 @@ body {
 }
 
 .wave-crash {
-  animation: wave-crash 1.6s ease-in-out infinite;
+  animation: wave-crash 1.15s ease-in-out infinite;
+}
+
+@keyframes wave-slam {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  35% {
+    transform: translate(8px, -6px) rotate(-1.8deg) scale(1.03);
+  }
+  70% {
+    transform: translate(-10px, 8px) rotate(1.4deg) scale(1.01);
+  }
+}
+
+.wave-slam {
+  animation: wave-slam 1.05s ease-in-out infinite;
+  transform-origin: 75% 45%;
+}
+
+@keyframes wave-unlock {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(255, 122, 24, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 22px rgba(255, 122, 24, 0.8));
+  }
+}
+
+.wave-unlock {
+  animation: wave-unlock 1.4s ease-in-out infinite;
 }
 
 .foam-pop {
@@ -327,6 +359,8 @@ body {
   .signal-blip,
   .wave-swell,
   .wave-crash,
+  .wave-slam,
+  .wave-unlock,
   .foam-pop,
   .tube-glow {
     animation: none;

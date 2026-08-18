@@ -2,12 +2,12 @@ import { Container } from "@/components/ui/Container";
 
 export function HomeClose() {
   return (
-    <section className="border-t border-cyan/20">
-      <Container className="py-12 sm:py-16">
-        <p className="font-display text-2xl font-bold uppercase tracking-tight sm:text-3xl">
+    <section className="relative z-0 border-t border-cyan/20">
+      <Container className="py-14 sm:py-16">
+        <p className="max-w-3xl break-words font-display text-2xl font-bold uppercase leading-tight tracking-tight sm:text-3xl">
           No committee. No brand guidelines.
         </p>
-        <p className="mt-3 max-w-xl text-sm text-muted sm:text-base">
+        <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
           Fork the culture. Feed the wave. Pay the peak or sit outside.
         </p>
       </Container>

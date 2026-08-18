@@ -7,19 +7,19 @@ import { getHandpicked } from "@/lib/handpicked";
 import { formatDate } from "@/lib/format";
 
 export function FromTheCoast() {
-  const [featured, ...rest] = getLatestArticles(2);
+  const featured = getLatestArticles(1)[0];
   const picks = getHandpicked().slice(0, 2);
 
   return (
-    <section>
-      <Container className="py-14 sm:py-20">
+    <section className="relative z-0">
+      <Container className="py-14 sm:pb-8 sm:pt-20">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <SectionHeading
             eyebrow="from_the_coast"
             title="Writing + signal"
             description="One dispatch. Two picks. The rest is noise."
           />
-          <div className="flex gap-5 font-mono text-xs uppercase tracking-[0.16em]">
+          <div className="flex shrink-0 gap-5 font-mono text-xs uppercase tracking-[0.16em]">
             <Link href="/articles" className="text-sats glitch-hover hover:text-cyan">
               articles -&gt;
             </Link>
@@ -29,13 +29,12 @@ export function FromTheCoast() {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-4">
+        <div className="mt-10 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+          <div className="min-w-0">
             {featured ? <ArticleCard article={featured} featured /> : null}
-            {rest[0] ? <ArticleCard article={rest[0]} /> : null}
           </div>
 
-          <aside className="space-y-4">
+          <aside className="flex min-w-0 flex-col gap-4">
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
               {"//"} hand_picked
             </p>
@@ -46,7 +45,7 @@ export function FromTheCoast() {
                   <span className="mx-2 text-magenta">/</span>
                   <time dateTime={item.date}>{formatDate(item.date)}</time>
                 </p>
-                <h3 className="mt-3 font-display text-xl font-bold uppercase tracking-tight">
+                <h3 className="mt-3 break-words font-display text-xl font-bold uppercase tracking-tight">
                   <a
                     href={item.url}
                     target="_blank"

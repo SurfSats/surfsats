@@ -5,7 +5,7 @@ import { navLinks } from "@/lib/nav";
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-cyan/20 bg-black/40">
+    <footer className="relative z-10 mt-auto shrink-0 border-t border-cyan/20 bg-black/40">
       <Container className="flex flex-col gap-8 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-sm">
           <Logo />

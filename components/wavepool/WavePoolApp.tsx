@@ -33,6 +33,7 @@ export function WavePoolApp({
   const [zaps, setZaps] = useState<WaveZap[]>(seedZaps);
   const [cycles, setCycles] = useState(0);
   const [ready, setReady] = useState(false);
+  const [justUnlocked, setJustUnlocked] = useState(false);
 
   useEffect(() => {
     try {
@@ -71,7 +72,16 @@ export function WavePoolApp({
       handle: "you",
       at: new Date().toISOString(),
     };
-    setExtraSats((value) => value + sats);
+    setExtraSats((value) => {
+      const next = value + sats;
+      if (
+        !isPoolComplete(WAVE_POOL_SEED_SATS + value) &&
+        isPoolComplete(WAVE_POOL_SEED_SATS + next)
+      ) {
+        setJustUnlocked(true);
+      }
+      return next;
+    });
     setZaps((list) => [zap, ...list]);
   }
 
@@ -79,6 +89,7 @@ export function WavePoolApp({
     setExtraSats(0);
     setZaps(seedZaps);
     setCycles((value) => value + 1);
+    setJustUnlocked(false);
   }
 
   return (
@@ -86,29 +97,36 @@ export function WavePoolApp({
       <WaveVisual
         total={total}
         direction={snapshot.priceDirection}
+        changePct={snapshot.priceChangePct}
+        priceUsd={snapshot.priceUsd}
         complete={complete}
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Meter label="pool" value={`${formatInteger(total)} sats`} />
         <Meter
-          label="to_threshold"
+          label="in_the_pool"
+          value={`${formatInteger(total)} sats`}
+          hot
+        />
+        <Meter
+          label="to_2100"
           value={complete ? "unlocked" : `${formatInteger(left)} sats`}
         />
-        <Meter label="goal" value={`${formatInteger(WAVE_POOL_GOAL_SATS)}`} />
+        <Meter label="goal" value={formatInteger(WAVE_POOL_GOAL_SATS)} />
       </div>
 
       {complete ? (
-        <section className="border border-sats bg-sats/15 p-6 shadow-[6px_6px_0_var(--color-magenta)] sm:p-8">
+        <section className="relative overflow-hidden border border-sats bg-sats/15 p-6 shadow-[6px_6px_0_var(--color-magenta)] sm:p-8">
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-sats">
             wave_complete
           </p>
-          <h2 className="mt-2 font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">
-            The set is unlocked.
+          <h2 className="mt-2 font-display text-3xl font-bold uppercase tracking-tight sm:text-5xl">
+            {justUnlocked ? "You broke the set." : "The set is unlocked."}
           </h2>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
-            {WAVE_POOL_GOAL_SATS} sats in the pool. Reward TBD — for now this is
-            the celebration. Paddle back out and start the next one.
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
+            {WAVE_POOL_GOAL_SATS} sats in the pool. The room felt that one.
+            Reward TBD — this is the payoff for now. Paddle back out when you
+            want the next one.
           </p>
           <button type="button" onClick={resetPool} className="btn mt-6">
             paddle back out
@@ -124,7 +142,7 @@ export function WavePoolApp({
       <TimechainStats initial={initialSnapshot} variant="compact" />
 
       <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-        <ZapPanel complete={complete} onZap={applyZap} />
+        <ZapPanel complete={complete} remaining={left} onZap={applyZap} />
 
         <section>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
@@ -145,9 +163,7 @@ export function WavePoolApp({
                     {new Date(zap.at).toLocaleString()}
                   </p>
                 </div>
-                <p className="shrink-0 font-mono text-sm text-sats">
-                  +{zap.sats}
-                </p>
+                <p className="shrink-0 font-mono text-sm text-sats">+{zap.sats}</p>
               </li>
             ))}
           </ol>
@@ -157,13 +173,27 @@ export function WavePoolApp({
   );
 }
 
-function Meter({ label, value }: { label: string; value: string }) {
+function Meter({
+  label,
+  value,
+  hot = false,
+}: {
+  label: string;
+  value: string;
+  hot?: boolean;
+}) {
   return (
-    <div className="panel p-4">
+    <div className={hot ? "panel border-sats/40 p-4" : "panel p-4"}>
       <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
         {label}
       </p>
-      <p className="mt-2 font-display text-xl font-bold uppercase tracking-tight">
+      <p
+        className={
+          hot
+            ? "mt-2 font-display text-2xl font-bold uppercase tracking-tight text-sats"
+            : "mt-2 font-display text-xl font-bold uppercase tracking-tight"
+        }
+      >
         {value}
       </p>
     </div>
