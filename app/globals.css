@@ -72,24 +72,26 @@ body {
   inset: 0;
   z-index: 0;
   overflow: hidden;
-  color: #f0c400;
 }
 
 .site-watermark-mark {
   position: absolute;
-  top: 48%;
-  left: 50%;
-  width: min(128vmin, 1100px);
+  top: 56%;
+  left: 62%;
+  width: min(168vmin, 1680px);
+  max-width: none;
   height: auto;
-  transform: translate(-50%, -50%) rotate(-3deg);
-  opacity: 0.09;
+  transform: translate(-50%, -50%) rotate(-6deg);
+  opacity: 0.16;
+  mix-blend-mode: screen;
 }
 
 @media (max-width: 700px) {
   .site-watermark-mark {
-    top: 42%;
-    width: 108vmin;
-    opacity: 0.055;
+    top: 48%;
+    left: 68%;
+    width: 140vmin;
+    opacity: 0.1;
   }
 }
 
