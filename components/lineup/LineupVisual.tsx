@@ -370,21 +370,23 @@ function drawSea(
   height: number,
   time: number,
 ) {
-  const sea = ctx.createLinearGradient(0, height * 0.3, 0, height);
-  sea.addColorStop(0, "rgba(10,48,64,0.28)");
-  sea.addColorStop(1, "rgba(5,8,13,0.96)");
+  const sea = ctx.createLinearGradient(0, height * 0.32, 0, height);
+  sea.addColorStop(0, "rgba(8,20,32,0.55)");
+  sea.addColorStop(1, "rgba(2,3,6,0.98)");
   ctx.fillStyle = sea;
-  ctx.fillRect(0, height * 0.3, width, height * 0.7);
+  ctx.fillRect(0, height * 0.32, width, height * 0.68);
 
-  ctx.strokeStyle = "rgba(61,255,243,0.1)";
-  ctx.lineWidth = 1;
-  for (let i = 0; i < 5; i += 1) {
-    const y = height * (0.38 + i * 0.1);
+  ctx.lineWidth = 1.4;
+  for (let i = 0; i < 4; i += 1) {
+    const y = height * (0.42 + i * 0.11);
+    ctx.strokeStyle = i % 2 === 0 ? "rgba(61,255,243,0.08)" : "rgba(255,46,196,0.07)";
     ctx.beginPath();
-    for (let x = 0; x <= width; x += 10) {
-      const wobble = Math.sin(x * 0.01 + time * 0.9 + i * 0.7) * (3 + i);
-      if (x === 0) ctx.moveTo(x, y + wobble);
-      else ctx.lineTo(x, y + wobble);
+    let x = 0;
+    ctx.moveTo(0, y);
+    while (x < width * 0.62) {
+      const jag = ((Math.sin(x * 0.04 + time * 2.1 + i) + 1) * 0.5) ** 3 * 14 - 2;
+      x += 18 + (i + 1) * 4;
+      ctx.lineTo(x, y + jag);
     }
     ctx.stroke();
   }
@@ -396,37 +398,178 @@ function drawWave(
   height: number,
   time: number,
 ) {
-  const pulse = 0.88 + Math.sin(time * 1.25) * 0.07;
-  ctx.save();
-  ctx.globalAlpha = pulse;
+  // Gonzo break: slam, don't swell. Thick cel outline, misregistered neon.
+  const heave = Math.sin(time * 2.7) ** 3;
+  const lurch = Math.sin(time * 4.1 + 1.2);
+  const snap = heave > 0.35 ? 1 : 0.55 + heave;
+  const shakeX = lurch * width * 0.008;
+  const shakeY = heave * height * 0.012;
+  const lean = -0.05 + heave * 0.035;
 
-  const face = ctx.createLinearGradient(width * 0.58, height * 0.18, width, height * 0.75);
-  face.addColorStop(0, "rgba(61,255,243,0.04)");
-  face.addColorStop(0.4, "rgba(61,255,243,0.38)");
-  face.addColorStop(1, "rgba(255,122,24,0.28)");
-  ctx.fillStyle = face;
-  ctx.beginPath();
-  ctx.moveTo(width * 0.56, height * 0.8);
-  ctx.bezierCurveTo(width * 0.66, height * 0.52, width * 0.73, height * 0.2, width * 0.9, height * 0.3);
-  ctx.bezierCurveTo(width * 0.97, height * 0.38, width * 0.99, height * 0.58, width * 0.93, height * 0.84);
-  ctx.closePath();
+  ctx.save();
+  ctx.translate(width * 0.78 + shakeX, height * 0.52 + shakeY);
+  ctx.rotate(lean);
+  ctx.scale(1 + heave * 0.04, 1 + snap * 0.06);
+  ctx.translate(-width * 0.78, -height * 0.52);
+
+  const w = (x: number, y: number): [number, number] => [width * x, height * y];
+
+  // Offset magenta slam-shadow (print error / impact)
+  ctx.fillStyle = "rgba(255,46,196,0.22)";
+  traceWaveBody(ctx, width, height, 14, 10);
   ctx.fill();
 
-  ctx.strokeStyle = "rgba(61,255,243,0.65)";
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.moveTo(width * 0.68, height * 0.5);
-  ctx.quadraticCurveTo(width * 0.83, height * 0.18, width * 0.95, height * 0.38);
+  const body = ctx.createLinearGradient(...w(0.58, 0.12), ...w(1.02, 0.9));
+  body.addColorStop(0, "#041018");
+  body.addColorStop(0.28, "#0a2430");
+  body.addColorStop(0.55, "#3dfff3");
+  body.addColorStop(0.72, "#ff7a18");
+  body.addColorStop(1, "#1a0610");
+  ctx.fillStyle = body;
+  traceWaveBody(ctx, width, height, 0, 0);
+  ctx.fill();
+
+  // Hard black cartoon outline
+  ctx.strokeStyle = "#05080d";
+  ctx.lineWidth = Math.max(7, width * 0.009);
+  ctx.lineJoin = "miter";
+  ctx.miterLimit = 8;
+  traceWaveBody(ctx, width, height, 0, 0);
   ctx.stroke();
 
-  ctx.fillStyle = "rgba(5,8,13,0.72)";
+  // Misregistered neon edges
+  ctx.lineWidth = Math.max(2.2, width * 0.0032);
+  ctx.strokeStyle = "rgba(61,255,243,0.95)";
+  traceWaveBody(ctx, width, height, -3, -2);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(255,46,196,0.75)";
+  traceWaveBody(ctx, width, height, 4, 3);
+  ctx.stroke();
+
+  drawLipTeeth(ctx, width, height, time);
+  drawBarrelMaw(ctx, width, height, time);
+  drawSprayShards(ctx, width, height, time, snap);
+  ctx.restore();
+}
+
+function traceWaveBody(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  ox: number,
+  oy: number,
+) {
+  const p = (x: number, y: number): [number, number] => [width * x + ox, height * y + oy];
   ctx.beginPath();
-  ctx.ellipse(width * 0.855, height * 0.39, 26, 16, -0.35, 0, Math.PI * 2);
+  ctx.moveTo(...p(0.54, 0.92));
+  ctx.lineTo(...p(0.57, 0.7));
+  ctx.lineTo(...p(0.61, 0.5));
+  ctx.lineTo(...p(0.66, 0.32));
+  ctx.lineTo(...p(0.73, 0.16));
+  ctx.lineTo(...p(0.8, 0.08));
+  ctx.lineTo(...p(0.88, 0.05));
+  ctx.lineTo(...p(0.95, 0.1));
+  ctx.lineTo(...p(1.02, 0.22));
+  ctx.lineTo(...p(1.04, 0.38));
+  ctx.lineTo(...p(0.99, 0.48));
+  ctx.lineTo(...p(0.91, 0.44));
+  ctx.lineTo(...p(0.84, 0.5));
+  ctx.lineTo(...p(0.87, 0.62));
+  ctx.lineTo(...p(0.96, 0.72));
+  ctx.lineTo(...p(1.03, 0.86));
+  ctx.lineTo(...p(0.98, 0.96));
+  ctx.closePath();
+}
+
+function drawLipTeeth(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  time: number,
+) {
+  const gnash = 0.85 + Math.sin(time * 11) * 0.15;
+  ctx.fillStyle = "#ff7a18";
+  ctx.strokeStyle = "#05080d";
+  ctx.lineWidth = 2;
+  const teeth: Array<[number, number, number, number]> = [
+    [0.78, 0.09, 0.81, -0.04],
+    [0.84, 0.06, 0.86, -0.07],
+    [0.9, 0.07, 0.94, -0.03],
+    [0.96, 0.13, 1.02, 0.02],
+    [1.0, 0.2, 1.07, 0.12],
+  ];
+  for (const [x1, y1, x2, y2] of teeth) {
+    ctx.beginPath();
+    ctx.moveTo(width * (x1 - 0.016), height * y1);
+    ctx.lineTo(width * x2, height * (y1 + (y2 - y1) * gnash));
+    ctx.lineTo(width * (x1 + 0.018), height * y1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+}
+
+function drawBarrelMaw(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  time: number,
+) {
+  const pulse = 1 + Math.sin(time * 3.3) * 0.08;
+  const cx = width * 0.86;
+  const cy = height * 0.4;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-0.45 + Math.sin(time * 2.2) * 0.06);
+  ctx.scale(pulse, pulse * 0.92);
+
+  ctx.fillStyle = "#05080d";
+  ctx.beginPath();
+  ctx.moveTo(-34, 8);
+  ctx.bezierCurveTo(-28, -28, 18, -34, 38, -6);
+  ctx.bezierCurveTo(44, 10, 22, 28, -8, 24);
+  ctx.bezierCurveTo(-28, 20, -38, 14, -34, 8);
   ctx.fill();
-  ctx.strokeStyle = "rgba(255,122,24,0.75)";
+
+  ctx.strokeStyle = "#ff7a18";
+  ctx.lineWidth = 3.2;
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(61,255,243,0.85)";
   ctx.lineWidth = 1.4;
   ctx.stroke();
+
+  ctx.fillStyle = "#ff2ec4";
+  ctx.beginPath();
+  ctx.ellipse(4, 2, 7, 4, 0.3, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
+}
+
+function drawSprayShards(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  time: number,
+  snap: number,
+) {
+  const shards: Array<[number, number, number, number, string]> = [
+    [0.9, 0.04, 0.97, -0.06, "#3dfff3"],
+    [0.96, 0.08, 1.06, 0.0, "#ff7a18"],
+    [1.0, 0.16, 1.1, 0.1, "#ff2ec4"],
+    [0.74, 0.12, 0.7, 0.0, "#3dfff3"],
+    [1.01, 0.28, 1.12, 0.24, "#eceae4"],
+    [0.93, 0.02, 0.99, -0.1, "#eceae4"],
+  ];
+  ctx.lineWidth = 2;
+  for (let i = 0; i < shards.length; i += 1) {
+    const [x1, y1, x2, y2, color] = shards[i];
+    const fling = 1 + snap * 0.18 + Math.sin(time * 8 + i) * 0.05;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(width * x1, height * y1);
+    ctx.lineTo(width * (x1 + (x2 - x1) * fling), height * (y1 + (y2 - y1) * fling));
+    ctx.stroke();
+  }
 }
 
 function drawSurfer(
