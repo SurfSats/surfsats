@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Oxanium } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
+import { Watermark } from "@/components/layout/Watermark";
 import "./globals.css";
 
 const plexMono = IBM_Plex_Mono({
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body
         className={`${plexMono.variable} ${oxanium.variable} flex min-h-screen flex-col bg-background font-mono text-foreground`}
       >
+        <Watermark />
         <div className="crt-overlay" aria-hidden="true" />
         <div className="noise-overlay" aria-hidden="true" />
         <Navbar />
