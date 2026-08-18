@@ -30,10 +30,15 @@ export function Footer() {
 
       <div className="border-t border-dashed border-cyan/20">
         <Container className="flex flex-col gap-2 py-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {new Date().getFullYear()} surfsats · ride the swell · stack the
-            sats
-          </p>
+          <div>
+            <p>
+              © {new Date().getFullYear()} surfsats · ride the swell · stack the
+              sats
+            </p>
+            <p className="mt-1 tracking-[0.14em] text-muted/80">
+              A SurfPorn Company
+            </p>
+          </div>
           <p className="text-magenta">jukebox: 21_sats</p>
         </Container>
       </div>
