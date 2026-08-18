@@ -5,6 +5,7 @@ import {
   type LineupSnapshot,
   emptyLineup,
   hasLineupData,
+  mergeLineupSurfers,
 } from "@/lib/lineup";
 
 export function useLineupSnapshot(initial: LineupSnapshot | null) {
@@ -24,7 +25,19 @@ export function useLineupSnapshot(initial: LineupSnapshot | null) {
         if (!response.ok) throw new Error("bad status");
         const next = (await response.json()) as LineupSnapshot;
         if (cancelled) return;
-        setSnapshot(next);
+        setSnapshot((current) => {
+          const advanced =
+            current.blockHeight !== null &&
+            next.blockHeight !== null &&
+            next.blockHeight > current.blockHeight;
+          const kept = advanced
+            ? current.surfers.filter((surfer) => surfer.setIndex > 0)
+            : current.surfers;
+          return {
+            ...next,
+            surfers: mergeLineupSurfers(kept, next.surfers, next.sets),
+          };
+        });
         setStatus(hasLineupData(next) ? "live" : "error");
       } catch {
         if (!cancelled) {
@@ -39,7 +52,7 @@ export function useLineupSnapshot(initial: LineupSnapshot | null) {
 
     const id = window.setInterval(() => {
       void pull();
-    }, 12_000);
+    }, 8000);
 
     return () => {
       cancelled = true;

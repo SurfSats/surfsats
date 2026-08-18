@@ -38,12 +38,17 @@ export function LineupApp({ initial }: { initial: LineupSnapshot }) {
   return (
     <div className="space-y-8">
       {status === "error" && !live ? (
-        <div className="panel px-4 py-6 font-mono text-sm text-muted">
-          lineup fogged in · mempool.space silent. paddle back in a minute.
+        <div className="border border-magenta/40 bg-black px-4 py-16 text-center font-mono text-sm text-muted">
+          lineup fogged in · mempool.space silent.
         </div>
       ) : status === "loading" && !live ? (
-        <div className="panel px-4 py-6 font-mono text-sm text-cyan">
-          paddling out…
+        <div className="border border-cyan/30 bg-black px-4 py-16 text-center">
+          <p className="flicker font-display text-2xl font-bold uppercase text-cyan">
+            Paddling out
+          </p>
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+            reading the pack · sampling live txs
+          </p>
         </div>
       ) : (
         <LineupVisual snapshot={snapshot} catching={catching} />
@@ -122,6 +127,11 @@ export function LineupApp({ initial }: { initial: LineupSnapshot }) {
           <li>
             <span className="text-foreground">Catch</span> — a block lands,
             the peak drops in and disappears into the face.
+          </li>
+          <li>
+            <span className="text-cyan">Inspect</span> — hover or tap a bright
+            body. Click again to open the tx on mempool.space. Dim dots are
+            atmosphere, not individual txs.
           </li>
         </ul>
         <a
