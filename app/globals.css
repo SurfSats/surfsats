@@ -410,141 +410,160 @@ body {
   box-shadow: 3px 3px 0 var(--magenta);
 }
 
-.graffiti-wall {
+.graffiti-page {
   position: relative;
-  min-height: 440px;
-  overflow: hidden;
-  background-color: #2a2a26;
+  min-height: 160vh;
+  color: #efe6d4;
+  background-color: #3a3832;
   background-image:
-    radial-gradient(ellipse at 20% 10%, rgba(80, 90, 70, 0.18), transparent 40%),
-    radial-gradient(ellipse at 80% 90%, rgba(20, 40, 20, 0.25), transparent 45%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.28)),
     repeating-linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.015) 0 2px,
-      transparent 2px 7px
+      #4a4640 0 18px,
+      #3f3b36 18px 36px
     ),
     repeating-linear-gradient(
       0deg,
-      rgba(0, 0, 0, 0.08) 0 1px,
-      transparent 1px 5px
+      rgba(255, 255, 255, 0.03) 0 1px,
+      transparent 1px 11px
     );
-  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.55);
 }
 
-@media (min-width: 640px) {
-  .graffiti-wall {
-    min-height: 560px;
-  }
+.graffiti-page::before {
+  content: "HOPE    21    STACK    NO KINGS";
+  position: absolute;
+  inset: 8% 6%;
+  font-family: Impact, Haettenschweiler, sans-serif;
+  font-size: clamp(3rem, 12vw, 9rem);
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  color: rgba(0, 0, 0, 0.12);
+  transform: rotate(-8deg);
+  pointer-events: none;
+  z-index: 0;
 }
 
-@media (min-width: 1024px) {
-  .graffiti-wall {
-    min-height: 640px;
-  }
-}
-
-.graffiti-wall::before,
-.graffiti-wall::after {
+.graffiti-page::after {
   content: "";
   position: absolute;
+  inset: 0;
   pointer-events: none;
-  z-index: 3;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse at 8% 90%, rgba(18, 32, 14, 0.45), transparent 36%),
+    radial-gradient(ellipse at 96% 8%, rgba(0, 0, 0, 0.28), transparent 30%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, transparent 18%, transparent 82%, rgba(0, 0, 0, 0.4) 100%);
 }
 
-.graffiti-wall::before {
-  left: 0;
-  top: 0;
-  width: 18%;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(8, 20, 10, 0.45), transparent);
-}
-
-.graffiti-wall::after {
-  right: 0;
-  bottom: 0;
-  width: 36%;
-  height: 34%;
-  background: radial-gradient(ellipse at 100% 100%, rgba(12, 28, 12, 0.55), transparent 70%);
+.graffiti-wall {
+  position: relative;
+  z-index: 2;
+  min-height: 160vh;
 }
 
 .graf {
   position: absolute;
-  max-width: 38%;
-  line-height: 0.9;
+  max-width: min(46vw, 280px);
+  line-height: 0.88;
   word-break: break-word;
   user-select: none;
 }
 
 .graf-center {
   left: 50%;
-  top: 50%;
-  max-width: 80%;
-  transform: translate(-50%, -52%) rotate(-3deg);
-  z-index: 5;
+  top: 48%;
+  max-width: min(86vw, 720px);
+  transform: translate(-50%, -50%) rotate(-3deg);
+  z-index: 6;
   text-align: center;
+  filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.35));
 }
 
 .graf-temp {
   z-index: 4;
 }
 
-.graf-bold {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-}
-
 .graf-tag {
-  font-family: var(--font-graf-tag), var(--font-display), sans-serif;
+  font-family: var(--font-graf-tag), cursive;
   font-style: italic;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 400;
+  letter-spacing: -0.03em;
 }
 
-.graf-bubble {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+.graf-throwup {
+  font-family: var(--font-graf-throw), sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  -webkit-text-stroke: 2px #05080d;
+  -webkit-text-stroke: 4px #111;
   paint-order: stroke fill;
+}
+
+.graf-wildstyle {
+  font-family: var(--font-graf-wild), sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.08em;
+  text-transform: uppercase;
+  transform: skewX(-18deg);
+  text-shadow:
+    3px 3px 0 #111,
+    -2px 0 #000;
 }
 
 .graf-stencil {
   font-family: var(--font-mono), monospace;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-}
-
-.graf-glitch {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 800;
-  text-transform: uppercase;
-  text-shadow:
-    2px 0 #3dfff3,
-    -2px 0 #ff2ec4;
 }
 
 .graf-drip {
-  font-family: var(--font-graf-drip), var(--font-display), sans-serif;
+  font-family: var(--font-graf-drip), sans-serif;
   font-weight: 400;
   text-transform: uppercase;
   text-shadow:
-    0 6px 0 currentColor,
-    1px 14px 0 currentColor,
-    -1px 22px 0 currentColor;
+    0 8px 0 currentColor,
+    2px 16px 0 currentColor,
+    -1px 26px 0 currentColor,
+    1px 34px 0 currentColor;
 }
 
-.graf-color-cyan { color: #3dfff3; }
-.graf-color-magenta { color: #ff2ec4; }
-.graf-color-sats { color: #ff7a18; }
-.graf-color-acid { color: #c8ff00; }
-.graf-color-white { color: #f4f1ea; }
-.graf-color-black {
-  color: #111111;
-  -webkit-text-stroke: 1px #f4f1ea;
+.graf-blockbuster {
+  font-family: var(--font-graf-block), sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  -webkit-text-stroke: 1px #111;
+}
+
+.graf-color-chrome { color: #cfd4d8; }
+.graf-color-blood { color: #c41e3a; }
+.graf-color-banana { color: #f4d03f; }
+.graf-color-ice { color: #6ec4e0; }
+.graf-color-rust { color: #d35400; }
+.graf-color-bone { color: #efe6d4; }
+.graf-color-pink { color: #ff4fa3; }
+.graf-color-night {
+  color: #141414;
+  -webkit-text-stroke: 1px #efe6d4;
+}
+
+.graffiti-form {
+  position: relative;
+  z-index: 8;
+  margin: 0 1rem 2rem;
+  padding: 1.25rem;
+  background: rgba(18, 16, 14, 0.88);
+  border: 2px solid #2a2620;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.45);
+}
+
+@media (min-width: 640px) {
+  .graffiti-form {
+    margin: 0 auto 3rem;
+    max-width: 36rem;
+    padding: 1.6rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

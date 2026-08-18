@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Permanent_Marker, Rubik_Dirt } from "next/font/google";
+import { Anton, Bangers, Permanent_Marker, Rubik_Dirt, Rubik_Glitch } from "next/font/google";
 import { GraffitiForm } from "@/components/graffiti/GraffitiForm";
 import { GraffitiWall } from "@/components/graffiti/GraffitiWall";
 import {
@@ -20,10 +20,28 @@ const marker = Permanent_Marker({
   variable: "--font-graf-tag",
 });
 
+const throwup = Bangers({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-graf-throw",
+});
+
+const wild = Rubik_Glitch({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-graf-wild",
+});
+
 const drip = Rubik_Dirt({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-graf-drip",
+});
+
+const block = Anton({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-graf-block",
 });
 
 export function GraffitiApp() {
@@ -52,12 +70,16 @@ export function GraffitiApp() {
   }, [marks, ready]);
 
   useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 30_000);
+    const id = window.setInterval(() => setNow(Date.now()), 60_000);
     return () => window.clearInterval(id);
   }, []);
 
   const live = useMemo(
-    () => marks.filter((mark) => isActiveMark(mark, now)),
+    () =>
+      marks.filter(
+        (mark) =>
+          isActiveMark(mark, now) && typeof mark.scale === "number",
+      ),
     [marks, now],
   );
 
@@ -69,8 +91,10 @@ export function GraffitiApp() {
   }
 
   return (
-    <div className={`${marker.variable} ${drip.variable} space-y-8`}>
-      <GraffitiWall marks={live} now={now} />
+    <div
+      className={`${marker.variable} ${throwup.variable} ${wild.variable} ${drip.variable} ${block.variable} graffiti-page`}
+    >
+      <GraffitiWall marks={live} />
       <GraffitiForm onPaid={addMark} />
     </div>
   );

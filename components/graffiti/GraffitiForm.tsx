@@ -20,8 +20,8 @@ export function GraffitiForm({
   onPaid: (text: string, style: GraffitiStyle, color: GraffitiColor) => void;
 }) {
   const [text, setText] = useState("");
-  const [style, setStyle] = useState<GraffitiStyle>("drip");
-  const [color, setColor] = useState<GraffitiColor>("sats");
+  const [style, setStyle] = useState<GraffitiStyle>("tag");
+  const [color, setColor] = useState<GraffitiColor>("banana");
   const [step, setStep] = useState<Step>("compose");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,23 +63,23 @@ export function GraffitiForm({
   }
 
   return (
-    <section className="border border-sats/50 bg-sats/8 p-5 shadow-[4px_4px_0_var(--color-magenta)] sm:p-7">
-      <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-sats">
-        {"//"} leave_a_mark
+    <section className="graffiti-form">
+      <p className="text-[11px] uppercase tracking-[0.2em] text-amber-500/90">
+        spray can · {GRAFFITI_PRICE_SATS} sats · 24h
       </p>
-      <h2 className="mt-2 font-display text-2xl font-bold uppercase tracking-tight sm:text-3xl">
-        Leave a mark — {GRAFFITI_PRICE_SATS} sats
+      <h2 className="mt-2 font-display text-2xl font-bold uppercase tracking-tight text-[#efe6d4]">
+        Leave a mark
       </h2>
-      <p className="mt-3 text-sm leading-relaxed text-muted">
+      <p className="mt-2 text-sm leading-relaxed text-stone-400">
         24 hours on the wall. Then it fades. Hope stays.
       </p>
 
       {step === "compose" ? (
         <>
           <label className="mt-5 block">
-            <span className="mb-1.5 flex justify-between font-mono text-[11px] uppercase tracking-[0.16em] text-cyan">
-              <span>&gt; message</span>
-              <span className="text-muted">
+            <span className="mb-1.5 flex justify-between text-[11px] uppercase tracking-[0.16em] text-stone-400">
+              <span>message</span>
+              <span>
                 {text.length}/{GRAFFITI_MAX_CHARS}
               </span>
             </span>
@@ -89,11 +89,11 @@ export function GraffitiForm({
               onChange={(event) => setText(event.target.value)}
               rows={3}
               placeholder="say it once"
-              className="input-terminal resize-none"
+              className="w-full resize-none border border-stone-700 bg-black/60 px-3 py-2 text-[#efe6d4] outline-none focus:border-amber-500"
             />
           </label>
 
-          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.16em] text-cyan">
+          <p className="mt-4 text-[11px] uppercase tracking-[0.16em] text-stone-400">
             style
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -103,10 +103,10 @@ export function GraffitiForm({
                 type="button"
                 onClick={() => setStyle(item.id)}
                 className={cn(
-                  "border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em]",
+                  "border px-3 py-1.5 text-[11px] uppercase tracking-[0.12em]",
                   style === item.id
-                    ? "border-sats bg-sats text-background"
-                    : "border-cyan/30 text-cyan hover:border-cyan",
+                    ? "border-amber-500 bg-amber-500 text-black"
+                    : "border-stone-600 text-stone-300 hover:border-stone-400",
                 )}
               >
                 {item.label}
@@ -114,7 +114,7 @@ export function GraffitiForm({
             ))}
           </div>
 
-          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.16em] text-cyan">
+          <p className="mt-4 text-[11px] uppercase tracking-[0.16em] text-stone-400">
             color
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -124,8 +124,8 @@ export function GraffitiForm({
                 type="button"
                 onClick={() => setColor(item.id)}
                 className={cn(
-                  "size-8 border",
-                  color === item.id ? "border-foreground" : "border-white/15",
+                  "size-8 border-2",
+                  color === item.id ? "border-white" : "border-black/40",
                 )}
                 style={{ background: item.hex }}
                 aria-label={item.label}
@@ -134,29 +134,31 @@ export function GraffitiForm({
           </div>
 
           {error ? (
-            <p className="mt-4 font-mono text-xs uppercase text-magenta">{error}</p>
+            <p className="mt-4 text-xs uppercase text-red-400">{error}</p>
           ) : null}
 
           <button
             type="button"
             disabled={pending || !check.ok}
             onClick={() => void requestInvoice()}
-            className="btn btn-pulse mt-6 w-full px-5 py-4 text-sm disabled:opacity-40"
+            className="mt-6 w-full bg-amber-500 px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-black disabled:opacity-40"
           >
-            {pending ? "building invoice…" : `leave a mark — ${GRAFFITI_PRICE_SATS} sats`}
+            {pending
+              ? "shaking the can…"
+              : `leave a mark — ${GRAFFITI_PRICE_SATS} sats`}
           </button>
         </>
       ) : null}
 
       {step === "invoice" ? (
-        <div className="mt-5 border border-cyan/30 bg-black p-4">
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-cyan">
+        <div className="mt-5 border border-stone-600 bg-black/70 p-4">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
             invoice · {GRAFFITI_PRICE_SATS} sats
           </p>
-          <p className="mt-3 break-all font-mono text-[11px] text-muted">
+          <p className="mt-3 break-all font-mono text-[11px] text-stone-500">
             lnbc21n1pgraffitiplaceholderwaitforrealbolt11
           </p>
-          <p className="mt-3 font-mono text-[11px] uppercase text-sats">
+          <p className="mt-3 text-[11px] uppercase text-stone-400">
             simulated · nothing charged yet
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -164,14 +166,14 @@ export function GraffitiForm({
               type="button"
               disabled={pending}
               onClick={() => void simulatePay()}
-              className="btn flex-1"
+              className="flex-1 bg-amber-500 px-4 py-2 text-xs font-bold uppercase text-black"
             >
               {pending ? "listening…" : "simulate payment"}
             </button>
             <button
               type="button"
               onClick={() => setStep("compose")}
-              className="btn btn-ghost flex-1"
+              className="flex-1 border border-stone-500 px-4 py-2 text-xs uppercase text-stone-300"
             >
               cancel
             </button>
@@ -180,14 +182,14 @@ export function GraffitiForm({
       ) : null}
 
       {step === "done" ? (
-        <div className="mt-5 border border-sats/40 bg-sats/10 px-4 py-3">
-          <p className="font-mono text-xs uppercase tracking-[0.14em] text-sats">
+        <div className="mt-5 border border-amber-700/50 bg-black/60 px-4 py-3">
+          <p className="text-xs uppercase tracking-[0.14em] text-amber-500">
             on the wall · 24 hours
           </p>
           <button
             type="button"
             onClick={reset}
-            className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-cyan hover:text-sats"
+            className="mt-3 text-[11px] uppercase tracking-[0.14em] text-stone-300 hover:text-amber-400"
           >
             another mark -&gt;
           </button>
