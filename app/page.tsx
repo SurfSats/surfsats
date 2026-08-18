@@ -1,9 +1,8 @@
+import { FeaturedTools } from "@/components/home/FeaturedTools";
+import { FromTheCoast } from "@/components/home/FromTheCoast";
 import { Hero } from "@/components/home/Hero";
-import { Intro } from "@/components/home/Intro";
-import { JukeboxHighlight } from "@/components/home/JukeboxHighlight";
-import { LatestArticles } from "@/components/home/LatestArticles";
-import { TimechainStats } from "@/components/timechain/TimechainStats";
-import { Container } from "@/components/ui/Container";
+import { HomeClose } from "@/components/home/HomeClose";
+import { HomeSignalStrip } from "@/components/home/HomeSignalStrip";
 import { getTimechainSnapshot } from "@/lib/timechain";
 
 export const revalidate = 20;
@@ -14,12 +13,10 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <Container className="py-10 sm:py-12">
-        <TimechainStats initial={snapshot} variant="home" />
-      </Container>
-      <Intro />
-      <LatestArticles />
-      <JukeboxHighlight />
+      <FeaturedTools />
+      <HomeSignalStrip initial={snapshot} />
+      <FromTheCoast />
+      <HomeClose />
     </>
   );
 }
