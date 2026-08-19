@@ -1,3 +1,11 @@
+export const SWELL_SCALE = [
+  { label: "ANKLE BITERS", range: "0–1%" },
+  { label: "WAIST", range: "1–3%" },
+  { label: "CHEST-HEAD", range: "3–6%" },
+  { label: "OVERHEAD", range: "6–10%" },
+  { label: "SOLID XXL", range: "10%+" },
+] as const;
+
 export type SwellDirection = "up" | "down";
 
 export type SwellReport = {

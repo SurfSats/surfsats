@@ -142,10 +142,14 @@ body {
     radial-gradient(ellipse 40% 30% at 60% 110%, rgba(255, 122, 24, 0.14), transparent 55%);
 }
 
-.swell-card {
+.swell-stack {
   width: 100%;
   max-width: 22rem;
   justify-self: end;
+}
+
+.swell-card {
+  width: 100%;
   border: 1px solid rgba(61, 255, 243, 0.28);
   background: rgba(6, 8, 12, 0.82);
   padding: 1rem 1.05rem 0.95rem;
@@ -153,15 +157,21 @@ body {
 }
 
 .swell-card-up {
-  border-color: rgba(61, 255, 243, 0.55);
-  box-shadow: 0 0 28px rgba(61, 255, 243, 0.12);
-  color: #3dfff3;
+  color: #22ff88;
+}
+
+.swell-card-up .swell-card {
+  border-color: rgba(34, 255, 136, 0.6);
+  box-shadow: 0 0 28px rgba(34, 255, 136, 0.14);
 }
 
 .swell-card-down {
+  color: #ff2ec4;
+}
+
+.swell-card-down .swell-card {
   border-color: rgba(255, 46, 196, 0.55);
   box-shadow: 0 0 28px rgba(255, 46, 196, 0.14);
-  color: #ff2ec4;
 }
 
 .swell-card-idle {
@@ -227,9 +237,37 @@ body {
 }
 
 .swell-glyph {
-  width: 3.2rem;
-  height: 2rem;
+  width: 4.4rem;
+  height: 2.65rem;
   flex-shrink: 0;
+}
+
+.swell-legend {
+  margin: 0.45rem 0 0;
+  padding: 0.35rem 0.15rem 0;
+  list-style: none;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b8d99;
+}
+
+.swell-legend-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.18rem 0.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.swell-legend-active {
+  color: #22ff88;
+  font-weight: 700;
+}
+
+.swell-card-down .swell-legend-active {
+  color: #ff2ec4;
 }
 
 .panel {
