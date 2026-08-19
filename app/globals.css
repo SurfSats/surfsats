@@ -535,8 +535,9 @@ body {
 
 .graf {
   position: absolute;
-  max-width: min(46vw, 280px);
-  line-height: 0.88;
+  max-width: min(42vw, 210px);
+  line-height: 0.9;
+  overflow-wrap: anywhere;
   word-break: break-word;
   user-select: none;
 }
@@ -544,16 +545,64 @@ body {
 .graf-center {
   left: 50%;
   top: 48%;
-  max-width: min(86vw, 720px);
+  max-width: min(84vw, 720px);
   transform: translate(-50%, -50%) rotate(-3deg);
-  z-index: 6;
+  z-index: 7;
   text-align: center;
-  filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.45));
 }
 
 .graf-temp {
   z-index: 4;
-  opacity: 0.86;
+}
+
+.graf-inner {
+  display: inline-block;
+  max-width: 100%;
+  animation: graf-in 0.55s ease-out both;
+}
+
+.graf-fresh {
+  z-index: 5;
+}
+
+.graf-fresh .graf-inner {
+  animation:
+    graf-in 0.45s ease-out both,
+    graf-pulse 0.95s ease-in-out 0.4s 4;
+}
+
+@keyframes graf-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes graf-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(244, 208, 63, 0.95));
+    transform: scale(1.07);
+  }
+}
+
+@keyframes graf-blink {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .graf-tag {
@@ -561,33 +610,39 @@ body {
   font-style: italic;
   font-weight: 400;
   letter-spacing: -0.03em;
+  text-shadow:
+    2px 2px 0 #111,
+    0 1px 0 #000;
 }
 
 .graf-throwup {
   font-family: var(--font-graf-throw), sans-serif;
   font-weight: 400;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  -webkit-text-stroke: 4px #111;
+  -webkit-text-stroke: 5px #111;
   paint-order: stroke fill;
+  filter: drop-shadow(2px 3px 0 #000);
 }
 
 .graf-wildstyle {
   font-family: var(--font-graf-wild), sans-serif;
   font-weight: 400;
-  letter-spacing: -0.08em;
+  letter-spacing: -0.04em;
   text-transform: uppercase;
-  transform: skewX(-18deg);
+  transform: skewX(-10deg);
   text-shadow:
     3px 3px 0 #111,
-    -2px 0 #000;
+    -2px 0 #000,
+    0 0 10px currentColor;
 }
 
 .graf-stencil {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-graf-stencil), var(--font-mono), monospace;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
+  text-shadow: 2px 2px 0 #111;
 }
 
 .graf-drip {
@@ -595,6 +650,7 @@ body {
   font-weight: 400;
   text-transform: uppercase;
   text-shadow:
+    0 2px 0 #111,
     0 8px 0 currentColor,
     2px 16px 0 currentColor,
     -1px 26px 0 currentColor,
@@ -604,21 +660,84 @@ body {
 .graf-blockbuster {
   font-family: var(--font-graf-block), sans-serif;
   font-weight: 400;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   text-transform: uppercase;
-  -webkit-text-stroke: 1px #111;
+  -webkit-text-stroke: 2px #111;
+  paint-order: stroke fill;
+  filter: drop-shadow(3px 4px 0 #000);
 }
 
-.graf-color-chrome { color: #cfd4d8; }
-.graf-color-blood { color: #c41e3a; }
-.graf-color-banana { color: #f4d03f; }
-.graf-color-ice { color: #6ec4e0; }
-.graf-color-rust { color: #d35400; }
-.graf-color-bone { color: #efe6d4; }
-.graf-color-pink { color: #ff4fa3; }
+.graf-fatcap {
+  font-family: var(--font-graf-fat), sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  -webkit-text-stroke: 6px #111;
+  paint-order: stroke fill;
+  filter: drop-shadow(2px 3px 0 #000);
+}
+
+.graf-chrome {
+  font-family: var(--font-graf-block), sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #d8dee4;
+  -webkit-text-stroke: 3px #111;
+  paint-order: stroke fill;
+  text-shadow:
+    0 1px 0 #fff,
+    0 3px 0 #8b939c,
+    2px 5px 0 #111;
+}
+
+.graf-chrome.graf-color-blood { filter: drop-shadow(0 0 8px #c41e3a); }
+.graf-chrome.graf-color-banana { filter: drop-shadow(0 0 8px #f4d03f); }
+.graf-chrome.graf-color-ice { filter: drop-shadow(0 0 8px #6ec4e0); }
+.graf-chrome.graf-color-rust { filter: drop-shadow(0 0 8px #d35400); }
+.graf-chrome.graf-color-bone { filter: drop-shadow(0 0 8px #efe6d4); }
+.graf-chrome.graf-color-pink { filter: drop-shadow(0 0 8px #ff4fa3); }
+.graf-chrome.graf-color-night { filter: drop-shadow(0 0 8px #efe6d4); }
+.graf-chrome.graf-color-chrome { filter: drop-shadow(0 0 8px #cfd4d8); }
+
+.graf-color-chrome { color: #cfd4d8; text-shadow: 1px 1px 0 #111, 0 2px 0 #000; }
+.graf-color-blood { color: #e23a54; text-shadow: 1px 1px 0 #111, 0 2px 0 #000; }
+.graf-color-banana { color: #f4d03f; text-shadow: 1px 1px 0 #111, 0 2px 0 #000; }
+.graf-color-ice { color: #7ad4ee; text-shadow: 1px 1px 0 #111, 0 2px 0 #000; }
+.graf-color-rust { color: #e05e12; text-shadow: 1px 1px 0 #111, 0 2px 0 #000; }
+.graf-color-bone { color: #efe6d4; text-shadow: 1px 1px 0 #111, 0 2px 0 #000; }
+.graf-color-pink { color: #ff4fa3; text-shadow: 1px 1px 0 #111, 0 2px 0 #000; }
 .graf-color-night {
   color: #141414;
   -webkit-text-stroke: 1px #efe6d4;
+  text-shadow: 0 2px 0 #000;
+}
+
+.graf-chrome {
+  color: #d8dee4;
+}
+
+.graf-wait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+}
+
+.graf-wait-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: #f59e0b;
+  box-shadow: 0 0 10px #f59e0b;
+  animation: graf-blink 1s ease-in-out infinite;
+}
+
+.graf-success {
+  border-color: rgba(245, 158, 11, 0.55);
+  background:
+    linear-gradient(180deg, rgba(245, 158, 11, 0.12), rgba(0, 0, 0, 0.7));
 }
 
 .graffiti-form {
@@ -688,6 +807,10 @@ body {
   .graf-preview-wall:not(.graf-preview-wall--compact) .graf-preview-tag {
     min-height: 11rem;
   }
+
+  .graf {
+    max-width: min(36vw, 250px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -702,7 +825,10 @@ body {
   .wave-slam,
   .wave-unlock,
   .foam-pop,
-  .tube-glow {
+  .tube-glow,
+  .graf-inner,
+  .graf-fresh .graf-inner,
+  .graf-wait-dot {
     animation: none;
     transition: none;
   }

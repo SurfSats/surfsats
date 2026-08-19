@@ -1,5 +1,10 @@
 import { cn } from "@/lib/cn";
-import type { GraffitiColor, GraffitiStyle } from "@/lib/graffiti";
+import {
+  isGraffitiColor,
+  isGraffitiStyle,
+  type GraffitiColor,
+  type GraffitiStyle,
+} from "@/lib/graffiti";
 
 export function GraffitiTag({
   text,
@@ -12,8 +17,10 @@ export function GraffitiTag({
   color: GraffitiColor;
   className?: string;
 }) {
+  const safeStyle = isGraffitiStyle(style) ? style : "tag";
+  const safeColor = isGraffitiColor(color) ? color : "banana";
   return (
-    <p className={cn(`graf-${style}`, `graf-color-${color}`, className)}>
+    <p className={cn(`graf-${safeStyle}`, `graf-color-${safeColor}`, className)}>
       {text}
     </p>
   );

@@ -34,6 +34,9 @@ export function GraffitiForm({
   const [copied, setCopied] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [invoiceError, setInvoiceError] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  const [expired, setExpired] = useState(false);
 
   const check = sanitizeGraffiti(text);
   const previewText = check.ok ? check.text : text.trim() || "your mark";
@@ -63,7 +66,21 @@ export function GraffitiForm({
   }, [paymentRequest]);
 
   useEffect(() => {
-    if (step !== "invoice" || !paymentHash) return;
+    if (step !== "invoice") return;
+    const id = window.setInterval(() => setNowTick(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [step]);
+
+  useEffect(() => {
+    if (step !== "invoice" || !expiresAt) return;
+    if (Date.now() >= new Date(expiresAt).getTime()) {
+      setExpired(true);
+      setWaiting(false);
+    }
+  }, [step, expiresAt, nowTick]);
+
+  useEffect(() => {
+    if (step !== "invoice" || !paymentHash || expired) return;
 
     let cancelled = false;
     setWaiting(true);
@@ -108,7 +125,7 @@ export function GraffitiForm({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [step, paymentHash, onPaid]);
+  }, [step, paymentHash, onPaid, expired]);
 
   function showPreview() {
     const next = sanitizeGraffiti(text);
@@ -143,6 +160,7 @@ export function GraffitiForm({
         error?: string;
         payment_request?: string;
         payment_hash?: string;
+        expires_at?: string | null;
       };
       if (
         !response.ok ||
@@ -155,8 +173,13 @@ export function GraffitiForm({
       }
       setPaymentRequest(data.payment_request);
       setPaymentHash(data.payment_hash);
+      setExpiresAt(
+        data.expires_at ||
+          new Date(Date.now() + 50 * 60 * 1000).toISOString(),
+      );
       setCopied(false);
       setInvoiceError(null);
+      setExpired(false);
       setStep("invoice");
     } catch {
       setError("could not create invoice. try again");
@@ -187,7 +210,15 @@ export function GraffitiForm({
     setCopied(false);
     setWaiting(false);
     setInvoiceError(null);
+    setExpiresAt(null);
+    setExpired(false);
   }
+
+  const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
+  const remainLabel = formatRemain(remainMs);
+  const hardFail =
+    expired ||
+    Boolean(invoiceError && !invoiceError.includes("retrying"));
 
   return (
     <section className="graffiti-form">
@@ -340,7 +371,8 @@ export function GraffitiForm({
       {step === "invoice" ? (
         <div className="mt-5 border border-stone-600 bg-black/70 p-4">
           <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
-            invoice · {GRAFFITI_PRICE_SATS} sats · unpaid
+            invoice · {GRAFFITI_PRICE_SATS} sats ·{" "}
+            {expired ? "expired" : "unpaid"}
           </p>
           {qrSrc ? (
             // data: URL from the live BOLT11 — next/image cannot optimize it
@@ -358,52 +390,111 @@ export function GraffitiForm({
           <p className="mt-4 break-all font-mono text-[11px] leading-relaxed text-stone-400">
             {paymentRequest}
           </p>
-          <p className="mt-3 text-[11px] uppercase tracking-[0.14em] text-amber-500/90">
-            {waiting ? "waiting for payment…" : "scan or copy the invoice"}
-          </p>
+          {expired ? (
+            <p className="mt-3 text-center text-xs uppercase tracking-[0.14em] text-red-400">
+              invoice expired. generate a new one to pay.
+            </p>
+          ) : (
+            <div className="graf-wait">
+              <span className="graf-wait-dot" aria-hidden="true" />
+              <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
+                {waiting ? "waiting for 21 sats" : "scan or copy the invoice"}
+              </p>
+              <p className="text-[11px] uppercase tracking-[0.12em] text-stone-400">
+                pay from any lightning wallet
+                {remainLabel ? ` · ${remainLabel}` : ""}
+              </p>
+            </div>
+          )}
           {invoiceError ? (
-            <p className="mt-2 text-xs uppercase text-red-400">{invoiceError}</p>
+            <p className="mt-2 text-center text-xs uppercase text-red-400">
+              {invoiceError}
+            </p>
           ) : null}
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            {hardFail ? (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => {
+                  setPaymentHash("");
+                  setPaymentRequest("");
+                  setQrSrc("");
+                  setWaiting(false);
+                  setExpired(false);
+                  setInvoiceError(null);
+                  void requestInvoice();
+                }}
+                className="flex-1 bg-amber-500 px-4 py-2 text-xs font-bold uppercase text-black disabled:opacity-40"
+              >
+                {pending ? "building invoice…" : "new invoice"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void copyInvoice()}
+                className="flex-1 bg-amber-500 px-4 py-2 text-xs font-bold uppercase text-black"
+              >
+                {copied ? "copied" : "copy invoice"}
+              </button>
+            )}
+            {!expired ? (
+              <a
+                href={`lightning:${paymentRequest}`}
+                className="flex-1 border border-stone-500 px-4 py-2 text-center text-xs uppercase text-stone-300"
+              >
+                open wallet
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setPaymentHash("");
+                  setPaymentRequest("");
+                  setQrSrc("");
+                  setWaiting(false);
+                  setExpired(false);
+                  setInvoiceError(null);
+                  setStep("preview");
+                }}
+                className="flex-1 border border-stone-500 px-4 py-2 text-xs uppercase text-stone-300"
+              >
+                back to preview
+              </button>
+            )}
+          </div>
+          {!expired ? (
             <button
               type="button"
-              onClick={() => void copyInvoice()}
-              className="flex-1 bg-amber-500 px-4 py-2 text-xs font-bold uppercase text-black"
+              onClick={() => {
+                setPaymentHash("");
+                setPaymentRequest("");
+                setQrSrc("");
+                setWaiting(false);
+                setExpired(false);
+                setInvoiceError(null);
+                setStep("preview");
+              }}
+              className="mt-3 w-full text-[11px] uppercase tracking-[0.14em] text-stone-500 hover:text-stone-300"
             >
-              {copied ? "copied" : "copy invoice"}
+              back to preview
             </button>
-            <a
-              href={`lightning:${paymentRequest}`}
-              className="flex-1 border border-stone-500 px-4 py-2 text-center text-xs uppercase text-stone-300"
-            >
-              open wallet
-            </a>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setPaymentHash("");
-              setPaymentRequest("");
-              setQrSrc("");
-              setWaiting(false);
-              setStep("preview");
-            }}
-            className="mt-3 w-full text-[11px] uppercase tracking-[0.14em] text-stone-500 hover:text-stone-300"
-          >
-            back to preview
-          </button>
+          ) : null}
         </div>
       ) : null}
 
       {step === "done" ? (
-        <div className="mt-5 border border-amber-700/50 bg-black/70 px-4 py-3">
-          <p className="text-xs uppercase tracking-[0.14em] text-amber-500">
-            paid · on the wall · {GRAFFITI_TTL_HOURS} hours
+        <div className="graf-success mt-5 border bg-black/70 px-4 py-4">
+          <p className="font-display text-lg font-bold uppercase tracking-tight text-amber-400">
+            Tagged. Live for {GRAFFITI_TTL_HOURS} hours.
+          </p>
+          <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-stone-400">
+            look for the pulse on the wall
           </p>
           <button
             type="button"
             onClick={reset}
-            className="mt-3 text-[11px] uppercase tracking-[0.14em] text-stone-300 hover:text-amber-400"
+            className="mt-4 text-[11px] uppercase tracking-[0.14em] text-stone-300 hover:text-amber-400"
           >
             another mark -&gt;
           </button>
@@ -411,4 +502,12 @@ export function GraffitiForm({
       ) : null}
     </section>
   );
+}
+
+function formatRemain(ms: number) {
+  if (ms <= 0) return "";
+  const total = Math.ceil(ms / 1000);
+  const minutes = Math.floor(total / 60);
+  const seconds = total % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")} left`;
 }

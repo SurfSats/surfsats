@@ -9,11 +9,13 @@ export const GRAFFITI_HERO_BAND = 26;
 
 export const graffitiStyles = [
   { id: "tag", label: "classic tag" },
-  { id: "throwup", label: "throw-up" },
-  { id: "wildstyle", label: "wildstyle" },
+  { id: "throwup", label: "throw-up / bubble" },
+  { id: "blockbuster", label: "blockbuster" },
   { id: "stencil", label: "stencil" },
   { id: "drip", label: "drip" },
-  { id: "blockbuster", label: "blockbuster" },
+  { id: "wildstyle", label: "wildstyle-lite" },
+  { id: "fatcap", label: "fat-cap / marker" },
+  { id: "chrome", label: "chrome" },
 ] as const;
 
 export const graffitiColors = [
@@ -92,35 +94,32 @@ export function isGraffitiColor(value: unknown): value is GraffitiColor {
   return graffitiColors.some((item) => item.id === value);
 }
 
-export function placeMark(seed?: string) {
-  if (seed) {
-    const top = GRAFFITI_HERO_BAND + hashUnit(seed, 0) * 64;
-    let left = 1 + hashUnit(seed, 8) * 76;
-    if (top > 34 && top < 68 && left > 16 && left < 64) {
-      left = hashUnit(seed, 16) > 0.5 ? 4 : 70;
-    }
-    return {
-      top,
-      left,
-      rotate: -18 + hashUnit(seed, 24) * 36,
-      scale: 0.68 + hashUnit(seed, 32) * 0.85,
-    };
-  }
+/** Side and bottom bands only — leave the center Hope piece clear. */
+const PLACE_ZONES = [
+  { topMin: 28, topMax: 40, leftMin: 3, leftMax: 18 },
+  { topMin: 28, topMax: 40, leftMin: 54, leftMax: 60 },
+  { topMin: 42, topMax: 64, leftMin: 2, leftMax: 12 },
+  { topMin: 42, topMax: 64, leftMin: 58, leftMax: 62 },
+  { topMin: 70, topMax: 86, leftMin: 4, leftMax: 26 },
+  { topMin: 70, topMax: 86, leftMin: 48, leftMax: 58 },
+] as const;
 
-  for (let attempt = 0; attempt < 24; attempt += 1) {
-    const top = GRAFFITI_HERO_BAND + Math.random() * 64;
-    const left = 1 + Math.random() * 76;
-    const hitsCenter = top > 34 && top < 68 && left > 16 && left < 64;
-    if (!hitsCenter) {
-      return {
-        top,
-        left,
-        rotate: -18 + Math.random() * 36,
-        scale: 0.68 + Math.random() * 0.85,
-      };
-    }
-  }
-  return { top: 30, left: 4, rotate: -8, scale: 0.9 };
+export function placeMark(seed?: string) {
+  const index = seed
+    ? Math.floor(hashUnit(seed, 40) * PLACE_ZONES.length)
+    : Math.floor(Math.random() * PLACE_ZONES.length);
+  const zone = PLACE_ZONES[index % PLACE_ZONES.length];
+  const topUnit = seed ? hashUnit(seed, 0) : Math.random();
+  const leftUnit = seed ? hashUnit(seed, 8) : Math.random();
+  const rotateUnit = seed ? hashUnit(seed, 24) : Math.random();
+  const scaleUnit = seed ? hashUnit(seed, 32) : Math.random();
+
+  return {
+    top: zone.topMin + topUnit * (zone.topMax - zone.topMin),
+    left: zone.leftMin + leftUnit * (zone.leftMax - zone.leftMin),
+    rotate: -10 + rotateUnit * 20,
+    scale: 0.78 + scaleUnit * 0.24,
+  };
 }
 
 export function createMark(
@@ -160,10 +159,10 @@ export const seedMarks: GraffitiMark[] = [
     color: "bone",
     createdAt: new Date(Date.now() - 3_600_000).toISOString(),
     expiresAt: new Date(Date.now() + 18 * 3_600_000).toISOString(),
-    top: 34,
+    top: 32,
     left: 4,
-    rotate: -11,
-    scale: 1.15,
+    rotate: -8,
+    scale: 1.02,
   },
   {
     id: "seed-2",
@@ -172,10 +171,10 @@ export const seedMarks: GraffitiMark[] = [
     color: "pink",
     createdAt: new Date(Date.now() - 8_000_000).toISOString(),
     expiresAt: new Date(Date.now() + 14 * 3_600_000).toISOString(),
-    top: 30,
-    left: 68,
-    rotate: 9,
-    scale: 0.95,
+    top: 31,
+    left: 56,
+    rotate: 7,
+    scale: 0.92,
   },
   {
     id: "seed-3",
@@ -197,8 +196,8 @@ export const seedMarks: GraffitiMark[] = [
     createdAt: new Date(Date.now() - 5_000_000).toISOString(),
     expiresAt: new Date(Date.now() + 16 * 3_600_000).toISOString(),
     top: 76,
-    left: 62,
+    left: 52,
     rotate: 5,
-    scale: 1.2,
+    scale: 1.02,
   },
 ];

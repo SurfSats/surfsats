@@ -1,7 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Anton, Bangers, Permanent_Marker, Rubik_Dirt, Rubik_Glitch } from "next/font/google";
+import {
+  Anton,
+  Bangers,
+  Bungee,
+  Permanent_Marker,
+  Rubik_Dirt,
+  Rubik_Glitch,
+  Stardos_Stencil,
+} from "next/font/google";
 import { GraffitiForm } from "@/components/graffiti/GraffitiForm";
 import { GraffitiWall } from "@/components/graffiti/GraffitiWall";
 import {
@@ -42,10 +50,23 @@ const block = Anton({
   variable: "--font-graf-block",
 });
 
+const fat = Bungee({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-graf-fat",
+});
+
+const stencil = Stardos_Stencil({
+  weight: "700",
+  subsets: ["latin"],
+  variable: "--font-graf-stencil",
+});
+
 export function GraffitiApp() {
   const [paid, setPaid] = useState<GraffitiMark[]>([]);
   const [ready, setReady] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [freshId, setFreshId] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -110,13 +131,23 @@ export function GraffitiApp() {
 
   const addMark = useCallback((mark: GraffitiMark) => {
     setPaid((current) => mergePaid(current, [mark]));
+    setFreshId(mark.id);
+    window.setTimeout(() => {
+      document.getElementById(`graf-${mark.id}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 80);
+    window.setTimeout(() => {
+      setFreshId((current) => (current === mark.id ? null : current));
+    }, 5200);
   }, []);
 
   return (
     <div
-      className={`${marker.variable} ${throwup.variable} ${wild.variable} ${drip.variable} ${block.variable} graffiti-page`}
+      className={`${marker.variable} ${throwup.variable} ${wild.variable} ${drip.variable} ${block.variable} ${fat.variable} ${stencil.variable} graffiti-page`}
     >
-      <GraffitiWall marks={live} />
+      <GraffitiWall marks={live} freshId={freshId} />
       <GraffitiForm onPaid={addMark} />
     </div>
   );
