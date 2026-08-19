@@ -7,7 +7,7 @@ export const revalidate = 20;
 export const metadata: Metadata = {
   title: "TideChain",
   description:
-    "The chain is the clock. The tide is the schedule. Live Bitcoin time: height, last block, difficulty, halving, supply, hashrate, fees, Moscow Time.",
+    "Bitcoin protocol monitor. The chain is the clock. Live height, last block, 24h production, difficulty epoch, and path to the next halving.",
 };
 
 export default async function TimechainPage() {
