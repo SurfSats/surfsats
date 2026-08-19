@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 
 export function HomeClose() {
@@ -10,6 +11,12 @@ export function HomeClose() {
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
           Fork the culture. Feed the wave. Pay the peak or sit outside.
         </p>
+        <Link
+          href="/about"
+          className="mt-6 inline-block font-mono text-[11px] uppercase tracking-[0.16em] text-muted/80 glitch-hover hover:text-cyan"
+        >
+          about -&gt;
+        </Link>
       </Container>
     </section>
   );

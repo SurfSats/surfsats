@@ -39,7 +39,15 @@ export function Footer() {
               A SurfPorn Company
             </p>
           </div>
-          <p className="text-magenta">jukebox: 21_sats</p>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/about"
+              className="tracking-[0.14em] text-muted/80 glitch-hover hover:text-cyan"
+            >
+              /about
+            </Link>
+            <p className="text-magenta">jukebox: 21_sats</p>
+          </div>
         </Container>
       </div>
     </footer>
