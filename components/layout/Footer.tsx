@@ -11,7 +11,7 @@ export function Footer() {
           <Logo />
           <p className="mt-4 font-mono text-xs leading-relaxed text-muted">
             unauthorized culture for people who live on ocean time and bitcoin
-            time. fork it. remix it. don&apos;t ask permission.
+            time. don&apos;t ask permission.
           </p>
         </div>
 

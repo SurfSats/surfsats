@@ -9,7 +9,7 @@ export function Hero() {
       <Container className="relative py-16 sm:py-24 lg:py-28">
         <TerminalLabel>bitcoin · surf · no masters</TerminalLabel>
         <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
-          <span className="text-cyan">root@surfsats:~$</span> boot --gonzo --no-kyc
+          <span className="text-cyan">root@surfsats:~$</span> boot --btc --no-kyc
         </p>
         <h1
           data-text="SurfSats"
@@ -32,6 +32,9 @@ export function Hero() {
           </ButtonLink>
           <ButtonLink href="/jukebox" variant="ghost">
             drop 21 sats
+          </ButtonLink>
+          <ButtonLink href="/graffiti" variant="ghost">
+            tag the block
           </ButtonLink>
         </div>
       </Container>

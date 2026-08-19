@@ -33,6 +33,15 @@ const tools = [
     cta: "drop_21_sats",
     accent: "sats",
   },
+  {
+    href: "/graffiti",
+    code: "04",
+    name: "Graffiti Wall",
+    hook: "21 sats. 21 hours.",
+    body: "Pay Lightning. Leave a mark. Bitcoin Is Hope stays forever.",
+    cta: "tag_the_block",
+    accent: "sats",
+  },
 ] as const;
 
 export function FeaturedTools() {
@@ -42,9 +51,9 @@ export function FeaturedTools() {
         <SectionHeading
           eyebrow="live_tools"
           title="The machines"
-          description="Not a blog with a tip jar. Three things you can actually use."
+          description="Not a blog with a tip jar. Four things you can actually use."
         />
-        <div className="mt-10 grid items-stretch gap-4 lg:grid-cols-3">
+        <div className="mt-10 grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {tools.map((tool) => (
             <Link
               key={tool.href}

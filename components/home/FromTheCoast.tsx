@@ -16,15 +16,20 @@ export function FromTheCoast() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <SectionHeading
             eyebrow="from_the_coast"
-            title="Writing + signal"
+            title="The Signal"
             description="One dispatch. Two picks. The rest is noise."
           />
-          <Link
-            href="/signal"
-            className="shrink-0 font-mono text-xs uppercase tracking-[0.16em] text-sats glitch-hover hover:text-cyan"
-          >
-            signal -&gt;
-          </Link>
+          <div className="flex shrink-0 flex-wrap gap-x-5 gap-y-2 font-mono text-xs uppercase tracking-[0.16em]">
+            <Link href="/signal" className="text-sats glitch-hover hover:text-cyan">
+              signal -&gt;
+            </Link>
+            <Link href="/tidechain" className="text-sats glitch-hover hover:text-cyan">
+              tidechain -&gt;
+            </Link>
+            <Link href="/tools" className="text-sats glitch-hover hover:text-cyan">
+              tools -&gt;
+            </Link>
+          </div>
         </div>
 
         <div className="mt-10 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
