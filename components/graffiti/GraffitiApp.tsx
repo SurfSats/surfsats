@@ -1,16 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Anton, Bangers, Permanent_Marker, Rubik_Dirt, Rubik_Glitch } from "next/font/google";
 import { GraffitiForm } from "@/components/graffiti/GraffitiForm";
 import { GraffitiWall } from "@/components/graffiti/GraffitiWall";
 import {
   GRAFFITI_HERO_BAND,
   GRAFFITI_STORAGE_KEY,
-  type GraffitiColor,
   type GraffitiMark,
-  type GraffitiStyle,
-  createMark,
   isActiveMark,
   seedMarks,
 } from "@/lib/graffiti";
@@ -46,7 +43,7 @@ const block = Anton({
 });
 
 export function GraffitiApp() {
-  const [marks, setMarks] = useState<GraffitiMark[]>(seedMarks);
+  const [paid, setPaid] = useState<GraffitiMark[]>([]);
   const [ready, setReady] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
@@ -56,7 +53,7 @@ export function GraffitiApp() {
       if (raw) {
         const stored = JSON.parse(raw) as GraffitiMark[];
         if (Array.isArray(stored) && stored.length) {
-          setMarks(stored);
+          setPaid(stored.filter((mark) => Boolean(mark.paymentHash)));
         }
       }
     } catch {
@@ -66,32 +63,54 @@ export function GraffitiApp() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const response = await fetch("/api/graffiti", { cache: "no-store" });
+        const data = (await response.json()) as { marks?: GraffitiMark[] };
+        if (cancelled || !Array.isArray(data.marks)) return;
+        setPaid((current) => mergePaid(current, data.marks ?? []));
+      } catch {
+        // keep cached marks
+      }
+    }
+
+    void load();
+    const id = window.setInterval(() => void load(), 12_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!ready) return;
-    window.localStorage.setItem(GRAFFITI_STORAGE_KEY, JSON.stringify(marks));
-  }, [marks, ready]);
+    window.localStorage.setItem(GRAFFITI_STORAGE_KEY, JSON.stringify(paid));
+  }, [paid, ready]);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 60_000);
     return () => window.clearInterval(id);
   }, []);
 
-  const live = useMemo(
-    () =>
-      marks.filter(
-        (mark) =>
-          isActiveMark(mark, now) &&
-          typeof mark.scale === "number" &&
-          mark.top >= GRAFFITI_HERO_BAND,
-      ),
-    [marks, now],
-  );
+  const live = useMemo(() => {
+    const byId = new Map<string, GraffitiMark>();
+    for (const mark of [...seedMarks, ...paid]) {
+      if (
+        isActiveMark(mark, now) &&
+        typeof mark.scale === "number" &&
+        mark.top >= GRAFFITI_HERO_BAND
+      ) {
+        byId.set(mark.id, mark);
+      }
+    }
+    return [...byId.values()];
+  }, [paid, now]);
 
-  function addMark(text: string, style: GraffitiStyle, color: GraffitiColor) {
-    setMarks((current) => {
-      const next = createMark(text, style, color);
-      return [...current.filter((mark) => isActiveMark(mark)), next];
-    });
-  }
+  const addMark = useCallback((mark: GraffitiMark) => {
+    setPaid((current) => mergePaid(current, [mark]));
+  }, []);
 
   return (
     <div
@@ -101,4 +120,14 @@ export function GraffitiApp() {
       <GraffitiForm onPaid={addMark} />
     </div>
   );
+}
+
+function mergePaid(current: GraffitiMark[], incoming: GraffitiMark[]) {
+  const byKey = new Map<string, GraffitiMark>();
+  for (const mark of [...current, ...incoming]) {
+    const key = mark.paymentHash || mark.id;
+    if (!key) continue;
+    byKey.set(key, mark);
+  }
+  return [...byKey.values()];
 }

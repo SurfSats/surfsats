@@ -2,7 +2,7 @@ export const GRAFFITI_PRICE_SATS = 21;
 export const GRAFFITI_TTL_HOURS = 21;
 export const GRAFFITI_MAX_CHARS = 100;
 export const GRAFFITI_TTL_MS = GRAFFITI_TTL_HOURS * 60 * 60 * 1000;
-export const GRAFFITI_STORAGE_KEY = "surfsats.graffiti.v3";
+export const GRAFFITI_STORAGE_KEY = "surfsats.graffiti.v4";
 export const GRAFFITI_CENTER = "Bitcoin Is Hope";
 /** Keep tags below the hero title band (~first 26% of the wall). */
 export const GRAFFITI_HERO_BAND = 26;
@@ -41,7 +41,18 @@ export type GraffitiMark = {
   left: number;
   rotate: number;
   scale: number;
+  paymentHash?: string;
 };
+
+export type PendingGraffiti = {
+  paymentHash: string;
+  text: string;
+  style: GraffitiStyle;
+  color: GraffitiColor;
+  createdAt: string;
+};
+
+export const GRAFFITI_META_KIND = "surfsats-graffiti";
 
 const blocked = [
   "nigger",
@@ -73,7 +84,29 @@ export function isActiveMark(mark: GraffitiMark, now = Date.now()) {
   return new Date(mark.expiresAt).getTime() > now;
 }
 
-export function placeMark() {
+export function isGraffitiStyle(value: unknown): value is GraffitiStyle {
+  return graffitiStyles.some((item) => item.id === value);
+}
+
+export function isGraffitiColor(value: unknown): value is GraffitiColor {
+  return graffitiColors.some((item) => item.id === value);
+}
+
+export function placeMark(seed?: string) {
+  if (seed) {
+    let top = GRAFFITI_HERO_BAND + hashUnit(seed, 0) * 64;
+    let left = 1 + hashUnit(seed, 8) * 76;
+    if (top > 34 && top < 68 && left > 16 && left < 64) {
+      left = hashUnit(seed, 16) > 0.5 ? 4 : 70;
+    }
+    return {
+      top,
+      left,
+      rotate: -18 + hashUnit(seed, 24) * 36,
+      scale: 0.68 + hashUnit(seed, 32) * 0.85,
+    };
+  }
+
   for (let attempt = 0; attempt < 24; attempt += 1) {
     const top = GRAFFITI_HERO_BAND + Math.random() * 64;
     const left = 1 + Math.random() * 76;
@@ -94,9 +127,11 @@ export function createMark(
   text: string,
   style: GraffitiStyle,
   color: GraffitiColor,
+  options?: { paidAt?: number; paymentHash?: string },
 ) {
-  const created = Date.now();
-  const id = `g-${created}-${Math.random().toString(36).slice(2, 7)}`;
+  const created = options?.paidAt ?? Date.now();
+  const paymentHash = options?.paymentHash;
+  const id = paymentHash ? `g-${paymentHash.slice(0, 12)}` : `g-${created}`;
   return {
     id,
     text,
@@ -104,8 +139,17 @@ export function createMark(
     color,
     createdAt: new Date(created).toISOString(),
     expiresAt: new Date(created + GRAFFITI_TTL_MS).toISOString(),
-    ...placeMark(),
+    paymentHash,
+    ...placeMark(paymentHash),
   } satisfies GraffitiMark;
+}
+
+function hashUnit(seed: string, offset: number) {
+  const hex = seed.replace(/[^0-9a-f]/gi, "0").padEnd(offset + 8, "0");
+  const slice = hex.slice(offset, offset + 8);
+  const value = Number.parseInt(slice, 16);
+  if (!Number.isFinite(value)) return 0.5;
+  return (value % 10_000) / 10_000;
 }
 
 export const seedMarks: GraffitiMark[] = [

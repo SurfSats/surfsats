@@ -661,6 +661,14 @@ body {
   min-height: 7.25rem;
 }
 
+.graf-invoice-qr {
+  display: block;
+  width: min(100%, 16rem);
+  height: auto;
+  aspect-ratio: 1;
+  background: #efe6d4;
+}
+
 @media (min-width: 640px) {
   .graffiti-hero-copy {
     padding: 2.5rem 2rem 5.25rem;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
 import { cn } from "@/lib/cn";
 import {
@@ -8,6 +8,7 @@ import {
   GRAFFITI_PRICE_SATS,
   GRAFFITI_TTL_HOURS,
   type GraffitiColor,
+  type GraffitiMark,
   type GraffitiStyle,
   graffitiColors,
   graffitiStyles,
@@ -19,7 +20,7 @@ type Step = "compose" | "preview" | "invoice" | "done";
 export function GraffitiForm({
   onPaid,
 }: {
-  onPaid: (text: string, style: GraffitiStyle, color: GraffitiColor) => void;
+  onPaid: (mark: GraffitiMark) => void;
 }) {
   const [text, setText] = useState("");
   const [style, setStyle] = useState<GraffitiStyle>("tag");
@@ -27,6 +28,11 @@ export function GraffitiForm({
   const [step, setStep] = useState<Step>("compose");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentRequest, setPaymentRequest] = useState("");
+  const [paymentHash, setPaymentHash] = useState("");
+  const [qrSrc, setQrSrc] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [waiting, setWaiting] = useState(false);
 
   const check = sanitizeGraffiti(text);
   const previewText = check.ok ? check.text : text.trim() || "your mark";
@@ -34,6 +40,61 @@ export function GraffitiForm({
     graffitiStyles.find((item) => item.id === style)?.label ?? style;
   const colorLabel =
     graffitiColors.find((item) => item.id === color)?.label ?? color;
+
+  useEffect(() => {
+    if (!paymentRequest) {
+      setQrSrc("");
+      return;
+    }
+    let cancelled = false;
+    void import("qrcode").then(async (QRCode) => {
+      const src = await QRCode.toDataURL(paymentRequest, {
+        width: 280,
+        margin: 2,
+        color: { dark: "#111111", light: "#efe6d4" },
+        errorCorrectionLevel: "M",
+      });
+      if (!cancelled) setQrSrc(src);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [paymentRequest]);
+
+  useEffect(() => {
+    if (step !== "invoice" || !paymentHash) return;
+
+    let cancelled = false;
+    setWaiting(true);
+
+    async function poll() {
+      try {
+        const response = await fetch(
+          `/api/lightning/check?hash=${encodeURIComponent(paymentHash)}`,
+          { cache: "no-store" },
+        );
+        const data = (await response.json()) as {
+          paid?: boolean;
+          mark?: GraffitiMark | null;
+        };
+        if (cancelled) return;
+        if (data.paid && data.mark) {
+          setWaiting(false);
+          onPaid(data.mark);
+          setStep("done");
+        }
+      } catch {
+        // keep waiting; next tick retries
+      }
+    }
+
+    void poll();
+    const id = window.setInterval(() => void poll(), 2500);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [step, paymentHash, onPaid]);
 
   function showPreview() {
     const next = sanitizeGraffiti(text);
@@ -54,23 +115,45 @@ export function GraffitiForm({
     }
     setError(null);
     setPending(true);
-    // Lightning hook:
-    // 1) POST /api/ln/invoice { sats: 21, memo: next.text }
-    // 2) show bolt11 / QR
-    // 3) wait for payment, then onPaid(...)
-    await wait(400);
-    setStep("invoice");
-    setPending(false);
+    try {
+      const response = await fetch("/api/lightning/invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: next.text,
+          style,
+          color,
+        }),
+      });
+      const data = (await response.json()) as {
+        error?: string;
+        payment_request?: string;
+        payment_hash?: string;
+      };
+      if (!response.ok || !data.payment_request || !data.payment_hash) {
+        setError(data.error || "could not create invoice. try again");
+        return;
+      }
+      setPaymentRequest(data.payment_request);
+      setPaymentHash(data.payment_hash);
+      setCopied(false);
+      setStep("invoice");
+    } catch {
+      setError("could not create invoice. try again");
+    } finally {
+      setPending(false);
+    }
   }
 
-  async function simulatePay() {
-    const next = sanitizeGraffiti(text);
-    if (!next.ok || pending) return;
-    setPending(true);
-    await wait(650);
-    onPaid(next.text, style, color);
-    setStep("done");
-    setPending(false);
+  async function copyInvoice() {
+    if (!paymentRequest) return;
+    try {
+      await navigator.clipboard.writeText(paymentRequest);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
   }
 
   function reset() {
@@ -78,6 +161,11 @@ export function GraffitiForm({
     setStep("compose");
     setError(null);
     setPending(false);
+    setPaymentRequest("");
+    setPaymentHash("");
+    setQrSrc("");
+    setCopied(false);
+    setWaiting(false);
   }
 
   return (
@@ -200,6 +288,9 @@ export function GraffitiForm({
             {styleLabel} · {colorLabel} · {GRAFFITI_PRICE_SATS} sats ·{" "}
             {GRAFFITI_TTL_HOURS} hours
           </p>
+          {error ? (
+            <p className="mt-4 text-xs uppercase text-red-400">{error}</p>
+          ) : null}
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
@@ -208,12 +299,15 @@ export function GraffitiForm({
               className="flex-1 bg-amber-500 px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-black disabled:opacity-40"
             >
               {pending
-                ? "shaking the can…"
+                ? "building invoice…"
                 : `looks good — ${GRAFFITI_PRICE_SATS} sats`}
             </button>
             <button
               type="button"
-              onClick={() => setStep("compose")}
+              onClick={() => {
+                setError(null);
+                setStep("compose");
+              }}
               className="flex-1 border border-stone-500 px-4 py-3 text-xs uppercase tracking-[0.12em] text-stone-300"
             >
               edit
@@ -225,38 +319,60 @@ export function GraffitiForm({
       {step === "invoice" ? (
         <div className="mt-5 border border-stone-600 bg-black/70 p-4">
           <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
-            invoice · {GRAFFITI_PRICE_SATS} sats
+            invoice · {GRAFFITI_PRICE_SATS} sats · unpaid
           </p>
-          <p className="mt-3 break-all font-mono text-[11px] text-stone-500">
-            lnbc21n1pgraffitiplaceholderwaitforrealbolt11
+          {qrSrc ? (
+            <img
+              src={qrSrc}
+              alt="Lightning invoice QR"
+              className="graf-invoice-qr mx-auto mt-4"
+            />
+          ) : (
+            <div className="graf-invoice-qr mx-auto mt-4 grid place-items-center bg-[#efe6d4] text-[11px] uppercase text-black">
+              loading qr
+            </div>
+          )}
+          <p className="mt-4 break-all font-mono text-[11px] leading-relaxed text-stone-400">
+            {paymentRequest}
           </p>
-          <p className="mt-3 text-[11px] uppercase text-stone-400">
-            simulated · nothing charged yet
+          <p className="mt-3 text-[11px] uppercase tracking-[0.14em] text-amber-500/90">
+            {waiting ? "waiting for payment…" : "scan or copy the invoice"}
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
-              disabled={pending}
-              onClick={() => void simulatePay()}
+              onClick={() => void copyInvoice()}
               className="flex-1 bg-amber-500 px-4 py-2 text-xs font-bold uppercase text-black"
             >
-              {pending ? "listening…" : "simulate payment"}
+              {copied ? "copied" : "copy invoice"}
             </button>
-            <button
-              type="button"
-              onClick={() => setStep("preview")}
-              className="flex-1 border border-stone-500 px-4 py-2 text-xs uppercase text-stone-300"
+            <a
+              href={`lightning:${paymentRequest}`}
+              className="flex-1 border border-stone-500 px-4 py-2 text-center text-xs uppercase text-stone-300"
             >
-              back to preview
-            </button>
+              open wallet
+            </a>
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              setPaymentHash("");
+              setPaymentRequest("");
+              setQrSrc("");
+              setWaiting(false);
+              setStep("preview");
+            }}
+            className="mt-3 w-full text-[11px] uppercase tracking-[0.14em] text-stone-500 hover:text-stone-300"
+          >
+            back to preview
+          </button>
         </div>
       ) : null}
 
       {step === "done" ? (
         <div className="mt-5 border border-amber-700/50 bg-black/70 px-4 py-3">
           <p className="text-xs uppercase tracking-[0.14em] text-amber-500">
-            on the wall · {GRAFFITI_TTL_HOURS} hours
+            paid · on the wall · {GRAFFITI_TTL_HOURS} hours
           </p>
           <button
             type="button"
@@ -269,8 +385,4 @@ export function GraffitiForm({
       ) : null}
     </section>
   );
-}
-
-function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
