@@ -33,6 +33,7 @@ export function GraffitiForm({
   const [qrSrc, setQrSrc] = useState("");
   const [copied, setCopied] = useState(false);
   const [waiting, setWaiting] = useState(false);
+  const [invoiceError, setInvoiceError] = useState<string | null>(null);
 
   const check = sanitizeGraffiti(text);
   const previewText = check.ok ? check.text : text.trim() || "your mark";
@@ -76,15 +77,28 @@ export function GraffitiForm({
         const data = (await response.json()) as {
           paid?: boolean;
           mark?: GraffitiMark | null;
+          error?: string;
         };
         if (cancelled) return;
         if (data.paid && data.mark) {
+          setInvoiceError(null);
           setWaiting(false);
           onPaid(data.mark);
           setStep("done");
+          return;
+        }
+        if (data.paid && !data.mark) {
+          setInvoiceError("payment landed, but the tag could not be placed");
+          setWaiting(false);
+          return;
+        }
+        if (!response.ok) {
+          setInvoiceError(data.error || "could not check payment. retrying…");
         }
       } catch {
-        // keep waiting; next tick retries
+        if (!cancelled) {
+          setInvoiceError("could not check payment. retrying…");
+        }
       }
     }
 
@@ -130,13 +144,19 @@ export function GraffitiForm({
         payment_request?: string;
         payment_hash?: string;
       };
-      if (!response.ok || !data.payment_request || !data.payment_hash) {
+      if (
+        !response.ok ||
+        !data.payment_request ||
+        !data.payment_hash ||
+        !data.payment_request.toLowerCase().startsWith("ln")
+      ) {
         setError(data.error || "could not create invoice. try again");
         return;
       }
       setPaymentRequest(data.payment_request);
       setPaymentHash(data.payment_hash);
       setCopied(false);
+      setInvoiceError(null);
       setStep("invoice");
     } catch {
       setError("could not create invoice. try again");
@@ -166,6 +186,7 @@ export function GraffitiForm({
     setQrSrc("");
     setCopied(false);
     setWaiting(false);
+    setInvoiceError(null);
   }
 
   return (
@@ -322,6 +343,8 @@ export function GraffitiForm({
             invoice · {GRAFFITI_PRICE_SATS} sats · unpaid
           </p>
           {qrSrc ? (
+            // data: URL from the live BOLT11 — next/image cannot optimize it
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={qrSrc}
               alt="Lightning invoice QR"
@@ -338,6 +361,9 @@ export function GraffitiForm({
           <p className="mt-3 text-[11px] uppercase tracking-[0.14em] text-amber-500/90">
             {waiting ? "waiting for payment…" : "scan or copy the invoice"}
           </p>
+          {invoiceError ? (
+            <p className="mt-2 text-xs uppercase text-red-400">{invoiceError}</p>
+          ) : null}
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <button
               type="button"

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import {
-  asInvoice,
   invoicePaymentHash,
   isAlbyConfigured,
+  verifyAlbyWebhook,
+  webhookEventType,
+  webhookInvoicePayload,
 } from "@/lib/alby";
 import { settleGraffitiPayment } from "@/lib/graffiti-payments";
 
@@ -17,20 +19,29 @@ export async function POST(request: Request) {
     );
   }
 
+  const rawBody = await request.text();
+  const verified = verifyAlbyWebhook(rawBody, request.headers);
+  if (!verified.ok) {
+    return NextResponse.json({ error: "invalid webhook signature" }, { status: 401 });
+  }
+
   let body: unknown;
   try {
-    body = await request.json();
+    body = rawBody ? JSON.parse(rawBody) : null;
   } catch {
     return NextResponse.json({ error: "invalid payload" }, { status: 400 });
   }
 
-  const invoice =
-    asInvoice(body) ||
-    asInvoice(
-      body && typeof body === "object"
-        ? (body as { data?: unknown }).data
-        : null,
-    );
+  const eventType = webhookEventType(body).toLowerCase();
+  if (
+    eventType &&
+    !eventType.includes("incoming") &&
+    eventType !== "invoice.settled"
+  ) {
+    return NextResponse.json({ ok: true, ignored: true });
+  }
+
+  const invoice = webhookInvoicePayload(body);
   const paymentHash = invoice ? invoicePaymentHash(invoice) : "";
   if (!paymentHash) {
     return NextResponse.json({ ok: true, ignored: true });
@@ -44,7 +55,6 @@ export async function POST(request: Request) {
       live: Boolean(result.mark),
     });
   } catch {
-    // Acknowledge so Alby / Svix does not hammer retries on transient lookup misses.
     return NextResponse.json({ ok: true, paid: false });
   }
 }

@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { GRAFFITI_PRICE_SATS } from "@/lib/graffiti";
 
 const ALBY_API_BASE =
@@ -89,22 +90,21 @@ export function publicErrorStatus(error: unknown) {
 export async function createAlbyInvoice(input: {
   amountSats: number;
   description: string;
-  metadata?: Record<string, unknown>;
-  comment?: string;
 }) {
   const body = await albyFetch("/invoices", {
     method: "POST",
     body: JSON.stringify({
       amount: input.amountSats,
       description: input.description,
-      memo: input.description,
-      comment: input.comment,
-      metadata: input.metadata ?? {},
     }),
   });
 
   const invoice = asInvoice(body);
-  if (!invoice?.payment_request || !invoicePaymentHash(invoice)) {
+  if (
+    !invoice?.payment_request ||
+    !invoice.payment_request.toLowerCase().startsWith("ln") ||
+    !invoicePaymentHash(invoice)
+  ) {
     throw Object.assign(new Error("could not create invoice. try again"), {
       status: 502,
     });
@@ -177,4 +177,61 @@ function stringOrNull(value: unknown) {
 
 function numberOrNull(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+export function webhookSecretConfigured() {
+  return Boolean(process.env.ALBY_WEBHOOK_SECRET?.trim());
+}
+
+/** Svix signature check used by Alby webhooks. Skips if no secret is set. */
+export function verifyAlbyWebhook(rawBody: string, headers: Headers) {
+  const secret = process.env.ALBY_WEBHOOK_SECRET?.trim();
+  if (!secret) return { ok: true as const, skipped: true };
+
+  const id = headers.get("svix-id") || headers.get("webhook-id");
+  const timestamp =
+    headers.get("svix-timestamp") || headers.get("webhook-timestamp");
+  const signature =
+    headers.get("svix-signature") || headers.get("webhook-signature");
+  if (!id || !timestamp || !signature) {
+    return { ok: false as const, skipped: false };
+  }
+
+  const ageSec = Math.abs(Date.now() / 1000 - Number(timestamp));
+  if (Number.isFinite(ageSec) && ageSec > 5 * 60) {
+    return { ok: false as const, skipped: false };
+  }
+
+  const keyPart = secret.startsWith("whsec_") ? secret.slice(6) : secret;
+  let key = Buffer.from(keyPart, "base64");
+  if (!key.length) key = Buffer.from(secret, "utf8");
+
+  const expected = createHmac("sha256", key)
+    .update(`${id}.${timestamp}.${rawBody}`)
+    .digest("base64");
+  const expectedBuf = Buffer.from(expected);
+
+  const valid = signature.split(/\s+/).some((part) => {
+    const value = part.includes(",") ? part.slice(part.lastIndexOf(",") + 1) : part;
+    const got = Buffer.from(value);
+    return got.length === expectedBuf.length && timingSafeEqual(got, expectedBuf);
+  });
+
+  return { ok: valid, skipped: false };
+}
+
+export function webhookEventType(body: unknown) {
+  if (!body || typeof body !== "object") return "";
+  const record = body as Record<string, unknown>;
+  return String(record.type || record.event_type || record.filter_type || "");
+}
+
+export function webhookInvoicePayload(body: unknown) {
+  if (!body || typeof body !== "object") return asInvoice(body);
+  const record = body as Record<string, unknown>;
+  return (
+    asInvoice(body) ||
+    asInvoice(record.data) ||
+    asInvoice(record.invoice)
+  );
 }

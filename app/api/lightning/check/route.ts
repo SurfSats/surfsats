@@ -20,7 +20,7 @@ async function checkHash(paymentHash: string) {
     const result = await settleGraffitiPayment(paymentHash);
     return NextResponse.json({
       paid: result.paid,
-      mark: result.mark,
+      mark: result.mark ?? null,
     });
   } catch (error) {
     return NextResponse.json(

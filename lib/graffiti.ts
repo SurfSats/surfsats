@@ -94,7 +94,7 @@ export function isGraffitiColor(value: unknown): value is GraffitiColor {
 
 export function placeMark(seed?: string) {
   if (seed) {
-    let top = GRAFFITI_HERO_BAND + hashUnit(seed, 0) * 64;
+    const top = GRAFFITI_HERO_BAND + hashUnit(seed, 0) * 64;
     let left = 1 + hashUnit(seed, 8) * 76;
     if (top > 34 && top < 68 && left > 16 && left < 64) {
       left = hashUnit(seed, 16) > 0.5 ? 4 : 70;

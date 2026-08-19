@@ -17,7 +17,6 @@ import {
   type GraffitiColor,
   type GraffitiMark,
   type GraffitiStyle,
-  type PendingGraffiti,
 } from "@/lib/graffiti";
 import {
   findPaidByHash,
@@ -57,13 +56,6 @@ export async function createGraffitiInvoice(input: GraffitiInvoicePayload) {
   const invoice = await createAlbyInvoice({
     amountSats: GRAFFITI_PRICE_SATS,
     description: "SurfSats Graffiti",
-    comment: input.text.slice(0, 80),
-    metadata: {
-      kind: GRAFFITI_META_KIND,
-      text: input.text,
-      style: input.style,
-      color: input.color,
-    },
   });
 
   const paymentHash = invoicePaymentHash(invoice);
