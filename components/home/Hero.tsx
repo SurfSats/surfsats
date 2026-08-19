@@ -1,12 +1,15 @@
+import { SwellScorecard } from "@/components/home/SwellScorecard";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Container } from "@/components/ui/Container";
 import { TerminalLabel } from "@/components/ui/TerminalLabel";
+import type { TimechainSnapshot } from "@/lib/timechain";
 
-export function Hero() {
+export function Hero({ initial }: { initial: TimechainSnapshot | null }) {
   return (
     <section className="relative overflow-hidden">
       <div className="hero-glow pointer-events-none absolute inset-0" />
-      <Container className="relative py-16 sm:py-24 lg:py-28">
+      <Container className="relative grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)] lg:py-28">
+        <div className="min-w-0">
         <TerminalLabel>bitcoin · surf · no masters</TerminalLabel>
         <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
           <span className="text-cyan">root@surfsats:~$</span> boot --btc --no-kyc
@@ -37,6 +40,8 @@ export function Hero() {
             tag the block
           </ButtonLink>
         </div>
+        </div>
+        <SwellScorecard initial={initial} />
       </Container>
       <div
         className="h-px w-full bg-gradient-to-r from-transparent via-cyan/50 to-transparent"

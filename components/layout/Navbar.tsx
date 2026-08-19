@@ -7,8 +7,15 @@ import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
 import { cn } from "@/lib/cn";
 import { navLinks } from "@/lib/nav";
+import { swellFromPct } from "@/lib/swell";
+import type { TimechainSnapshot } from "@/lib/timechain";
+import { useTimechainSnapshot } from "@/components/timechain/useTimechainSnapshot";
 
-export function Navbar() {
+export function Navbar({
+  initial,
+}: {
+  initial: TimechainSnapshot | null;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -17,7 +24,9 @@ export function Navbar() {
       <div className="border-b border-magenta/25 bg-black/60">
         <Container className="flex h-7 items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-cyan/80">
           <span>sys.surfsats // online // no kyc</span>
-          <span className="hidden sm:inline">mempool=hot swell=unknown</span>
+          <span className="hidden sm:inline">
+            mempool=hot <SwellTicker initial={initial} />
+          </span>
         </Container>
       </div>
 
@@ -116,5 +125,17 @@ export function Navbar() {
         </div>
       ) : null}
     </header>
+  );
+}
+
+function SwellTicker({ initial }: { initial: TimechainSnapshot | null }) {
+  const { snapshot } = useTimechainSnapshot(initial);
+  const pct = snapshot.priceChangePct;
+  if (pct === null) return <>swell=unknown</>;
+  const swell = swellFromPct(pct);
+  return (
+    <span className={swell.direction === "up" ? "text-cyan" : "text-magenta"}>
+      swell={swell.direction}
+    </span>
   );
 }
