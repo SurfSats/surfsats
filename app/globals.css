@@ -966,13 +966,13 @@ body {
 .tide-core {
   position: relative;
   display: grid;
-  min-height: 58vh;
+  min-height: 68vh;
   place-items: center;
 }
 
 .tide-clock {
   display: block;
-  width: min(100%, 92vh);
+  width: min(100%, 100vh);
   height: auto;
 }
 
@@ -1061,13 +1061,20 @@ body {
 }
 
 .tide-clock-kicker {
-  font-size: 32px;
-  letter-spacing: 0.14em;
+  font-size: 26px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .tide-clock-read {
-  font-size: 40px;
-  letter-spacing: 0.03em;
+  font-size: 30px;
+  letter-spacing: 0.04em;
+}
+
+.tide-clock-onring {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .tide-strip {
@@ -1100,23 +1107,23 @@ body {
   }
 
   .tide-stage {
-    grid-template-columns: 17.5rem minmax(0, 1fr) 17.5rem;
+    grid-template-columns: 15rem minmax(0, 1fr) 15rem;
     grid-template-rows: auto 1fr auto;
     grid-template-areas:
       "price core moscow"
       "hash  core diff"
       "hash  fees diff";
-    min-height: calc(100dvh - 13.5rem);
-    padding: 0.4rem 1rem 0.3rem;
+    min-height: calc(100dvh - 12.5rem);
+    padding: 0.2rem 0.7rem 0.15rem;
   }
 
   .tide-core {
-    min-height: calc(100dvh - 16rem);
+    min-height: calc(100dvh - 13rem);
   }
 
   .tide-clock {
-    width: min(58vw, 78vh);
-    max-height: calc(100dvh - 15rem);
+    width: min(76vw, 94vh);
+    max-height: calc(100dvh - 12rem);
   }
 
   .tide-hash,
@@ -1150,11 +1157,15 @@ body {
   }
 
   .tide-clock-kicker {
-    font-size: 18px;
+    font-size: 15px;
   }
 
   .tide-clock-read {
-    font-size: 24px;
+    font-size: 18px;
+  }
+
+  .tide-clock-onring {
+    font-size: 13px;
   }
 
   .tide-strip {
