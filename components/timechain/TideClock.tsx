@@ -5,17 +5,17 @@ import {
   type TimechainSnapshot,
   formatBlockAge,
   formatInteger,
+  formatInterval,
 } from "@/lib/timechain";
 
 const CX = 500;
 const CY = 500;
-const TARGET_BLOCK_SEC = 600;
 
 const RINGS = {
-  last: { r: 168, color: "#3dfff3", ticks: 48, width: 9 },
-  day: { r: 228, color: "#ff7a18", ticks: 60, width: 10 },
-  diff: { r: 288, color: "#ff2ec4", ticks: 72, width: 11 },
-  half: { r: 348, color: "#ff9a3c", ticks: 96, width: 12 },
+  last: { r: 188, w: 18, color: "#3dfff3", ticks: 48 },
+  day: { r: 228, w: 20, color: "#ff7a18", ticks: 60 },
+  diff: { r: 272, w: 22, color: "#e14aff", ticks: 72 },
+  half: { r: 318, w: 24, color: "#f0b429", ticks: 96 },
 } as const;
 
 export function TideClock({
@@ -27,48 +27,50 @@ export function TideClock({
 }) {
   const uid = useId().replace(/:/g, "");
   const glow = `${uid}-glow`;
-  const lastP = clamp01(ageSec / TARGET_BLOCK_SEC);
+  const lastP = clamp01(ageSec / 600);
   const dayP = clamp01((snapshot.blocksLast24h ?? 0) / 144);
   const diffP = clamp01((snapshot.difficultyProgressPercent ?? 0) / 100);
   const halfP = clamp01((snapshot.halvingProgressPercent ?? 0) / 100);
+  const dayShare =
+    snapshot.blocksLast24h !== null ? snapshot.blocksLast24h / 144 : 0;
 
   return (
     <svg
       viewBox="0 0 1000 1000"
       className="tide-clock"
       role="img"
-      aria-label="Bitcoin protocol monitor: block height and four time rings"
+      aria-label="Bitcoin protocol monitor with four concentric time rings"
       preserveAspectRatio="xMidYMid meet"
     >
       <defs>
-        <filter id={glow} x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="3.2" result="b" />
+        <filter id={glow} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.6" result="b" />
           <feMerge>
             <feMergeNode in="b" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-        <radialGradient id={`${uid}-core`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#3dfff3" stopOpacity="0.14" />
-          <stop offset="55%" stopColor="#3dfff3" stopOpacity="0.04" />
+        <radialGradient id={`${uid}-core`} cx="50%" cy="50%" r="48%">
+          <stop offset="0%" stopColor="#3dfff3" stopOpacity="0.16" />
+          <stop offset="42%" stopColor="#3dfff3" stopOpacity="0.05" />
           <stop offset="100%" stopColor="#05060a" stopOpacity="0" />
         </radialGradient>
       </defs>
 
-      <circle cx={CX} cy={CY} r="420" fill={`url(#${uid}-core)`} />
+      <circle cx={CX} cy={CY} r="430" fill={`url(#${uid}-core)`} />
 
-      {Array.from({ length: 12 }, (_, i) => {
-        const a = (i / 12) * 360;
-        const a0 = polar(118, a);
-        const a1 = polar(360, a);
+      {Array.from({ length: 16 }, (_, i) => {
+        const a = (i / 16) * 360;
+        const inner = polar(148, a);
+        const outer = polar(338, a);
         return (
           <line
             key={i}
-            x1={a0.x}
-            y1={a0.y}
-            x2={a1.x}
-            y2={a1.y}
-            stroke="rgba(61,255,243,0.08)"
+            x1={inner.x}
+            y1={inner.y}
+            x2={outer.x}
+            y2={outer.y}
+            stroke="rgba(61,255,243,0.07)"
             strokeWidth="1"
           />
         );
@@ -77,36 +79,28 @@ export function TideClock({
       <circle
         cx={CX}
         cy={CY}
-        r="126"
+        r="152"
         fill="none"
-        stroke="rgba(61,255,243,0.28)"
-        strokeWidth="1.2"
-        strokeDasharray="3 5"
+        stroke="rgba(61,255,243,0.35)"
+        strokeWidth="1.4"
+        strokeDasharray="2 6"
       />
       <circle
         cx={CX}
         cy={CY}
-        r="118"
+        r="146"
         fill="none"
-        stroke="rgba(61,255,243,0.12)"
-        strokeWidth="8"
+        stroke="rgba(61,255,243,0.1)"
+        strokeWidth="10"
       />
 
       <Ring
         glow={glow}
-        r={RINGS.last.r}
-        color={RINGS.last.color}
-        progress={lastP}
-        ticks={RINGS.last.ticks}
-        width={RINGS.last.width}
-      />
-      <Ring
-        glow={glow}
-        r={RINGS.day.r}
-        color={RINGS.day.color}
-        progress={dayP}
-        ticks={RINGS.day.ticks}
-        width={RINGS.day.width}
+        r={RINGS.half.r}
+        color={RINGS.half.color}
+        progress={halfP}
+        ticks={RINGS.half.ticks}
+        width={RINGS.half.w}
       />
       <Ring
         glow={glow}
@@ -114,52 +108,96 @@ export function TideClock({
         color={RINGS.diff.color}
         progress={diffP}
         ticks={RINGS.diff.ticks}
-        width={RINGS.diff.width}
+        width={RINGS.diff.w}
       />
       <Ring
         glow={glow}
-        r={RINGS.half.r}
-        color={RINGS.half.color}
-        progress={halfP}
-        ticks={RINGS.half.ticks}
-        width={RINGS.half.width}
+        r={RINGS.day.r}
+        color={RINGS.day.color}
+        progress={dayP}
+        ticks={RINGS.day.ticks}
+        width={RINGS.day.w}
+      />
+      <Ring
+        glow={glow}
+        r={RINGS.last.r}
+        color={RINGS.last.color}
+        progress={lastP}
+        ticks={RINGS.last.ticks}
+        width={RINGS.last.w}
       />
 
-      <RingLabel
-        r={RINGS.last.r}
-        deg={312}
-        color={RINGS.last.color}
-        title="LAST BLOCK"
-        value={formatBlockAge(ageSec)}
-      />
-      <RingLabel
-        r={RINGS.day.r}
-        deg={38}
-        color={RINGS.day.color}
-        title="24H BLOCKS"
-        value={`${snapshot.blocksLast24h ?? "—"} / 144`}
-      />
-      <RingLabel
+      <Anno
         r={RINGS.diff.r}
-        deg={218}
+        deg={0}
         color={RINGS.diff.color}
-        title="DIFFICULTY EPOCH"
+        kicker="DIFFICULTY EPOCH"
         value={
-          snapshot.remainingBlocksToRetarget !== null
-            ? `${formatInteger(snapshot.remainingBlocksToRetarget)} LEFT`
+          snapshot.epochBlocksDone !== null
+            ? `${formatInteger(snapshot.epochBlocksDone)} / ${snapshot.epochLength}`
+            : "— / 2016"
+        }
+        sub={
+          snapshot.difficultyProgressPercent !== null
+            ? `${snapshot.difficultyProgressPercent.toFixed(2)}%`
+            : undefined
+        }
+        anchor="middle"
+      />
+      <Anno
+        r={RINGS.day.r}
+        deg={8}
+        color={RINGS.day.color}
+        kicker="24H BLOCK PRODUCTION"
+        value={`${snapshot.blocksLast24h ?? "—"} / 144`}
+        sub="BLOCKS"
+        anchor="start"
+      />
+      <Anno
+        r={RINGS.last.r}
+        deg={42}
+        color={RINGS.last.color}
+        kicker="AVG INTERVAL"
+        value={
+          snapshot.avgIntervalMs !== null
+            ? formatInterval(snapshot.avgIntervalMs)
+            : "10m"
+        }
+        anchor="start"
+      />
+      <Anno
+        r={RINGS.last.r}
+        deg={318}
+        color={RINGS.last.color}
+        kicker="LAST BLOCK"
+        value={formatBlockAge(ageSec)}
+        anchor="end"
+      />
+      <Anno
+        r={RINGS.day.r}
+        deg={230}
+        color={RINGS.day.color}
+        kicker="24H RATE"
+        value={`${snapshot.blocksLast24h ?? "—"} / 144`}
+        sub={`${(dayShare * 100).toFixed(1)}%`}
+        anchor="end"
+      />
+      <Anno
+        r={RINGS.half.r}
+        deg={180}
+        color={RINGS.half.color}
+        kicker="PATH TO NEXT HALVING"
+        value={
+          snapshot.daysToHalving !== null
+            ? `≈ ${snapshot.daysToHalving.toFixed(1)} DAYS`
             : "—"
         }
-      />
-      <RingLabel
-        r={RINGS.half.r}
-        deg={148}
-        color={RINGS.half.color}
-        title="NEXT HALVING"
-        value={
+        sub={
           snapshot.blocksToHalving !== null
             ? `${formatInteger(snapshot.blocksToHalving)} BLOCKS`
-            : "—"
+            : undefined
         }
+        anchor="middle"
       />
     </svg>
   );
@@ -181,7 +219,7 @@ function Ring({
   width: number;
 }) {
   const c = 2 * Math.PI * r;
-  const filled = Math.max(0.02, progress) * c;
+  const filled = Math.max(0.035, progress) * c;
 
   return (
     <g>
@@ -191,8 +229,16 @@ function Ring({
         r={r}
         fill="none"
         stroke={color}
-        strokeOpacity="0.14"
-        strokeWidth={width + 4}
+        strokeOpacity="0.16"
+        strokeWidth={width + 6}
+      />
+      <circle
+        cx={CX}
+        cy={CY}
+        r={r}
+        fill="none"
+        stroke="#07080c"
+        strokeWidth={width}
       />
       <circle
         cx={CX}
@@ -201,13 +247,14 @@ function Ring({
         fill="none"
         stroke={color}
         strokeOpacity="0.22"
-        strokeWidth="1"
+        strokeWidth={width}
+        strokeDasharray="7 5"
       />
       {Array.from({ length: ticks }, (_, i) => {
         const a = (i / ticks) * 360;
-        const major = i % 6 === 0;
-        const p1 = polar(r - (major ? 9 : 5), a);
-        const p2 = polar(r + (major ? 9 : 5), a);
+        const major = i % 8 === 0;
+        const p1 = polar(r - width / 2 - (major ? 3 : 1), a);
+        const p2 = polar(r + width / 2 + (major ? 4 : 1), a);
         return (
           <line
             key={i}
@@ -216,8 +263,8 @@ function Ring({
             x2={p2.x}
             y2={p2.y}
             stroke={color}
-            strokeOpacity={major ? 0.45 : 0.18}
-            strokeWidth={major ? 1.4 : 0.8}
+            strokeOpacity={major ? 0.7 : 0.28}
+            strokeWidth={major ? 1.6 : 0.8}
           />
         );
       })}
@@ -227,54 +274,69 @@ function Ring({
         r={r}
         fill="none"
         stroke={color}
-        strokeWidth={width}
-        strokeLinecap="round"
+        strokeWidth={width - 3}
+        strokeLinecap="butt"
         strokeDasharray={`${filled} ${c}`}
         transform={`rotate(-90 ${CX} ${CY})`}
         filter={`url(#${glow})`}
-        opacity="0.95"
       />
     </g>
   );
 }
 
-function RingLabel({
+function Anno({
   r,
   deg,
   color,
-  title,
+  kicker,
   value,
+  sub,
+  anchor,
 }: {
   r: number;
   deg: number;
   color: string;
-  title: string;
+  kicker: string;
   value: string;
+  sub?: string;
+  anchor: "start" | "end" | "middle";
 }) {
   const p = polar(r, deg);
-  const right = deg < 180;
+  const dx = anchor === "start" ? 16 : anchor === "end" ? -16 : 0;
   return (
     <g transform={`translate(${p.x} ${p.y})`}>
       <text
-        x={right ? 14 : -14}
-        y="-6"
-        textAnchor={right ? "start" : "end"}
+        x={dx}
+        y={sub ? -12 : -4}
+        textAnchor={anchor}
         fill={color}
         className="tide-clock-kicker"
         fontFamily="ui-monospace, monospace"
       >
-        {title}
+        {kicker}
       </text>
       <text
-        x={right ? 14 : -14}
-        y="14"
-        textAnchor={right ? "start" : "end"}
-        fill="#eceae4"
+        x={dx}
+        y={sub ? 8 : 14}
+        textAnchor={anchor}
+        fill="#f4f1ea"
         className="tide-clock-read"
         fontFamily="ui-monospace, monospace"
       >
         {value}
       </text>
+      {sub ? (
+        <text
+          x={dx}
+          y={24}
+          textAnchor={anchor}
+          fill="#8b8d99"
+          className="tide-clock-kicker"
+          fontFamily="ui-monospace, monospace"
+        >
+          {sub}
+        </text>
+      ) : null}
     </g>
   );
 }

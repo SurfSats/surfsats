@@ -87,7 +87,7 @@ export function LiveSignalBar({
         )}
 
         <Link
-          href="/timechain"
+          href="/tidechain"
           className="ml-auto hidden shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-sats glitch-hover hover:text-cyan sm:inline"
         >
           readout -&gt;

@@ -169,7 +169,7 @@ export function TimechainStats({
 
       {variant === "home" ? (
         <Link
-          href="/timechain"
+          href="/tidechain"
           className="mt-4 inline-flex font-mono text-xs uppercase tracking-[0.16em] text-sats glitch-hover hover:text-cyan"
         >
           full_readout -&gt;
