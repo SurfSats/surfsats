@@ -5,6 +5,7 @@ export function Logo({ className }: { className?: string }) {
   return (
     <Link
       href="/"
+      aria-label="SurfSats home"
       className={cn(
         "group inline-flex items-center gap-2.5 text-foreground",
         className,
