@@ -11,9 +11,10 @@ export function GraffitiWall({
 }) {
   return (
     <div className="graffiti-wall">
-      <div className="graf graf-center">
-        <p className="graf-drip graf-color-banana text-5xl sm:text-7xl lg:text-8xl">
-          {GRAFFITI_CENTER}
+      <div className="graf graf-center" aria-label={GRAFFITI_CENTER}>
+        <p className="graf-center-piece graf-drip graf-color-banana">
+          <span className="graf-center-line">Bitcoin Is</span>
+          <span className="graf-center-hope">Hope</span>
         </p>
       </div>
 

@@ -15,7 +15,7 @@ import {
   sanitizeGraffiti,
 } from "@/lib/graffiti";
 
-type Step = "compose" | "preview" | "invoice" | "done";
+type Step = "compose" | "invoice" | "done";
 
 export function GraffitiForm({
   onPaid,
@@ -126,16 +126,6 @@ export function GraffitiForm({
       window.clearInterval(id);
     };
   }, [step, paymentHash, onPaid, expired]);
-
-  function showPreview() {
-    const next = sanitizeGraffiti(text);
-    if (!next.ok) {
-      setError(next.reason);
-      return;
-    }
-    setError(null);
-    setStep("preview");
-  }
 
   async function requestInvoice() {
     const next = sanitizeGraffiti(text);
@@ -295,38 +285,7 @@ export function GraffitiForm({
           <p className="mt-5 text-[11px] uppercase tracking-[0.16em] text-stone-400">
             live preview
           </p>
-          <div className="graf-preview-wall graf-preview-wall--compact mt-2">
-            <div className="graf-preview-tag">
-              <GraffitiTag
-                text={previewText}
-                style={style}
-                color={color}
-                className="text-2xl sm:text-4xl"
-              />
-            </div>
-          </div>
-
-          {error ? (
-            <p className="mt-4 text-xs uppercase text-red-400">{error}</p>
-          ) : null}
-
-          <button
-            type="button"
-            disabled={pending || !check.ok}
-            onClick={showPreview}
-            className="mt-6 w-full bg-amber-500 px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-black disabled:opacity-40"
-          >
-            preview mark
-          </button>
-        </>
-      ) : null}
-
-      {step === "preview" ? (
-        <div className="mt-5">
-          <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
-            preview · how it hits the wall
-          </p>
-          <div className="graf-preview-wall mt-3">
+          <div className="graf-preview-wall mt-2">
             <div className="graf-preview-tag">
               <GraffitiTag
                 text={previewText}
@@ -340,32 +299,22 @@ export function GraffitiForm({
             {styleLabel} · {colorLabel} · {GRAFFITI_PRICE_SATS} sats ·{" "}
             {GRAFFITI_TTL_HOURS} hours
           </p>
+
           {error ? (
             <p className="mt-4 text-xs uppercase text-red-400">{error}</p>
           ) : null}
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => void requestInvoice()}
-              className="flex-1 bg-amber-500 px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-black disabled:opacity-40"
-            >
-              {pending
-                ? "building invoice…"
-                : `looks good — ${GRAFFITI_PRICE_SATS} sats`}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setError(null);
-                setStep("compose");
-              }}
-              className="flex-1 border border-stone-500 px-4 py-3 text-xs uppercase tracking-[0.12em] text-stone-300"
-            >
-              edit
-            </button>
-          </div>
-        </div>
+
+          <button
+            type="button"
+            disabled={pending || !check.ok}
+            onClick={() => void requestInvoice()}
+            className="mt-6 w-full bg-amber-500 px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-black disabled:opacity-40"
+          >
+            {pending
+              ? "building invoice…"
+              : `pay ${GRAFFITI_PRICE_SATS} sats`}
+          </button>
+        </>
       ) : null}
 
       {step === "invoice" ? (
@@ -455,11 +404,11 @@ export function GraffitiForm({
                   setWaiting(false);
                   setExpired(false);
                   setInvoiceError(null);
-                  setStep("preview");
+                  setStep("compose");
                 }}
                 className="flex-1 border border-stone-500 px-4 py-2 text-xs uppercase text-stone-300"
               >
-                back to preview
+                edit mark
               </button>
             )}
           </div>
@@ -473,11 +422,11 @@ export function GraffitiForm({
                 setWaiting(false);
                 setExpired(false);
                 setInvoiceError(null);
-                setStep("preview");
+                setStep("compose");
               }}
               className="mt-3 w-full text-[11px] uppercase tracking-[0.14em] text-stone-500 hover:text-stone-300"
             >
-              back to preview
+              edit mark
             </button>
           ) : null}
         </div>

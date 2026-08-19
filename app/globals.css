@@ -535,25 +535,48 @@ body {
 
 .graf {
   position: absolute;
+  user-select: none;
+}
+
+.graf-temp {
+  z-index: 4;
   max-width: min(42vw, 210px);
   line-height: 0.9;
   overflow-wrap: anywhere;
   word-break: break-word;
-  user-select: none;
 }
 
 .graf-center {
   left: 50%;
   top: 48%;
-  max-width: min(84vw, 720px);
-  transform: translate(-50%, -50%) rotate(-3deg);
   z-index: 7;
+  width: min(94vw, 1100px);
+  max-width: min(94vw, 1100px);
+  transform: translate(-50%, -50%) rotate(-3deg);
   text-align: center;
-  filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+  overflow: visible;
+  word-break: normal;
+  overflow-wrap: normal;
+  filter: drop-shadow(0 12px 0 rgba(0, 0, 0, 0.42));
 }
 
-.graf-temp {
-  z-index: 4;
+.graf-center-piece {
+  margin: 0;
+  line-height: 0.84;
+}
+
+.graf-center-line {
+  display: block;
+  white-space: nowrap;
+  font-size: clamp(1.55rem, 7.4vw, 5.1rem);
+}
+
+.graf-center-hope {
+  display: block;
+  white-space: nowrap;
+  font-size: clamp(2.5rem, 13vw, 7.2rem);
+  margin-top: 0.04em;
 }
 
 .graf-inner {
@@ -808,7 +831,7 @@ body {
     min-height: 11rem;
   }
 
-  .graf {
+  .graf-temp {
     max-width: min(36vw, 250px);
   }
 }

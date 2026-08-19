@@ -96,10 +96,8 @@ export function isGraffitiColor(value: unknown): value is GraffitiColor {
 
 /** Side and bottom bands only — leave the center Hope piece clear. */
 const PLACE_ZONES = [
-  { topMin: 28, topMax: 40, leftMin: 3, leftMax: 18 },
-  { topMin: 28, topMax: 40, leftMin: 54, leftMax: 60 },
-  { topMin: 42, topMax: 64, leftMin: 2, leftMax: 12 },
-  { topMin: 42, topMax: 64, leftMin: 58, leftMax: 62 },
+  { topMin: 28, topMax: 38, leftMin: 3, leftMax: 18 },
+  { topMin: 28, topMax: 38, leftMin: 54, leftMax: 60 },
   { topMin: 70, topMax: 86, leftMin: 4, leftMax: 26 },
   { topMin: 70, topMax: 86, leftMin: 48, leftMax: 58 },
 ] as const;
