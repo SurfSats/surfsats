@@ -836,6 +836,165 @@ body {
   }
 }
 
+.tidechain-page {
+  position: relative;
+  min-height: calc(100dvh - 8.25rem);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(61, 255, 243, 0.06), transparent 42%),
+    #07080c;
+}
+
+.tidechain-shell {
+  display: flex;
+  min-height: calc(100dvh - 8.25rem);
+  flex-direction: column;
+  padding: 0.85rem 0.9rem 1.1rem;
+}
+
+.tidechain-mast {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding-bottom: 0.75rem;
+}
+
+.tidechain-strip {
+  display: grid;
+  flex-shrink: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.7rem;
+}
+
+.tidechain-strip-item,
+.tidechain-dock-item {
+  min-width: 0;
+  border: 1px solid rgba(61, 255, 243, 0.18);
+  background: rgba(8, 10, 14, 0.78);
+  padding: 0.5rem 0.65rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tidechain-stage {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+}
+
+.tidechain-instrument {
+  min-height: 58vh;
+  overflow: hidden;
+  border: 1px solid rgba(61, 255, 243, 0.28);
+  background: #05070d;
+}
+
+.tide-clock {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 58vh;
+}
+
+.tide-clock-tick {
+  font-size: 22px;
+}
+
+.tide-clock-label {
+  font-size: 24px;
+}
+
+.tide-clock-read {
+  font-size: 28px;
+}
+
+.tidechain-dock {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  align-content: start;
+}
+
+.tidechain-legend {
+  flex-shrink: 0;
+  margin-top: 0.75rem;
+  border-top: 1px solid rgba(61, 255, 243, 0.16);
+  padding-top: 0.65rem;
+}
+
+.tidechain-legend ul {
+  display: grid;
+  margin-top: 0.45rem;
+  list-style: none;
+  gap: 0.3rem 1rem;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+@media (min-width: 640px) {
+  .tidechain-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tidechain-legend ul {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tidechain-shell {
+    padding: 0.9rem 1.15rem 1rem;
+  }
+
+  .tidechain-mast {
+    flex-direction: row;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.25rem;
+  }
+
+  .tidechain-strip {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .tidechain-stage {
+    grid-template-columns: minmax(0, 1fr) 17.5rem;
+    min-height: calc(100dvh - 20rem);
+  }
+
+  .tidechain-instrument,
+  .tide-clock {
+    min-height: calc(100dvh - 20rem);
+  }
+
+  .tide-clock-tick {
+    font-size: 13px;
+  }
+
+  .tide-clock-label {
+    font-size: 14px;
+  }
+
+  .tide-clock-read {
+    font-size: 16px;
+  }
+
+  .tidechain-dock {
+    grid-template-columns: 1fr;
+  }
+
+  .tidechain-legend ul {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flicker,
   .panel-hover,
