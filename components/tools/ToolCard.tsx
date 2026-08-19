@@ -11,7 +11,7 @@ export function ToolCard({ tool }: { tool: DirectoryTool }) {
         <a
           href={tool.url}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="glitch-hover hover:text-sats"
         >
           {tool.name}
@@ -22,7 +22,7 @@ export function ToolCard({ tool }: { tool: DirectoryTool }) {
       <a
         href={tool.url}
         target="_blank"
-        rel="noreferrer"
+        rel="noopener noreferrer"
         className="mt-5 inline-flex font-mono text-xs uppercase tracking-[0.14em] text-sats glitch-hover hover:text-cyan"
       >
         launch -&gt;

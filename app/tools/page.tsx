@@ -38,7 +38,11 @@ export default function ToolsPage() {
 
         <div className="mt-14 flex flex-col gap-16 sm:gap-20">
           {directory.map((section) => (
-            <section key={section.id} className="min-w-0">
+            <section
+              key={section.id}
+              id={section.id}
+              className="min-w-0"
+            >
               <SectionHeading
                 eyebrow={section.eyebrow}
                 title={section.title}
