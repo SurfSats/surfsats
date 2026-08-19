@@ -17,10 +17,10 @@ export function LatestArticles() {
             description="Field notes from beach towns, Lightning rails, and the overlap between both."
           />
           <Link
-            href="/articles"
+            href="/signal#articles"
             className="shrink-0 font-mono text-xs uppercase tracking-[0.16em] text-sats glitch-hover hover:text-cyan"
           >
-            all_articles -&gt;
+            signal -&gt;
           </Link>
         </div>
 

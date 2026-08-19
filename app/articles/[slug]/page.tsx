@@ -41,10 +41,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     <article>
       <Container className="py-14 sm:py-20">
         <Link
-          href="/articles"
+          href="/signal#articles"
           className="font-mono text-xs uppercase tracking-[0.14em] text-muted glitch-hover hover:text-cyan"
         >
-          &lt;- all_articles
+          &lt;- signal
         </Link>
 
         <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">

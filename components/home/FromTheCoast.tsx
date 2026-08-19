@@ -19,14 +19,12 @@ export function FromTheCoast() {
             title="Writing + signal"
             description="One dispatch. Two picks. The rest is noise."
           />
-          <div className="flex shrink-0 gap-5 font-mono text-xs uppercase tracking-[0.16em]">
-            <Link href="/articles" className="text-sats glitch-hover hover:text-cyan">
-              articles -&gt;
-            </Link>
-            <Link href="/news" className="text-sats glitch-hover hover:text-cyan">
-              signal -&gt;
-            </Link>
-          </div>
+          <Link
+            href="/signal"
+            className="shrink-0 font-mono text-xs uppercase tracking-[0.16em] text-sats glitch-hover hover:text-cyan"
+          >
+            signal -&gt;
+          </Link>
         </div>
 
         <div className="mt-10 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
