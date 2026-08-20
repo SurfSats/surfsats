@@ -1919,17 +1919,33 @@ body {
 .cab-machine {
   position: relative;
   width: 100%;
-  /* CRT inner glass on arcade-cabinet-front.jpg (784x1168) */
+  /* CRT inner glass on arcade-cabinet-cutout.png (1152x1712) */
   --crt-top: 28.55%;
   --crt-left: 30.05%;
   --crt-w: 39.05%;
   --crt-h: 19.5%;
 }
 
+.cab-machine::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  bottom: 0.6%;
+  z-index: 0;
+  height: 3.6%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55), transparent 72%);
+}
+
 .cab-art {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: auto;
+  background: transparent;
+  filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.62));
 }
 
 .cab-crt-slot {

@@ -67,10 +67,10 @@ export function ArcadeCabinet({
     <div className="cab-wrap">
       <div className="cab-machine">
         <Image
-          src="/arcade-cabinet-front.jpg"
+          src="/arcade-cabinet-cutout.png"
           alt="SurfSats arcade cabinet"
-          width={784}
-          height={1168}
+          width={1152}
+          height={1712}
           priority
           className="cab-art"
           sizes="(max-width: 900px) 92vw, 32rem"
