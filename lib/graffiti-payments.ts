@@ -4,7 +4,6 @@ import {
   invoicePaymentHash,
   isGraffitiInvoiceAmount,
   isInvoiceSettled,
-  listIncomingInvoices,
   type AlbyInvoice,
 } from "@/lib/alby";
 import {
@@ -18,10 +17,12 @@ import {
   type GraffitiMark,
   type GraffitiStyle,
 } from "@/lib/graffiti";
+import { graffitiLog, hashRef } from "@/lib/graffiti-log";
 import {
   findPaidByHash,
   getPaidMarks,
   getPending,
+  graffitiStoreKind,
   savePaidMark,
   savePending,
 } from "@/lib/graffiti-store";
@@ -52,12 +53,32 @@ export function parseGraffitiPayload(
   return { text: clean.text, style: record.style, color: record.color };
 }
 
-export async function createGraffitiInvoice(input: GraffitiInvoicePayload) {
-  const invoice = await createAlbyInvoice({
-    amountSats: GRAFFITI_PRICE_SATS,
-    description: "SurfSats Graffiti",
-  });
+async function createInvoice(input: GraffitiInvoicePayload) {
+  const metadata = {
+    kind: GRAFFITI_META_KIND,
+    text: input.text,
+    style: input.style,
+    color: input.color,
+  };
+  try {
+    return await createAlbyInvoice({
+      amountSats: GRAFFITI_PRICE_SATS,
+      description: "SurfSats Graffiti",
+      metadata,
+    });
+  } catch {
+    graffitiLog("warn", "invoice.metadata_rejected", {
+      store: graffitiStoreKind(),
+    });
+    return createAlbyInvoice({
+      amountSats: GRAFFITI_PRICE_SATS,
+      description: "SurfSats Graffiti",
+    });
+  }
+}
 
+export async function createGraffitiInvoice(input: GraffitiInvoicePayload) {
+  const invoice = await createInvoice(input);
   const paymentHash = invoicePaymentHash(invoice);
   await savePending({
     paymentHash,
@@ -65,6 +86,10 @@ export async function createGraffitiInvoice(input: GraffitiInvoicePayload) {
     style: input.style,
     color: input.color,
     createdAt: new Date().toISOString(),
+  });
+  graffitiLog("info", "invoice.created", {
+    hash: hashRef(paymentHash),
+    store: graffitiStoreKind(),
   });
 
   return {
@@ -80,17 +105,34 @@ export async function settleGraffitiPayment(paymentHash: string): Promise<{
   mark: GraffitiMark | null;
 }> {
   const existing = await findPaidByHash(paymentHash);
-  if (existing) return { paid: true, mark: existing };
+  if (existing) {
+    graffitiLog("info", "settle.already_live", {
+      id: existing.id,
+      hash: hashRef(paymentHash),
+      store: graffitiStoreKind(),
+    });
+    return { paid: true, mark: existing };
+  }
 
   const invoice = await getAlbyInvoice(paymentHash);
   if (!isInvoiceSettled(invoice)) {
     return { paid: false, mark: null };
   }
   if (!isGraffitiInvoiceAmount(invoice)) {
+    graffitiLog("warn", "settle.wrong_amount", {
+      hash: hashRef(paymentHash),
+    });
     return { paid: false, mark: null };
   }
 
   const mark = await promotePaidInvoice(invoice);
+  if (!mark) {
+    graffitiLog("error", "settle.paid_without_mark", {
+      hash: hashRef(paymentHash),
+      hasMetadata: Boolean(parseGraffitiPayload(invoice.metadata)),
+      store: graffitiStoreKind(),
+    });
+  }
   return { paid: true, mark };
 }
 
@@ -103,7 +145,13 @@ async function promotePaidInvoice(invoice: AlbyInvoice) {
 
   const pending =
     (await getPending(paymentHash)) ?? parseGraffitiPayload(invoice.metadata);
-  if (!pending) return null;
+  if (!pending) {
+    graffitiLog("warn", "settle.missing_payload", {
+      hash: hashRef(paymentHash),
+      store: graffitiStoreKind(),
+    });
+    return null;
+  }
 
   const paidAt = invoice.settled_at
     ? new Date(invoice.settled_at).getTime()
@@ -116,24 +164,7 @@ async function promotePaidInvoice(invoice: AlbyInvoice) {
   return mark;
 }
 
-let lastHydrate = 0;
-
 export async function liveGraffitiMarks() {
-  if (Date.now() - lastHydrate > 20_000) {
-    lastHydrate = Date.now();
-    try {
-      const incoming = await listIncomingInvoices(50);
-      for (const invoice of incoming) {
-        if (!isInvoiceSettled(invoice) || !isGraffitiInvoiceAmount(invoice)) {
-          continue;
-        }
-        if (!parseGraffitiPayload(invoice.metadata)) continue;
-        await promotePaidInvoice(invoice);
-      }
-    } catch {
-      // store-only fallback if history cannot be read
-    }
-  }
   return getPaidMarks();
 }
 

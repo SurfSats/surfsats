@@ -6,7 +6,9 @@ import {
   webhookEventType,
   webhookInvoicePayload,
 } from "@/lib/alby";
+import { graffitiLog, hashRef } from "@/lib/graffiti-log";
 import { settleGraffitiPayment } from "@/lib/graffiti-payments";
+import { graffitiStoreKind } from "@/lib/graffiti-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,6 +24,9 @@ export async function POST(request: Request) {
   const rawBody = await request.text();
   const verified = verifyAlbyWebhook(rawBody, request.headers);
   if (!verified.ok) {
+    graffitiLog("warn", "webhook.invalid_signature", {
+      store: graffitiStoreKind(),
+    });
     return NextResponse.json({ error: "invalid webhook signature" }, { status: 401 });
   }
 
@@ -44,17 +49,40 @@ export async function POST(request: Request) {
   const invoice = webhookInvoicePayload(body);
   const paymentHash = invoice ? invoicePaymentHash(invoice) : "";
   if (!paymentHash) {
+    graffitiLog("info", "webhook.ignored_no_hash", {
+      eventType: eventType || "unknown",
+    });
     return NextResponse.json({ ok: true, ignored: true });
   }
 
   try {
     const result = await settleGraffitiPayment(paymentHash);
+    if (result.paid && !result.mark) {
+      graffitiLog("error", "webhook.paid_without_mark", {
+        hash: hashRef(paymentHash),
+        store: graffitiStoreKind(),
+      });
+      return NextResponse.json(
+        { ok: false, paid: true, live: false },
+        { status: 500 },
+      );
+    }
+    graffitiLog("info", "webhook.settled", {
+      hash: hashRef(paymentHash),
+      paid: result.paid,
+      live: Boolean(result.mark),
+      store: graffitiStoreKind(),
+    });
     return NextResponse.json({
       ok: true,
       paid: result.paid,
       live: Boolean(result.mark),
     });
   } catch {
-    return NextResponse.json({ ok: true, paid: false });
+    graffitiLog("error", "webhook.settle_failed", {
+      hash: hashRef(paymentHash),
+      store: graffitiStoreKind(),
+    });
+    return NextResponse.json({ ok: false, paid: false }, { status: 500 });
   }
 }

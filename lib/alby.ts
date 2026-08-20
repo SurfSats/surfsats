@@ -90,13 +90,17 @@ export function publicErrorStatus(error: unknown) {
 export async function createAlbyInvoice(input: {
   amountSats: number;
   description: string;
+  metadata?: Record<string, unknown>;
 }) {
+  const payload: Record<string, unknown> = {
+    amount: input.amountSats,
+    description: input.description,
+  };
+  if (input.metadata) payload.metadata = input.metadata;
+
   const body = await albyFetch("/invoices", {
     method: "POST",
-    body: JSON.stringify({
-      amount: input.amountSats,
-      description: input.description,
-    }),
+    body: JSON.stringify(payload),
   });
 
   const invoice = asInvoice(body);

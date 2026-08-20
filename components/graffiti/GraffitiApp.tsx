@@ -74,7 +74,11 @@ export function GraffitiApp() {
       if (raw) {
         const stored = JSON.parse(raw) as GraffitiMark[];
         if (Array.isArray(stored) && stored.length) {
-          setPaid(stored.filter((mark) => Boolean(mark.paymentHash)));
+          setPaid(
+            stored.filter(
+              (mark) => Boolean(mark.paymentHash) && isActiveMark(mark),
+            ),
+          );
         }
       }
     } catch {
@@ -91,9 +95,19 @@ export function GraffitiApp() {
         const response = await fetch("/api/graffiti", { cache: "no-store" });
         const data = (await response.json()) as { marks?: GraffitiMark[] };
         if (cancelled || !Array.isArray(data.marks)) return;
-        setPaid((current) => mergePaid(current, data.marks ?? []));
+        const server = data.marks.filter(
+          (mark) => Boolean(mark.paymentHash) && isActiveMark(mark),
+        );
+        setPaid((current) => {
+          const optimistic = current.filter(
+            (mark) =>
+              mark.paymentHash &&
+              !server.some((item) => item.paymentHash === mark.paymentHash),
+          );
+          return mergePaid(server, optimistic);
+        });
       } catch {
-        // keep cached marks
+        // keep last known public marks
       }
     }
 

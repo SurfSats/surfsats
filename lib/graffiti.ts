@@ -2,7 +2,7 @@ export const GRAFFITI_PRICE_SATS = 21;
 export const GRAFFITI_TTL_HOURS = 21;
 export const GRAFFITI_MAX_CHARS = 100;
 export const GRAFFITI_TTL_MS = GRAFFITI_TTL_HOURS * 60 * 60 * 1000;
-export const GRAFFITI_STORAGE_KEY = "surfsats.graffiti.v4";
+export const GRAFFITI_STORAGE_KEY = "surfsats.graffiti.v5";
 export const GRAFFITI_CENTER = "Bitcoin Is Hope";
 /** Keep tags below the hero title band (~first 26% of the wall). */
 export const GRAFFITI_HERO_BAND = 26;

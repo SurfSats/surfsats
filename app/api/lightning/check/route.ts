@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { isAlbyConfigured, publicErrorMessage, publicErrorStatus } from "@/lib/alby";
+import { graffitiLog, hashRef } from "@/lib/graffiti-log";
 import { settleGraffitiPayment } from "@/lib/graffiti-payments";
+import { graffitiStoreKind } from "@/lib/graffiti-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,11 +20,21 @@ async function checkHash(paymentHash: string) {
 
   try {
     const result = await settleGraffitiPayment(paymentHash);
+    if (result.paid && !result.mark) {
+      graffitiLog("error", "check.paid_without_mark", {
+        hash: hashRef(paymentHash),
+        store: graffitiStoreKind(),
+      });
+    }
     return NextResponse.json({
       paid: result.paid,
       mark: result.mark ?? null,
     });
   } catch (error) {
+    graffitiLog("error", "check.settle_failed", {
+      hash: hashRef(paymentHash),
+      store: graffitiStoreKind(),
+    });
     return NextResponse.json(
       { error: publicErrorMessage(error), paid: false },
       { status: publicErrorStatus(error) },
