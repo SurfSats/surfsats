@@ -154,15 +154,35 @@ export function isGraffitiInvoiceAmount(invoice: AlbyInvoice) {
   return invoiceAmountSats(invoice) === GRAFFITI_PRICE_SATS;
 }
 
+function asBolt11(value: unknown) {
+  if (typeof value !== "string") return null;
+  const cleaned = value.replace(/\s+/g, "").trim();
+  if (cleaned.length < 80) return null;
+  if (!cleaned.toLowerCase().startsWith("ln")) return null;
+  return cleaned;
+}
+
 export function asInvoice(value: unknown): AlbyInvoice | null {
   if (!value || typeof value !== "object") return null;
   const record = value as Record<string, unknown>;
+  const nested =
+    record.invoice && typeof record.invoice === "object"
+      ? (record.invoice as Record<string, unknown>)
+      : null;
+  const paymentRequest =
+    asBolt11(record.payment_request) ||
+    asBolt11(record.bolt11) ||
+    asBolt11(record.pay_req) ||
+    asBolt11(nested?.payment_request) ||
+    asBolt11(nested?.bolt11);
   return {
-    amount: numberOrNull(record.amount),
-    value: numberOrNull(record.value),
-    payment_hash: stringOrNull(record.payment_hash),
-    r_hash_str: stringOrNull(record.r_hash_str),
-    payment_request: stringOrNull(record.payment_request),
+    amount: numberOrNull(record.amount) ?? numberOrNull(nested?.amount),
+    value: numberOrNull(record.value) ?? numberOrNull(nested?.value),
+    payment_hash:
+      stringOrNull(record.payment_hash) ||
+      stringOrNull(nested?.payment_hash),
+    r_hash_str: stringOrNull(record.r_hash_str) || stringOrNull(nested?.r_hash_str),
+    payment_request: paymentRequest,
     expires_at: stringOrNull(record.expires_at),
     settled: typeof record.settled === "boolean" ? record.settled : null,
     settled_at: stringOrNull(record.settled_at),
@@ -180,7 +200,12 @@ function stringOrNull(value: unknown) {
 }
 
 function numberOrNull(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
 }
 
 export function webhookSecretConfigured() {

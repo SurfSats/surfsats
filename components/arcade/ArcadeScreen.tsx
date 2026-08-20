@@ -7,16 +7,12 @@ export type ArcadeScreenMode = "attract" | "invoice" | "ready" | "playing";
 export function ArcadeScreen({
   mode,
   credits,
-  qrSrc,
-  paymentRequest,
   waiting,
   invoiceError,
   expired,
 }: {
   mode: ArcadeScreenMode;
   credits: number;
-  qrSrc: string;
-  paymentRequest: string;
   waiting: boolean;
   invoiceError: string | null;
   expired: boolean;
@@ -28,27 +24,18 @@ export function ArcadeScreen({
       <p className="cab-crt-1up">1UP</p>
 
       {mode === "invoice" ? (
-        <div className="cab-crt-pay">
-          {qrSrc ? (
-            // data: URL from the live BOLT11 — next/image cannot optimize it
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={qrSrc} alt="Lightning invoice QR" className="cab-crt-qr" />
-          ) : (
-            <div className="cab-crt-qr cab-crt-qr-wait">LOADING QR</div>
-          )}
-          <p className="cab-crt-pay-msg">
-            {expired
-              ? "INVOICE EXPIRED"
-              : waiting
-                ? `WAITING ${ARCADE_PRICE_SATS} SATS`
-                : "SCAN TO INSERT"}
+        <div className="cab-crt-attract">
+          <PixelWave />
+          <p className="cab-crt-insert cab-crt-blink">
+            {expired ? "INVOICE EXPIRED" : `PAY ${ARCADE_PRICE_SATS} SATS`}
           </p>
-          {invoiceError ? (
-            <p className="cab-crt-pay-err">{invoiceError}</p>
-          ) : null}
-          {paymentRequest ? (
-            <p className="cab-crt-bolt">{paymentRequest.slice(0, 28)}…</p>
-          ) : null}
+          <p className="cab-crt-sub">
+            {invoiceError
+              ? invoiceError
+              : waiting
+                ? "LOOK AT THE COIN DOOR"
+                : "SCAN THE COIN DOOR"}
+          </p>
         </div>
       ) : null}
 

@@ -87,13 +87,22 @@ export async function createArcadeInvoice(input: ArcadeInvoicePayload) {
     alias: input.alias,
     createdAt: new Date().toISOString(),
   });
+  const paymentRequest = invoice.payment_request as string;
   arcadeLog("info", "invoice.created", {
     hash: hashRef(paymentHash),
+    amountSats: ARCADE_PRICE_SATS,
+    chars: paymentRequest.length,
+    prefix: paymentRequest.slice(0, 6).toLowerCase(),
     store: arcadeStoreKind(),
   });
+  if (paymentRequest.toLowerCase().startsWith("lnbcrt")) {
+    arcadeLog("warn", "invoice.regtest", {
+      hash: hashRef(paymentHash),
+    });
+  }
   return {
     paymentHash,
-    paymentRequest: invoice.payment_request as string,
+    paymentRequest,
     amountSats: ARCADE_PRICE_SATS,
     expiresAt: invoice.expires_at ?? null,
   };

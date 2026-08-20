@@ -2265,12 +2265,22 @@ body {
 .cab-coin {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
   margin: 0.35rem 0.7rem 0.7rem;
-  padding: 0.7rem 0.7rem 0.85rem;
+  padding: 0.75rem 0.75rem 0.9rem;
   background:
     linear-gradient(#2a2a2a, #121212 40%, #0a0a0a);
   border: 3px solid #080808;
   box-shadow: inset 0 0 0 2px #3a3a3a, 0 10px 0 rgba(0, 0, 0, 0.4);
+}
+
+.cab-coin-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .cab-insert {
@@ -2297,11 +2307,9 @@ body {
 }
 
 .cab-coin-btc {
-  position: absolute;
-  top: 0.7rem;
-  right: 0.85rem;
   display: grid;
   place-items: center;
+  flex-shrink: 0;
   width: 2.4rem;
   height: 2.4rem;
   border-radius: 50%;
@@ -2313,8 +2321,7 @@ body {
 }
 
 .cab-led {
-  margin-top: 0.7rem;
-  width: 4.6rem;
+  width: 5.2rem;
   padding: 0.25rem 0.3rem 0.2rem;
   background: #140404;
   border: 2px solid #3a0c0c;
@@ -2334,61 +2341,28 @@ body {
   text-shadow: 0 0 10px #ff2a2a;
 }
 
-.cab-badge {
-  position: absolute;
-  font-size: 0.48rem;
-  line-height: 1.25;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #d7c4a8;
-}
-
-.cab-badge-left {
-  left: 0.55rem;
-  bottom: 2.7rem;
-  padding: 0.2rem 0.28rem;
-  border: 1px solid #8a5a2a;
-  background: #1a100a;
-}
-
-.cab-badge-right {
-  right: 0.55rem;
-  bottom: 2.7rem;
-  padding: 0.2rem 0.28rem;
-  border: 1px dashed #c9a227;
-  color: #e6c86a;
-  background: #1a1408;
-  text-align: right;
-}
-
-.cab-badge-sats {
-  left: 0.55rem;
-  bottom: 1.55rem;
-  color: #f7931a;
-}
-
 .cab-alias {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  margin-top: 0.85rem;
-  max-width: 12rem;
+  gap: 0.28rem;
+  width: 100%;
 }
 
 .cab-alias span {
-  font-size: 0.48rem;
+  font-size: 0.58rem;
   letter-spacing: 0.16em;
-  color: #8b8d99;
+  color: #c9b8a4;
 }
 
 .cab-alias input {
+  width: 100%;
   border: 1px solid #5a4030;
   background: #080808;
   color: #ffb14a;
   font-family: var(--font-arcade-pixel), monospace;
-  font-size: 0.55rem;
+  font-size: 0.7rem;
   letter-spacing: 0.08em;
-  padding: 0.4rem 0.45rem;
+  padding: 0.55rem 0.6rem;
   text-transform: uppercase;
   outline: none;
 }
@@ -2397,41 +2371,140 @@ body {
   border-color: #ff7a18;
 }
 
+.cab-alias input:disabled {
+  opacity: 0.6;
+}
+
+.cab-sticker-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cab-badge {
+  margin: 0;
+  padding: 0.28rem 0.4rem;
+  border: 1px solid #8a5a2a;
+  background: #1a100a;
+  font-size: 0.52rem;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d7c4a8;
+}
+
+.cab-badge-sats {
+  border-color: #f7931a;
+  color: #f7931a;
+}
+
+.cab-badge-warn {
+  border-style: dashed;
+  border-color: #c9a227;
+  color: #e6c86a;
+  background: #1a1408;
+}
+
 .cab-error {
-  margin-top: 0.45rem;
+  margin: 0;
   font-size: 0.62rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #ff6b6b;
 }
 
+.cab-invoice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.7rem 0.6rem 0.75rem;
+  background: #efe6d4;
+  border: 2px solid #1a0e08;
+  box-shadow: 4px 4px 0 #000;
+}
+
+.cab-invoice-qr {
+  width: min(100%, 13.5rem);
+  height: auto;
+  aspect-ratio: 1;
+  background: #efe6d4;
+  image-rendering: auto;
+}
+
+.cab-invoice-qr-wait {
+  display: grid;
+  place-items: center;
+  min-height: 10rem;
+  color: #111;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cab-invoice-kicker {
+  margin: 0;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #1a0e08;
+}
+
+.cab-invoice-bolt {
+  margin: 0;
+  width: 100%;
+  max-height: 4.5rem;
+  overflow: auto;
+  padding: 0.4rem 0.45rem;
+  background: #111;
+  color: #efe6d4;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
 .cab-pay-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin-top: 0.55rem;
+  width: 100%;
   align-items: center;
+  justify-content: center;
 }
 
 .cab-mini {
   background: #ff7a18;
   color: #140a04;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  padding: 0.35rem 0.55rem;
+  padding: 0.45rem 0.65rem;
+}
+
+.cab-mini-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .cab-mini-ghost {
   background: transparent;
   border: 1px solid #5a4030;
-  color: #d7c4a8;
+  color: #1a0e08;
+}
+
+.cab-invoice .cab-mini-ghost {
+  border-color: #5a4030;
 }
 
 .cab-remain {
+  margin: 0;
   font-size: 0.55rem;
   letter-spacing: 0.1em;
-  color: #8b8d99;
+  text-transform: uppercase;
+  color: #5a4030;
 }
 
 .arcade-boards {
@@ -2647,9 +2720,8 @@ body {
     padding: 0.4rem 0.7rem 0.3rem;
   }
 
-  .cab-badge-left,
-  .cab-badge-right {
-    display: none;
+  .cab-invoice-qr {
+    width: min(100%, 12rem);
   }
 }
 

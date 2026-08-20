@@ -123,9 +123,9 @@ export function ArcadeApp() {
     let cancelled = false;
     void import("qrcode").then(async (QRCode) => {
       const src = await QRCode.toDataURL(paymentRequest, {
-        width: 220,
-        margin: 1,
-        color: { dark: "#041018", light: "#d7f4ff" },
+        width: 280,
+        margin: 2,
+        color: { dark: "#111111", light: "#efe6d4" },
         errorCorrectionLevel: "M",
       });
       if (!cancelled) setQrSrc(src);
