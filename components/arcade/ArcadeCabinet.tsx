@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   ARCADE_ALIAS_MAX,
   ARCADE_PRICE_SATS,
@@ -64,200 +65,144 @@ export function ArcadeCabinet({
 
   return (
     <div className="cab-wrap">
-      <div className="cab-pint" aria-hidden="true">
-        <div className="cab-pint-glass">
-          <span className="cab-pint-beer" />
-          <span className="cab-pint-foam" />
-          <span className="cab-pint-shine" />
-          <span className="cab-pint-drip" />
+      <div className="cab-machine">
+        <Image
+          src="/arcade-cabinet-front.jpg"
+          alt="SurfSats arcade cabinet"
+          width={784}
+          height={1168}
+          priority
+          className="cab-art"
+          sizes="(max-width: 900px) 92vw, 32rem"
+        />
+
+        <div className="cab-crt-slot">
+          <ArcadeScreen
+            mode={mode}
+            credits={credits}
+            waiting={waiting}
+            invoiceError={invoiceError}
+            expired={expired}
+            lastScore={lastScore}
+            gameRef={gameRef}
+            onPlay={onPlay}
+            onWipeout={onWipeout}
+            photoCrt
+          />
         </div>
-      </div>
 
-      <div className="cab">
-        <div className="cab-front">
-          <div className="cab-wear" aria-hidden="true" />
+        <button
+          type="button"
+          className="cab-hit cab-hit-stick"
+          onClick={stickAction}
+          aria-label={mode === "playing" ? "Hop" : "Play"}
+        />
+        <button
+          type="button"
+          className="cab-hit cab-hit-start"
+          onClick={stickAction}
+          aria-label={mode === "playing" ? "Hop" : "Start"}
+        />
 
-          <div className="cab-marquee">
-            <p className="cab-marquee-brand">SURFSATS</p>
-            <p className="cab-marquee-sub">ARCADE</p>
+        <div className="cab-smoke" aria-hidden="true">
+          <span className="cab-joint-smoke" />
+          <span className="cab-joint-smoke cab-joint-smoke-b" />
+          <span className="cab-joint-smoke cab-joint-smoke-c" />
+        </div>
+
+        <div className="cab-coin" id="arcade-coin">
+        <div className="cab-coin-top">
+          <button
+            type="button"
+            className="cab-insert"
+            disabled={pending || paying || mode === "playing"}
+            onClick={onInsert}
+          >
+            INSERT
+            <span>{ARCADE_PRICE_SATS} SATS</span>
+          </button>
+          <div className="cab-led">
+            <p>CREDITS</p>
+            <p className="cab-led-num">{formatCredits(credits)}</p>
           </div>
+        </div>
 
-          <div className="cab-bezel">
-            <span className="cab-bezel-grime" aria-hidden="true" />
-            <ArcadeScreen
-              mode={mode}
-              credits={credits}
-              waiting={waiting}
-              invoiceError={invoiceError}
-              expired={expired}
-              lastScore={lastScore}
-              gameRef={gameRef}
-              onPlay={onPlay}
-              onWipeout={onWipeout}
-            />
-          </div>
+        <label className="cab-alias">
+          <span>CALLSIGN</span>
+          <input
+            value={alias}
+            maxLength={ARCADE_ALIAS_MAX}
+            onChange={(event) => onAlias(event.target.value)}
+            placeholder="YOUR ALIAS"
+            autoCapitalize="characters"
+            autoComplete="off"
+            spellCheck={false}
+            disabled={paying}
+          />
+        </label>
 
-          <div className="cab-deck">
-            <div className="cab-controls">
-              <button
-                type="button"
-                className="cab-btn cab-btn-red"
-                onClick={stickAction}
-                aria-label={mode === "playing" ? "Hop" : "Start"}
-              />
-              <button
-                type="button"
-                className="cab-stick"
-                onClick={stickAction}
-                aria-label={mode === "playing" ? "Hop" : "Play"}
-              >
-                <span className="cab-stick-shaft" />
-                <span className="cab-stick-ball" />
-              </button>
-              <button
-                type="button"
-                className="cab-btn cab-btn-gold"
-                tabIndex={-1}
-                aria-hidden="true"
-              />
-              <button
-                type="button"
-                className="cab-btn cab-btn-cyan"
-                tabIndex={-1}
-                aria-hidden="true"
-              />
-            </div>
+        <p className="cab-coin-note">LIGHTNING · NO FIAT · NO KYC</p>
 
-            <div className="cab-ash" aria-hidden="true">
-              <div className="cab-ash-tray">
-                <span className="cab-ash-butt" />
-                <span className="cab-ash-dust" />
+        {error ? <p className="cab-error">{error}</p> : null}
+
+        {paying && liveInvoice ? (
+          <div className="cab-invoice">
+            {qrSrc ? (
+              // data: URL from the live BOLT11 — next/image cannot optimize it
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={qrSrc}
+                alt="Lightning invoice QR"
+                className="cab-invoice-qr"
+              />
+            ) : (
+              <div className="cab-invoice-qr cab-invoice-qr-wait">
+                building qr
               </div>
-              <div className="cab-joint">
-                <span className="cab-joint-paper" />
-                <span className="cab-joint-filter" />
-                <span className="cab-joint-ember" />
-                <span className="cab-joint-smoke" />
-                <span className="cab-joint-smoke cab-joint-smoke-b" />
-                <span className="cab-joint-smoke cab-joint-smoke-c" />
-              </div>
-            </div>
-          </div>
-
-          <div className="cab-belly">
-            <div className="cab-coin" id="arcade-coin">
-              <span className="cab-coin-grime" aria-hidden="true" />
-              <div className="cab-coin-top">
+            )}
+            <p className="cab-invoice-kicker">
+              {expired
+                ? "invoice expired"
+                : waiting
+                  ? `waiting for ${ARCADE_PRICE_SATS} sats`
+                  : "scan or copy the bolt11"}
+            </p>
+            <p className="cab-invoice-bolt">{paymentRequest}</p>
+            {invoiceError ? <p className="cab-error">{invoiceError}</p> : null}
+            {remainLabel ? <p className="cab-remain">{remainLabel}</p> : null}
+            <div className="cab-pay-actions">
+              {expired ? (
                 <button
                   type="button"
-                  className="cab-insert"
-                  disabled={pending || paying || mode === "playing"}
+                  className="cab-mini"
                   onClick={onInsert}
+                  disabled={pending}
                 >
-                  INSERT
-                  <span>{ARCADE_PRICE_SATS} SATS</span>
+                  {pending ? "BUILDING…" : "NEW INVOICE"}
                 </button>
-                <div className="cab-coin-btc" aria-hidden="true">
-                  ₿
-                </div>
-              </div>
-
-              <div className="cab-led">
-                <p>CREDITS</p>
-                <p className="cab-led-num">{formatCredits(credits)}</p>
-              </div>
-
-              <label className="cab-alias">
-                <span>CALLSIGN</span>
-                <input
-                  value={alias}
-                  maxLength={ARCADE_ALIAS_MAX}
-                  onChange={(event) => onAlias(event.target.value)}
-                  placeholder="YOUR ALIAS"
-                  autoCapitalize="characters"
-                  autoComplete="off"
-                  spellCheck={false}
-                  disabled={paying}
-                />
-              </label>
-
-              <div className="cab-sticker-row">
-                <p className="cab-badge">LIGHTNING ENABLED</p>
-                <p className="cab-badge cab-badge-sats">₿ SATS ACCEPTED HERE</p>
-                <p className="cab-badge cab-badge-warn">NO FIAT · NO FICTION</p>
-              </div>
-
-              {error ? <p className="cab-error">{error}</p> : null}
-
-              {paying && liveInvoice ? (
-                <div className="cab-invoice">
-                  {qrSrc ? (
-                    // data: URL from the live BOLT11 — next/image cannot optimize it
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={qrSrc}
-                      alt="Lightning invoice QR"
-                      className="cab-invoice-qr"
-                    />
-                  ) : (
-                    <div className="cab-invoice-qr cab-invoice-qr-wait">
-                      building qr
-                    </div>
-                  )}
-                  <p className="cab-invoice-kicker">
-                    {expired
-                      ? "invoice expired"
-                      : waiting
-                        ? `waiting for ${ARCADE_PRICE_SATS} sats`
-                        : "scan or copy the bolt11"}
-                  </p>
-                  <p className="cab-invoice-bolt">{paymentRequest}</p>
-                  {invoiceError ? (
-                    <p className="cab-error">{invoiceError}</p>
-                  ) : null}
-                  {remainLabel ? <p className="cab-remain">{remainLabel}</p> : null}
-                  <div className="cab-pay-actions">
-                    {expired ? (
-                      <button
-                        type="button"
-                        className="cab-mini"
-                        onClick={onInsert}
-                        disabled={pending}
-                      >
-                        {pending ? "BUILDING…" : "NEW INVOICE"}
-                      </button>
-                    ) : (
-                      <>
-                        <button type="button" className="cab-mini" onClick={onCopy}>
-                          {copied ? "COPIED" : "COPY INVOICE"}
-                        </button>
-                        <a
-                          className="cab-mini cab-mini-link"
-                          href={`lightning:${paymentRequest}`}
-                        >
-                          OPEN WALLET
-                        </a>
-                      </>
-                    )}
-                    <button
-                      type="button"
-                      className="cab-mini cab-mini-ghost"
-                      onClick={onCancel}
-                    >
-                      BACK
-                    </button>
-                  </div>
-                </div>
-              ) : null}
+              ) : (
+                <>
+                  <button type="button" className="cab-mini" onClick={onCopy}>
+                    {copied ? "COPIED" : "COPY INVOICE"}
+                  </button>
+                  <a
+                    className="cab-mini cab-mini-link"
+                    href={`lightning:${paymentRequest}`}
+                  >
+                    OPEN WALLET
+                  </a>
+                </>
+              )}
+              <button
+                type="button"
+                className="cab-mini cab-mini-ghost"
+                onClick={onCancel}
+              >
+                BACK
+              </button>
             </div>
-
-            <p className="cab-decal cab-decal-wipe" aria-hidden="true">
-              WIPE OUT
-            </p>
-            <p className="cab-decal cab-decal-btc" aria-hidden="true">
-              ₿
-            </p>
           </div>
+        ) : null}
         </div>
       </div>
     </div>
