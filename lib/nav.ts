@@ -8,4 +8,5 @@ export const navLinks: NavLink[] = [
   { href: "/jukebox", label: "Jukebox" },
   { href: "/tools", label: "Tools" },
   { href: "/graffiti", label: "Graffiti" },
+  { href: "/arcade", label: "Arcade" },
 ];

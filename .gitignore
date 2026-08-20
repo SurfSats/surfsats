@@ -36,6 +36,7 @@ yarn-error.log*
 
 # local graffiti wall persistence
 /data/graffiti.json
+/data/arcade.json
 
 # vercel
 .vercel

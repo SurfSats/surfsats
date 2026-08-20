@@ -127,11 +127,16 @@ export async function settleGraffitiPayment(paymentHash: string): Promise<{
 
   const mark = await promotePaidInvoice(invoice);
   if (!mark) {
-    graffitiLog("error", "settle.paid_without_mark", {
-      hash: hashRef(paymentHash),
-      hasMetadata: Boolean(parseGraffitiPayload(invoice.metadata)),
-      store: graffitiStoreKind(),
-    });
+    const ours = Boolean(
+      (await getPending(paymentHash)) || parseGraffitiPayload(invoice.metadata),
+    );
+    if (ours) {
+      graffitiLog("error", "settle.paid_without_mark", {
+        hash: hashRef(paymentHash),
+        hasMetadata: Boolean(parseGraffitiPayload(invoice.metadata)),
+        store: graffitiStoreKind(),
+      });
+    }
   }
   return { paid: true, mark };
 }

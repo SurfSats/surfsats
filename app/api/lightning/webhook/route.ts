@@ -6,6 +6,9 @@ import {
   webhookEventType,
   webhookInvoicePayload,
 } from "@/lib/alby";
+import { arcadeLog } from "@/lib/arcade-log";
+import { settleArcadePayment } from "@/lib/arcade-payments";
+import { arcadeStoreKind } from "@/lib/arcade-store";
 import { graffitiLog, hashRef } from "@/lib/graffiti-log";
 import { settleGraffitiPayment } from "@/lib/graffiti-payments";
 import { graffitiStoreKind } from "@/lib/graffiti-store";
@@ -56,27 +59,56 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await settleGraffitiPayment(paymentHash);
-    if (result.paid && !result.mark) {
-      graffitiLog("error", "webhook.paid_without_mark", {
+    const graffiti = await settleGraffitiPayment(paymentHash);
+    if (graffiti.mark) {
+      graffitiLog("info", "webhook.settled", {
         hash: hashRef(paymentHash),
+        paid: true,
+        live: true,
+        kind: "graffiti",
         store: graffitiStoreKind(),
+      });
+      return NextResponse.json({
+        ok: true,
+        paid: true,
+        live: true,
+        kind: "graffiti",
+      });
+    }
+
+    const arcade = await settleArcadePayment(paymentHash);
+    if (arcade.ok) {
+      arcadeLog("info", "webhook.settled", {
+        hash: hashRef(paymentHash),
+        paid: true,
+        live: true,
+        kind: "arcade",
+        store: arcadeStoreKind(),
+      });
+      return NextResponse.json({
+        ok: true,
+        paid: true,
+        live: true,
+        kind: "arcade",
+      });
+    }
+
+    if (graffiti.paid || arcade.paid) {
+      graffitiLog("error", "webhook.paid_without_claim", {
+        hash: hashRef(paymentHash),
+        graffiti: Boolean(graffiti.paid),
+        arcade: Boolean(arcade.paid),
       });
       return NextResponse.json(
         { ok: false, paid: true, live: false },
         { status: 500 },
       );
     }
-    graffitiLog("info", "webhook.settled", {
-      hash: hashRef(paymentHash),
-      paid: result.paid,
-      live: Boolean(result.mark),
-      store: graffitiStoreKind(),
-    });
+
     return NextResponse.json({
       ok: true,
-      paid: result.paid,
-      live: Boolean(result.mark),
+      paid: false,
+      live: false,
     });
   } catch {
     graffitiLog("error", "webhook.settle_failed", {
