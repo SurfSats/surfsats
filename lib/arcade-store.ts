@@ -82,6 +82,8 @@ async function ensureNeonSchema() {
         ON arcade_plays (created_at DESC)`;
       await db`CREATE INDEX IF NOT EXISTS arcade_plays_score
         ON arcade_plays (game, score DESC)`;
+      await db`CREATE INDEX IF NOT EXISTS arcade_grants_created_at
+        ON arcade_grants (created_at DESC)`;
     })().catch((error) => {
       schemaReady = null;
       throw error;
@@ -314,6 +316,7 @@ export async function grantArcadeCredits(input: {
       arcadeLog("info", "grant.saved", {
         hash: hashRef(grant.paymentHash),
         credits: player?.credits ?? grant.credits,
+        shoutout: true,
         store: "neon",
       });
       return {
@@ -349,6 +352,7 @@ export async function grantArcadeCredits(input: {
       arcadeLog("info", "grant.saved", {
         hash: hashRef(grant.paymentHash),
         credits: memory.players[input.playerId].credits,
+        shoutout: true,
         store: "ephemeral",
       });
       return {
@@ -600,23 +604,26 @@ export async function getArcadeRecentPlays() {
     await ensureNeonSchema();
     const db = sql();
     const rows = await db`
-      SELECT alias, game, created_at
-      FROM arcade_plays
+      SELECT alias, created_at
+      FROM arcade_grants
       ORDER BY created_at DESC
       LIMIT 10
     `;
     return rows.map((row) => ({
       alias: String(row.alias ?? ""),
-      game: String(row.game ?? ARCADE_GAME_ID),
+      game: ARCADE_GAME_ID,
       sats: ARCADE_PRICE_SATS,
       createdAt: iso(row.created_at),
     })) satisfies ArcadeRecentPlay[];
   }
   await loadStore();
-  return memory.plays.slice(0, 10).map((play) => ({
-    alias: play.alias,
-    game: play.game,
-    sats: ARCADE_PRICE_SATS,
-    createdAt: play.createdAt,
-  }));
+  return Object.values(memory.grants)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 10)
+    .map((grant) => ({
+      alias: grant.alias,
+      game: ARCADE_GAME_ID,
+      sats: ARCADE_PRICE_SATS,
+      createdAt: grant.createdAt,
+    }));
 }
