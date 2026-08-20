@@ -72,6 +72,7 @@ export function ArcadeCabinet({
           width={1712}
           height={1152}
           priority
+          unoptimized
           className="cab-art"
           sizes="(max-width: 900px) 96vw, 58rem"
         />
