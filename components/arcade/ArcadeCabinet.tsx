@@ -67,13 +67,13 @@ export function ArcadeCabinet({
     <div className="cab-wrap">
       <div className="cab-machine">
         <Image
-          src="/arcade-cabinet-cutout.png"
+          src="/arcade-cabinet-wide.png"
           alt="SurfSats arcade cabinet"
-          width={1152}
-          height={1712}
+          width={1712}
+          height={1152}
           priority
           className="cab-art"
-          sizes="(max-width: 900px) 94vw, 50rem"
+          sizes="(max-width: 900px) 96vw, 58rem"
         />
 
         <div className="cab-crt-slot">
@@ -103,12 +103,6 @@ export function ArcadeCabinet({
           onClick={stickAction}
           aria-label={mode === "playing" ? "Hop" : "Start"}
         />
-
-        <div className="cab-smoke" aria-hidden="true">
-          <span className="cab-joint-smoke" />
-          <span className="cab-joint-smoke cab-joint-smoke-b" />
-          <span className="cab-joint-smoke cab-joint-smoke-c" />
-        </div>
 
         <div className="cab-coin" id="arcade-coin">
         <div className="cab-coin-top">

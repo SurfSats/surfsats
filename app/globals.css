@@ -1914,18 +1914,18 @@ body {
   position: relative;
   isolation: isolate;
   width: 100%;
-  max-width: 50rem;
+  max-width: 58rem;
   justify-self: center;
 }
 
 .cab-machine {
   position: relative;
   width: 100%;
-  /* CRT inner glass on arcade-cabinet-cutout.png (1152x1712) */
-  --crt-top: 28.55%;
-  --crt-left: 30.05%;
-  --crt-w: 39.05%;
-  --crt-h: 19.5%;
+  /* CRT inner glass on arcade-cabinet-wide.png (1712x1152) */
+  --crt-top: 24.6%;
+  --crt-left: 27.0%;
+  --crt-w: 46.1%;
+  --crt-h: 32.2%;
 }
 
 .cab-machine::after {
@@ -1958,7 +1958,7 @@ body {
   height: var(--crt-h);
   z-index: 3;
   overflow: hidden;
-  border-radius: 9% / 12%;
+  border-radius: 5.5% / 8.5%;
 }
 
 .cab-crt-slot .cab-crt {
@@ -2010,34 +2010,17 @@ body {
 }
 
 .cab-hit-stick {
-  left: 33.4%;
-  top: 50.9%;
-  width: 8.4%;
-  height: 8.6%;
+  left: 24.4%;
+  top: 57.2%;
+  width: 6.8%;
+  height: 9.2%;
 }
 
 .cab-hit-start {
-  left: 27.6%;
-  top: 54.3%;
-  width: 4.8%;
-  height: 3.5%;
-}
-
-.cab-smoke {
-  pointer-events: none;
-  position: absolute;
-  left: 66.5%;
-  top: 28.5%;
-  z-index: 5;
-  width: 11%;
-  height: 24%;
-}
-
-.cab-smoke .cab-joint-smoke {
-  right: 18%;
-  bottom: 0;
-  width: 42%;
-  height: 70%;
+  left: 44.5%;
+  top: 61.6%;
+  width: 11.2%;
+  height: 6.4%;
 }
 
 .cab-machine .cab-insert {
@@ -2050,10 +2033,10 @@ body {
 
 .cab-machine .cab-coin {
   position: absolute;
-  top: 60.6%;
-  left: 31%;
+  top: 74.2%;
+  left: 22%;
   z-index: 6;
-  width: 38%;
+  width: 56%;
   margin: 0;
   padding: 0.5rem 0.55rem 0.55rem;
   gap: 0.4rem;
@@ -3302,7 +3285,7 @@ body {
   }
 
   .cab-wrap {
-    width: min(100%, 40rem);
+    width: min(100%, 46rem);
     max-width: none;
   }
 
