@@ -63,15 +63,28 @@ export function ArcadeCabinet({
     Boolean(paymentRequest) && paymentRequest.toLowerCase().startsWith("ln");
 
   return (
-    <div className="cab">
+    <div className="cab-wrap">
+      <div className="cab-pint" aria-hidden="true">
+        <div className="cab-pint-glass">
+          <span className="cab-pint-beer" />
+          <span className="cab-pint-foam" />
+          <span className="cab-pint-shine" />
+          <span className="cab-pint-drip" />
+        </div>
+      </div>
+
+      <div className="cab">
       <aside className="cab-side" aria-hidden="true">
         <p className="cab-side-lightning">LIGHTNING</p>
         <div className="cab-sticker cab-sticker-btc">₿</div>
         <div className="cab-sticker cab-sticker-skull">☠</div>
         <div className="cab-sticker cab-sticker-heart">♥ 21</div>
+        <div className="cab-sticker cab-sticker-peel">NO KYC</div>
+        <div className="cab-sticker cab-sticker-rip" />
       </aside>
 
       <div className="cab-front">
+        <div className="cab-wear" aria-hidden="true" />
         <div className="cab-marquee">
           <svg className="cab-wave-mark" viewBox="0 0 64 16" aria-hidden="true">
             <path
@@ -94,6 +107,7 @@ export function ArcadeCabinet({
         </div>
 
         <div className="cab-bezel">
+          <span className="cab-bezel-grime" aria-hidden="true" />
           <ArcadeScreen
             mode={mode}
             credits={credits}
@@ -140,6 +154,7 @@ export function ArcadeCabinet({
         </div>
 
         <div className="cab-coin" id="arcade-coin">
+          <span className="cab-coin-grime" aria-hidden="true" />
           <div className="cab-coin-top">
             <button
               type="button"
@@ -239,6 +254,22 @@ export function ArcadeCabinet({
               </div>
             </div>
           ) : null}
+        </div>
+      </div>
+      </div>
+
+      <div className="cab-ash" aria-hidden="true">
+        <div className="cab-ash-tray">
+          <span className="cab-ash-butt" />
+          <span className="cab-ash-dust" />
+        </div>
+        <div className="cab-joint">
+          <span className="cab-joint-paper" />
+          <span className="cab-joint-filter" />
+          <span className="cab-joint-ember" />
+          <span className="cab-joint-smoke" />
+          <span className="cab-joint-smoke cab-joint-smoke-b" />
+          <span className="cab-joint-smoke cab-joint-smoke-c" />
         </div>
       </div>
     </div>
