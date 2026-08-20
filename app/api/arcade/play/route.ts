@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isPlayerId } from "@/lib/arcade";
+import { ARCADE_GAME_ID, isPlayerId } from "@/lib/arcade";
 import { arcadeLog } from "@/lib/arcade-log";
 import { arcadeStoreKind, spendArcadeCredit } from "@/lib/arcade-store";
 
@@ -15,12 +15,14 @@ export async function POST(request: Request) {
   }
   const record = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const playerId = String(record.playerId || record.player_id || "").trim();
+  const gameRaw = String(record.game || ARCADE_GAME_ID).trim() || ARCADE_GAME_ID;
+  const game = /^[a-z0-9-]{2,32}$/i.test(gameRaw) ? gameRaw : ARCADE_GAME_ID;
   if (!isPlayerId(playerId)) {
     return NextResponse.json({ error: "missing player" }, { status: 400 });
   }
 
   try {
-    const result = await spendArcadeCredit(playerId);
+    const result = await spendArcadeCredit(playerId, game);
     if (!result.ok) {
       return NextResponse.json({ error: result.reason }, { status: 400 });
     }

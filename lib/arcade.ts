@@ -1,7 +1,7 @@
 export const ARCADE_PRICE_SATS = 21;
 export const ARCADE_CREDITS_PER_PAY = 3;
-export const ARCADE_GAME_ID = "wave-1";
-export const ARCADE_GAME_LABEL = "WAVE-1";
+export const ARCADE_GAME_ID = "wave-runner";
+export const ARCADE_GAME_LABEL = "WAVE RUNNER";
 export const ARCADE_STORAGE_KEY = "surfsats.arcade.v1";
 export const ARCADE_META_KIND = "surfsats-arcade";
 export const ARCADE_ALIAS_MIN = 2;

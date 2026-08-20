@@ -5,10 +5,12 @@ import {
   ARCADE_PRICE_SATS,
   formatCredits,
 } from "@/lib/arcade";
+import type { RefObject } from "react";
 import {
   ArcadeScreen,
   type ArcadeScreenMode,
 } from "@/components/arcade/ArcadeScreen";
+import type { WaveRunnerHandle } from "@/components/arcade/WaveRunner";
 
 export function ArcadeCabinet({
   alias,
@@ -23,9 +25,13 @@ export function ArcadeCabinet({
   remainLabel,
   copied,
   error,
+  lastScore,
+  gameRef,
   onAlias,
   onInsert,
   onPlay,
+  onHop,
+  onWipeout,
   onCopy,
   onCancel,
 }: {
@@ -41,12 +47,17 @@ export function ArcadeCabinet({
   remainLabel: string;
   copied: boolean;
   error: string | null;
+  lastScore: number | null;
+  gameRef: RefObject<WaveRunnerHandle | null>;
   onAlias: (value: string) => void;
   onInsert: () => void;
   onPlay: () => void;
+  onHop: () => void;
+  onWipeout: (score: number) => void;
   onCopy: () => void;
   onCancel: () => void;
 }) {
+  const stickAction = mode === "playing" ? onHop : onPlay;
   const paying = mode === "invoice";
   const liveInvoice =
     Boolean(paymentRequest) && paymentRequest.toLowerCase().startsWith("ln");
@@ -89,6 +100,10 @@ export function ArcadeCabinet({
             waiting={waiting}
             invoiceError={invoiceError}
             expired={expired}
+            lastScore={lastScore}
+            gameRef={gameRef}
+            onPlay={onPlay}
+            onWipeout={onWipeout}
           />
         </div>
 
@@ -96,8 +111,8 @@ export function ArcadeCabinet({
           <button
             type="button"
             className="cab-stick"
-            onClick={onPlay}
-            aria-label="Play"
+            onClick={stickAction}
+            aria-label={mode === "playing" ? "Hop" : "Play"}
           >
             <span className="cab-stick-shaft" />
             <span className="cab-stick-ball" />
@@ -106,8 +121,8 @@ export function ArcadeCabinet({
             <button
               type="button"
               className="cab-btn cab-btn-red"
-              onClick={onPlay}
-              aria-label="Start"
+              onClick={stickAction}
+              aria-label={mode === "playing" ? "Hop" : "Start"}
             />
             <button
               type="button"
@@ -129,7 +144,7 @@ export function ArcadeCabinet({
             <button
               type="button"
               className="cab-insert"
-              disabled={pending || paying}
+              disabled={pending || paying || mode === "playing"}
               onClick={onInsert}
             >
               INSERT

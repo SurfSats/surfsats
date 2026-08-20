@@ -388,7 +388,10 @@ export async function getArcadePlayer(playerId: string) {
   return memory.players[playerId] ?? null;
 }
 
-export async function spendArcadeCredit(playerId: string) {
+export async function spendArcadeCredit(
+  playerId: string,
+  game = ARCADE_GAME_ID,
+) {
   try {
     if (isDatabaseConfigured()) {
       await ensureNeonSchema();
@@ -410,7 +413,7 @@ export async function spendArcadeCredit(playerId: string) {
         id: newPlayId(),
         playerId: player.playerId,
         alias: player.alias,
-        game: ARCADE_GAME_ID,
+        game,
         score: null,
         createdAt: new Date().toISOString(),
       };
@@ -444,7 +447,7 @@ export async function spendArcadeCredit(playerId: string) {
         id: newPlayId(),
         playerId,
         alias: current.alias,
-        game: ARCADE_GAME_ID,
+        game,
         score: null,
         createdAt: new Date().toISOString(),
       };
@@ -483,7 +486,7 @@ export async function submitArcadeScore(input: {
       if (input.playId) {
         await db`
           UPDATE arcade_plays
-          SET score = ${score}
+          SET score = ${score}, game = ${game}
           WHERE id = ${input.playId} AND player_id = ${input.playerId}
         `;
       } else {
@@ -523,7 +526,10 @@ export async function submitArcadeScore(input: {
         const play = memory.plays.find(
           (item) => item.id === input.playId && item.playerId === input.playerId,
         );
-        if (play) play.score = score;
+        if (play) {
+          play.score = score;
+          play.game = game;
+        }
       } else {
         memory.plays.unshift({
           id: newPlayId(),

@@ -1,11 +1,13 @@
 "use client";
 
 import { Press_Start_2P } from "next/font/google";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArcadeBoards } from "@/components/arcade/ArcadeBoards";
 import { ArcadeCabinet } from "@/components/arcade/ArcadeCabinet";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
+import type { WaveRunnerHandle } from "@/components/arcade/WaveRunner";
 import {
+  ARCADE_GAME_ID,
   ARCADE_PRICE_SATS,
   ARCADE_STORAGE_KEY,
   isPlayerId,
@@ -44,6 +46,11 @@ export function ArcadeApp() {
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [expired, setExpired] = useState(false);
   const [ready, setReady] = useState(false);
+  const [playId, setPlayId] = useState<string | null>(null);
+  const [lastScore, setLastScore] = useState<number | null>(null);
+  const gameRef = useRef<WaveRunnerHandle | null>(null);
+  const startLock = useRef(false);
+  const playIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cached: SessionCache | null = null;
@@ -196,7 +203,7 @@ export function ArcadeApp() {
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
 
   const screenMode: ArcadeScreenMode = useMemo(() => {
-    if (mode === "invoice" || mode === "playing") return mode;
+    if (mode === "invoice" || mode === "playing" || mode === "result") return mode;
     return credits > 0 ? "ready" : "attract";
   }, [mode, credits]);
 
@@ -246,8 +253,8 @@ export function ArcadeApp() {
     }
   }
 
-  async function play() {
-    if (mode === "invoice" || mode === "playing") return;
+  const play = useCallback(async () => {
+    if (mode === "invoice" || mode === "playing" || startLock.current) return;
     const next = sanitizeAlias(alias);
     if (!next.ok) {
       setError(next.reason);
@@ -259,30 +266,72 @@ export function ArcadeApp() {
     }
     setError(null);
     setAlias(next.alias);
+    startLock.current = true;
     try {
       const response = await fetch("/api/arcade/play", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId }),
+        body: JSON.stringify({ playerId, game: ARCADE_GAME_ID }),
       });
       const data = (await response.json()) as {
         error?: string;
         credits?: number;
+        playId?: string;
       };
       if (!response.ok) {
         setError(data.error || "cabinet jammed");
         return;
       }
       if (typeof data.credits === "number") setCredits(data.credits);
+      playIdRef.current = data.playId ?? null;
+      setPlayId(data.playId ?? null);
+      setLastScore(null);
       setMode("playing");
       void loadBoards();
-      window.setTimeout(() => {
-        setMode("attract");
-      }, 4200);
     } catch {
       setError("cabinet jammed. try again");
+    } finally {
+      startLock.current = false;
     }
+  }, [alias, credits, loadBoards, mode, playerId]);
+
+  const handleWipeout = useCallback(
+    async (score: number) => {
+      setLastScore(score);
+      setMode("result");
+      try {
+        await fetch("/api/arcade/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            playerId,
+            playId: playIdRef.current ?? playId,
+            score,
+            game: ARCADE_GAME_ID,
+          }),
+        });
+        await loadBoards();
+      } catch {
+        // play is already on LAST 10; score retry is not worth blocking the cabinet
+      }
+    },
+    [loadBoards, playId, playerId],
+  );
+
+  function hop() {
+    gameRef.current?.hop();
   }
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.code !== "Space" && event.code !== "ArrowUp") return;
+      if (mode === "playing" || mode === "invoice") return;
+      event.preventDefault();
+      void play();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mode, play]);
 
   async function copyInvoice() {
     if (!paymentRequest) return;
@@ -323,9 +372,13 @@ export function ArcadeApp() {
           remainLabel={remainLabel}
           copied={copied}
           error={error}
+          lastScore={lastScore}
+          gameRef={gameRef}
           onAlias={setAlias}
           onInsert={() => void requestInvoice()}
           onPlay={() => void play()}
+          onHop={hop}
+          onWipeout={(score) => void handleWipeout(score)}
           onCopy={() => void copyInvoice()}
           onCancel={cancelPay}
         />
