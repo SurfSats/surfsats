@@ -8,7 +8,7 @@ export function Hero({ initial }: { initial: TimechainSnapshot | null }) {
   return (
     <section className="relative overflow-hidden">
       <div className="hero-glow pointer-events-none absolute inset-0" />
-      <Container className="relative grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,36rem)] lg:py-28">
+      <Container className="relative grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,31rem)] lg:py-28">
         <div className="min-w-0">
         <TerminalLabel>bitcoin · surf · no masters</TerminalLabel>
         <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
