@@ -73,7 +73,7 @@ export function ArcadeCabinet({
           height={1712}
           priority
           className="cab-art"
-          sizes="(max-width: 900px) 92vw, 32rem"
+          sizes="(max-width: 900px) 94vw, 50rem"
         />
 
         <div className="cab-crt-slot">

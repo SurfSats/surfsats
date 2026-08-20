@@ -1887,7 +1887,7 @@ body {
 .arcade-page {
   position: relative;
   z-index: 1;
-  padding: 1.85rem 1rem 1.4rem;
+  padding: 0.7rem 0.9rem 1.15rem;
 }
 
 .arcade-haze {
@@ -1903,17 +1903,19 @@ body {
 .arcade-stage {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(280px, 34rem) minmax(260px, 1fr);
-  gap: 1.4rem 2rem;
-  align-items: center;
-  max-width: 72rem;
+  grid-template-columns: minmax(20rem, 1.85fr) minmax(15rem, 0.72fr);
+  gap: 0.75rem 1.15rem;
+  align-items: start;
+  max-width: 92rem;
   margin: 0 auto;
 }
 
 .cab-wrap {
   position: relative;
   isolation: isolate;
-  width: min(100%, 32rem);
+  width: 100%;
+  max-width: 50rem;
+  justify-self: center;
 }
 
 .cab-machine {
@@ -3118,12 +3120,14 @@ body {
 
 .arcade-boards {
   display: grid;
-  gap: 1rem;
+  gap: 0.7rem;
+  margin-top: 4.5%;
+  min-width: 0;
 }
 
 .arcade-board {
   position: relative;
-  padding: 0.85rem 0.9rem 0.75rem;
+  padding: 0.58rem 0.65rem 0.5rem;
   background: rgba(6, 8, 12, 0.72);
   backdrop-filter: blur(6px);
 }
@@ -3148,13 +3152,13 @@ body {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 0.55rem;
-  margin-bottom: 0.45rem;
+  gap: 0.4rem;
+  margin-bottom: 0.32rem;
 }
 
 .arcade-board-head h2 {
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(1.15rem, 3vw, 1.6rem);
+  font-size: clamp(0.92rem, 2vw, 1.2rem);
   font-weight: 800;
   letter-spacing: 0.08em;
   line-height: 1;
@@ -3179,7 +3183,7 @@ body {
   display: grid;
   align-items: baseline;
   font-family: var(--font-arcade-pixel), monospace;
-  font-size: 0.48rem;
+  font-size: 0.42rem;
   letter-spacing: 0.04em;
 }
 
@@ -3192,8 +3196,8 @@ body {
 
 .arcade-board-list {
   display: grid;
-  gap: 0.28rem;
-  margin-top: 0.4rem;
+  gap: 0.2rem;
+  margin-top: 0.28rem;
 }
 
 .arcade-board-list li {
@@ -3206,7 +3210,7 @@ body {
 
 .arcade-recent-list {
   display: grid;
-  gap: 0.32rem;
+  gap: 0.22rem;
 }
 
 .arcade-recent-list li {
@@ -3238,9 +3242,9 @@ body {
 }
 
 .arcade-board-foot {
-  margin-top: 0.7rem;
+  margin-top: 0.45rem;
   font-family: var(--font-display), sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   letter-spacing: 0.12em;
   text-align: center;
   color: #3dfff3;
@@ -3298,7 +3302,8 @@ body {
   }
 
   .cab-wrap {
-    width: min(100%, 28rem);
+    width: min(100%, 40rem);
+    max-width: none;
   }
 
   .cab-machine .cab-coin {
@@ -3310,7 +3315,8 @@ body {
   }
 
   .arcade-boards {
-    width: min(100%, 34rem);
+    width: min(100%, 40rem);
+    margin-top: 0;
   }
 
   .arcade-rail {
