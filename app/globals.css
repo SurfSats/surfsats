@@ -813,13 +813,10 @@ body {
   z-index: 1;
   background:
     radial-gradient(ellipse at 8% 90%, rgba(18, 32, 14, 0.45), transparent 36%),
-    radial-gradient(ellipse at 96% 18%, rgba(0, 0, 0, 0.22), transparent 28%),
     linear-gradient(
       180deg,
-      rgba(12, 10, 8, 0.72) 0%,
-      rgba(12, 10, 8, 0.2) 16%,
-      transparent 26%,
-      transparent 82%,
+      transparent 0%,
+      transparent 88%,
       rgba(0, 0, 0, 0.4) 100%
     );
 }
@@ -832,24 +829,29 @@ body {
 
 .graffiti-hero-scrim {
   position: absolute;
-  inset: 0;
+  inset: 0 auto auto 0;
+  width: min(42rem, 100%);
+  height: 14rem;
   background: linear-gradient(
-    180deg,
-    rgba(12, 10, 8, 0.94) 0%,
-    rgba(12, 10, 8, 0.82) 52%,
-    rgba(12, 10, 8, 0.4) 82%,
+    90deg,
+    rgba(12, 10, 8, 0.5) 0%,
+    rgba(12, 10, 8, 0.18) 58%,
     transparent 100%
   );
 }
 
 .graffiti-hero-copy {
   position: relative;
-  padding: 2rem 1.25rem 5rem;
+  padding: 1rem 1.25rem 4.5rem;
+}
+
+body:has(.graffiti-page) .site-watermark {
+  display: none;
 }
 
 @media (max-width: 639px) {
   .graffiti-hero-copy {
-    padding: 1.75rem 1.1rem 5.25rem;
+    padding: 0.85rem 1.1rem 4.75rem;
   }
 
   .graffiti-hero-title {
@@ -1341,7 +1343,7 @@ body {
 
 @media (min-width: 640px) {
   .graffiti-hero-copy {
-    padding: 2.5rem 2rem 5.25rem;
+    padding: 1.15rem 2rem 5rem;
   }
 
   .graffiti-hero-tagline {
