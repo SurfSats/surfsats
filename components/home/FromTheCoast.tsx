@@ -16,7 +16,7 @@ export function FromTheCoast() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <SectionHeading
             eyebrow="from_the_coast"
-            title="The Signal"
+            title="Dispatches"
             description="One dispatch. Two picks. The rest is noise."
           />
           <div className="flex shrink-0 flex-wrap gap-x-5 gap-y-2 font-mono text-xs uppercase tracking-[0.16em]">

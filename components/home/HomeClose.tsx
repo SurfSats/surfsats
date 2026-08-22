@@ -9,7 +9,8 @@ export function HomeClose() {
           No committee. No brand guidelines.
         </p>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
-          Fork the culture. Feed the wave. Pay the peak or sit outside.
+          Fork the culture. Tag the wall. Smash the cabinet. No permission
+          required.
         </p>
         <Link
           href="/about"
