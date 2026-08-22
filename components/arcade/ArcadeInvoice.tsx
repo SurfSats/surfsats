@@ -1,0 +1,109 @@
+"use client";
+
+import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
+
+export function ArcadeInvoice({
+  qrSrc,
+  paymentRequest,
+  waiting,
+  pending,
+  expired,
+  remainLabel,
+  copied,
+  invoiceError,
+  onCopy,
+  onRetry,
+  onCancel,
+}: {
+  qrSrc: string;
+  paymentRequest: string;
+  waiting: boolean;
+  pending: boolean;
+  expired: boolean;
+  remainLabel: string;
+  copied: boolean;
+  invoiceError: string | null;
+  onCopy: () => void;
+  onRetry: () => void;
+  onCancel: () => void;
+}) {
+  const live =
+    Boolean(paymentRequest) && paymentRequest.toLowerCase().startsWith("ln");
+
+  return (
+    <div className="arcade-pay" role="dialog" aria-modal="true" aria-labelledby="arcade-pay-title">
+      <button type="button" className="arcade-pay-scrim" onClick={onCancel} aria-label="Close invoice" />
+      <div className="arcade-pay-panel">
+        <p className="arcade-pay-kicker">lightning invoice</p>
+        <h2 id="arcade-pay-title" className="arcade-pay-title">
+          INSERT {ARCADE_PRICE_SATS} SATS
+        </h2>
+        <p className="arcade-pay-memo">
+          {ARCADE_CREDITS_PER_PAY} credits · WAVE RUNNER · SurfSats Arcade
+        </p>
+
+        {qrSrc && live && !expired ? (
+          // data: URL from the live BOLT11 — next/image cannot optimize it
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={qrSrc}
+            alt="Lightning invoice QR"
+            className="arcade-pay-qr"
+            width={256}
+            height={256}
+          />
+        ) : (
+          <div className="arcade-pay-qr arcade-pay-qr-wait">
+            {expired ? "invoice expired" : pending || !live ? "building qr" : "loading qr"}
+          </div>
+        )}
+
+        <p className="arcade-pay-status">
+          {expired
+            ? "invoice expired · generate a new one"
+            : waiting
+              ? `waiting for ${ARCADE_PRICE_SATS} sats`
+              : pending
+                ? "building invoice…"
+                : "scan the qr or copy the invoice"}
+        </p>
+        {remainLabel && !expired ? (
+          <p className="arcade-pay-remain">{remainLabel}</p>
+        ) : null}
+
+        {live ? (
+          <p className="arcade-pay-bolt">{paymentRequest}</p>
+        ) : null}
+
+        {invoiceError ? <p className="arcade-pay-error">{invoiceError}</p> : null}
+
+        <div className="arcade-pay-actions">
+          {expired || (!live && !pending) ? (
+            <button type="button" className="arcade-pay-btn" onClick={onRetry} disabled={pending}>
+              {pending ? "BUILDING…" : "NEW INVOICE"}
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="arcade-pay-btn"
+                onClick={onCopy}
+                disabled={!live}
+              >
+                {copied ? "COPIED" : "COPY INVOICE"}
+              </button>
+              {live ? (
+                <a className="arcade-pay-btn arcade-pay-link" href={`lightning:${paymentRequest}`}>
+                  OPEN WALLET
+                </a>
+              ) : null}
+            </>
+          )}
+          <button type="button" className="arcade-pay-btn arcade-pay-ghost" onClick={onCancel}>
+            BACK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

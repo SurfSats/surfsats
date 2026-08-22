@@ -105,8 +105,8 @@ export function ArcadeScreen({
             {invoiceError
               ? invoiceError
               : waiting
-                ? "LOOK AT THE COIN DOOR"
-                : "SCAN THE COIN DOOR"}
+                ? "SCAN THE INVOICE"
+                : "GET INVOICE"}
           </p>
         </div>
       ) : null}

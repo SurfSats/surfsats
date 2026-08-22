@@ -4,6 +4,7 @@ import { Press_Start_2P } from "next/font/google";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArcadeBoards } from "@/components/arcade/ArcadeBoards";
 import { ArcadeCabinet } from "@/components/arcade/ArcadeCabinet";
+import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import type { WaveRunnerHandle } from "@/components/arcade/WaveRunner";
 import {
@@ -219,6 +220,12 @@ export function ArcadeApp() {
     setAlias(next.alias);
     setError(null);
     setPending(true);
+    setPaymentHash("");
+    setPaymentRequest("");
+    setQrSrc("");
+    setExpired(false);
+    setInvoiceError(null);
+    setMode("invoice");
     try {
       const response = await fetch("/api/arcade/invoice", {
         method: "POST",
@@ -238,6 +245,7 @@ export function ArcadeApp() {
         !data.payment_request.toLowerCase().startsWith("ln")
       ) {
         setError(data.error || "could not create invoice. try again");
+        setMode(credits > 0 ? "ready" : "attract");
         return;
       }
       setPaymentRequest(data.payment_request);
@@ -251,6 +259,7 @@ export function ArcadeApp() {
       setMode("invoice");
     } catch {
       setError("could not create invoice. try again");
+      setMode(credits > 0 ? "ready" : "attract");
     } finally {
       setPending(false);
     }
@@ -396,7 +405,23 @@ export function ArcadeApp() {
     setWaiting(false);
     setExpired(false);
     setInvoiceError(null);
+    setPending(false);
   }
+
+  const showInvoice = screenMode === "invoice" || pending;
+
+  useEffect(() => {
+    if (!showInvoice) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") cancelPay();
+    }
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [showInvoice]);
 
   return (
     <div className={`${pixel.variable} arcade-page`}>
@@ -408,13 +433,6 @@ export function ArcadeApp() {
           credits={credits}
           mode={screenMode}
           pending={pending}
-          qrSrc={qrSrc}
-          paymentRequest={paymentRequest}
-          waiting={waiting}
-          invoiceError={invoiceError}
-          expired={expired}
-          remainLabel={remainLabel}
-          copied={copied}
           error={error}
           lastScore={lastScore}
           scoreRank={scoreRank}
@@ -425,9 +443,7 @@ export function ArcadeApp() {
           onPlay={() => void play()}
           onHop={hop}
           onWipeout={(score) => void handleWipeout(score)}
-          onCopy={() => void copyInvoice()}
           onCopyScore={() => void copyScore()}
-          onCancel={cancelPay}
         />
         <ArcadeBoards
           highScores={highScores}
@@ -442,6 +458,21 @@ export function ArcadeApp() {
         </p>
         <p>HIGH SCORES ARE GLOBAL WHEN THE CABINET IS LIVE</p>
       </div>
+      {showInvoice ? (
+        <ArcadeInvoice
+          qrSrc={qrSrc}
+          paymentRequest={paymentRequest}
+          waiting={waiting}
+          pending={pending}
+          expired={expired}
+          remainLabel={remainLabel}
+          copied={copied}
+          invoiceError={invoiceError}
+          onCopy={() => void copyInvoice()}
+          onRetry={() => void requestInvoice()}
+          onCancel={cancelPay}
+        />
+      ) : null}
     </div>
   );
 }
