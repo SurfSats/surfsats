@@ -14,7 +14,9 @@ import { GraffitiForm } from "@/components/graffiti/GraffitiForm";
 import { GraffitiWall } from "@/components/graffiti/GraffitiWall";
 import {
   GRAFFITI_HERO_BAND,
+  GRAFFITI_PRICE_SATS,
   GRAFFITI_STORAGE_KEY,
+  GRAFFITI_TTL_HOURS,
   clampPlacement,
   organicPlacement,
   placeMark,
@@ -205,6 +207,19 @@ export function GraffitiApp() {
     <div
       className={`${marker.variable} ${throwup.variable} ${wild.variable} ${drip.variable} ${block.variable} ${fat.variable} ${stencil.variable} graffiti-page`}
     >
+      <header className="graffiti-hero">
+        <div className="graffiti-hero-copy">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-stone-300/90">
+            city wall · no accounts
+          </p>
+          <h1 className="graffiti-hero-title">Graffiti Wall</h1>
+          <p className="graffiti-hero-tagline">
+            {GRAFFITI_PRICE_SATS} sats. {GRAFFITI_TTL_HOURS} hours. Then it
+            fades. Bitcoin Is Hope does not.
+          </p>
+        </div>
+      </header>
+
       <div className="graffiti-stage">
         <GraffitiWall
           marks={live}
