@@ -34,7 +34,8 @@ export function StoryComposer({
 
   const lineCheck = sanitizeStoryLine(text);
   const aliasCheck = sanitizeStoryAlias(alias);
-  const canPay = lineCheck.ok && aliasCheck.ok;
+  const canPay = lineCheck.ok && aliasCheck.ok && !pending;
+  const used = text.length;
 
   useEffect(() => {
     if (!paymentRequest) {
@@ -44,7 +45,7 @@ export function StoryComposer({
     let cancelled = false;
     void import("qrcode").then(async (QRCode) => {
       const src = await QRCode.toDataURL(paymentRequest, {
-        width: 280,
+        width: 320,
         margin: 2,
         color: { dark: "#1a1208", light: "#f3e6c4" },
         errorCorrectionLevel: "M",
@@ -59,7 +60,16 @@ export function StoryComposer({
   useEffect(() => {
     if (step !== "invoice") return;
     const id = window.setInterval(() => setNowTick(Date.now()), 1000);
-    return () => window.clearInterval(id);
+    document.body.style.overflow = "hidden";
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") cancelPay();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.clearInterval(id);
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
   }, [step]);
 
   useEffect(() => {
@@ -226,7 +236,12 @@ export function StoryComposer({
       {step === "compose" || step === "done" ? (
         <>
           <label className="story-field">
-            <span>the next sentence</span>
+            <span className="story-field-row">
+              <span>the next sentence</span>
+              <em>
+                {used}/{STORY_MAX_CHARS}
+              </em>
+            </span>
             <textarea
               value={text}
               maxLength={STORY_MAX_CHARS}
@@ -234,9 +249,6 @@ export function StoryComposer({
               onChange={(event) => setText(event.target.value)}
               placeholder="Write what happens next…"
             />
-            <em>
-              {text.trim().length}/{STORY_MAX_CHARS}
-            </em>
           </label>
           <label className="story-field">
             <span>callsign · optional</span>
@@ -251,23 +263,21 @@ export function StoryComposer({
           </label>
           {error ? <p className="story-error">{error}</p> : null}
           {step === "done" ? (
-            <p className="story-done">The line is in the book. Write another?</p>
+            <p className="story-done">Your line is in the book.</p>
           ) : null}
           <button
             type="button"
             className="story-pay-btn"
-            disabled={pending || !canPay}
+            disabled={!canPay}
             onClick={() => void requestInvoice()}
           >
-            {pending
-              ? "Preparing the seal…"
-              : `Pay ${STORY_PRICE_SATS} sats`}
+            {pending ? "Preparing the seal…" : `Inscribe · ${STORY_PRICE_SATS} sats`}
           </button>
         </>
       ) : null}
 
       {step === "invoice" ? (
-        <div className="story-pay" role="dialog" aria-modal="true">
+        <div className="story-pay" role="dialog" aria-modal="true" aria-labelledby="story-pay-title">
           <button
             type="button"
             className="story-pay-scrim"
@@ -276,8 +286,10 @@ export function StoryComposer({
           />
           <div className="story-pay-panel">
             <p className="story-pay-kicker">lightning seal</p>
-            <h3 className="story-pay-title">Pay {STORY_PRICE_SATS} sats</h3>
-            <p className="story-pay-memo">One line bound into the chain</p>
+            <h3 id="story-pay-title" className="story-pay-title">
+              Inscribe · {STORY_PRICE_SATS} sats
+            </h3>
+            <p className="story-pay-memo">One sentence bound into the chain</p>
             {qrSrc && live && !expired ? (
               // data: URL from the live BOLT11
               // eslint-disable-next-line @next/next/no-img-element
@@ -285,8 +297,8 @@ export function StoryComposer({
                 src={qrSrc}
                 alt="Lightning invoice QR"
                 className="story-pay-qr"
-                width={256}
-                height={256}
+                width={320}
+                height={320}
               />
             ) : (
               <div className="story-pay-qr story-pay-qr-wait">
@@ -295,12 +307,12 @@ export function StoryComposer({
             )}
             <p className="story-pay-status">
               {expired
-                ? "invoice expired"
+                ? "invoice expired · generate a new one"
                 : waiting
                   ? `waiting for ${STORY_PRICE_SATS} sats`
                   : pending
                     ? "preparing invoice…"
-                    : "scan or copy the invoice"}
+                    : "scan the qr or copy the invoice"}
             </p>
             {remainLabel && !expired ? (
               <p className="story-pay-remain">{remainLabel}</p>

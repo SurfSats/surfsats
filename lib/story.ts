@@ -63,7 +63,11 @@ export function sanitizeStoryAlias(raw: string) {
   return { ok: true as const, alias };
 }
 
-export function storyFaceIndex(id: string, faces = 6) {
+export function isSeedStoryLine(line: Pick<StoryLine, "id" | "paymentHash">) {
+  return line.id.startsWith("seed-") && !line.paymentHash;
+}
+
+export function storyFaceIndex(id: string, faces = 3) {
   let sum = 0;
   for (let i = 0; i < id.length; i += 1) {
     sum = (sum + id.charCodeAt(i) * (i + 3)) % 997;

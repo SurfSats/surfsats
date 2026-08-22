@@ -4,18 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Cinzel_Decorative,
   Cormorant_Garamond,
-  Great_Vibes,
   IM_Fell_English,
-  MedievalSharp,
-  UnifrakturCook,
   UnifrakturMaguntia,
 } from "next/font/google";
 import { StoryBook } from "@/components/story/StoryBook";
 import { StoryComposer } from "@/components/story/StoryComposer";
-import {
-  STORY_STORAGE_KEY,
-  type StoryLine,
-} from "@/lib/story";
+import { STORY_STORAGE_KEY, type StoryLine } from "@/lib/story";
 
 const titleFace = Cinzel_Decorative({
   weight: ["400", "700"],
@@ -23,41 +17,23 @@ const titleFace = Cinzel_Decorative({
   variable: "--font-story-title",
 });
 
-const faceGothic = UnifrakturMaguntia({
+const faceBlackletter = UnifrakturMaguntia({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-story-0",
 });
 
-const faceSharp = MedievalSharp({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-story-1",
-});
-
 const faceFell = IM_Fell_English({
   weight: "400",
   subsets: ["latin"],
-  variable: "--font-story-2",
-});
-
-const faceCook = UnifrakturCook({
-  weight: "700",
-  subsets: ["latin"],
-  variable: "--font-story-3",
-});
-
-const faceScript = Great_Vibes({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-story-4",
+  variable: "--font-story-1",
 });
 
 const faceGaramond = Cormorant_Garamond({
   weight: ["500", "600"],
   subsets: ["latin"],
   style: ["italic", "normal"],
-  variable: "--font-story-5",
+  variable: "--font-story-2",
 });
 
 export function StoryApp() {
@@ -105,19 +81,13 @@ export function StoryApp() {
     });
     setFreshId(line.id);
     window.setTimeout(() => {
-      document.getElementById(`story-line-${line.id}`)?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }, 80);
-    window.setTimeout(() => {
       setFreshId((current) => (current === line.id ? null : current));
-    }, 4800);
+    }, 5200);
   }, []);
 
   return (
     <div
-      className={`${titleFace.variable} ${faceGothic.variable} ${faceSharp.variable} ${faceFell.variable} ${faceCook.variable} ${faceScript.variable} ${faceGaramond.variable} story-page`}
+      className={`${titleFace.variable} ${faceBlackletter.variable} ${faceFell.variable} ${faceGaramond.variable} story-page`}
     >
       <div className="story-veil" aria-hidden="true" />
       <div className="story-column">
