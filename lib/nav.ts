@@ -6,6 +6,7 @@ export const navLinks: NavLink[] = [
   { href: "/wavepool", label: "Wave" },
   { href: "/lineup", label: "Lineup" },
   { href: "/jukebox", label: "Jukebox" },
+  { href: "/music", label: "Music" },
   { href: "/tools", label: "Tools" },
   { href: "/graffiti", label: "Graffiti" },
   { href: "/arcade", label: "Arcade" },
