@@ -6,7 +6,7 @@ import { TerminalLabel } from "@/components/ui/TerminalLabel";
 export const metadata: Metadata = {
   title: "Surf Radio",
   description:
-    "Explore permissionless music. Stream, zap, and discover. Jukebox, Wavlake, live Nostr sets, ZapTrax.",
+    "Explore permissionless music. Stream, zap, and discover. Jukebox, Wavlake, live Nostr sets, ZapTrax, Fountain.",
 };
 
 export default function MusicPage() {

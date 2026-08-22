@@ -1,6 +1,9 @@
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { JUKEBOX_PRICE_SATS } from "@/lib/jukebox";
 import {
+  FOUNTAIN_URL,
+  PODCAST_INDEX_URL,
+  PODVERSE_URL,
   TUNESTR_URL,
   WAVLAKE_EMBED_SRC,
   WAVLAKE_URL,
@@ -88,6 +91,70 @@ export function RadioDeck() {
             open zaptrax
           </ButtonLink>
         </div>
+      </article>
+
+      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cyan">
+          05 · v4v_shows
+        </p>
+        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
+          Fountain
+        </h2>
+        <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">
+          Value-for-value podcasts and live shows. Support creators with sats.
+        </p>
+        <div className="mt-6">
+          <ButtonLink href={FOUNTAIN_URL} external>
+            open fountain
+          </ButtonLink>
+        </div>
+      </article>
+
+      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-magenta">
+          06 · longform
+        </p>
+        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
+          Podcasts / Longform
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Permissionless audio for Bitcoiners — listen, zap, no middleman.
+        </p>
+        <ul className="mt-5 space-y-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+          <li className="flex flex-wrap items-baseline justify-between gap-2 border-b border-cyan/15 pb-2">
+            <span className="text-foreground">Fountain</span>
+            <a
+              href={FOUNTAIN_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sats glitch-hover hover:text-cyan"
+            >
+              listen / boost -&gt;
+            </a>
+          </li>
+          <li className="flex flex-wrap items-baseline justify-between gap-2 border-b border-cyan/15 pb-2">
+            <span className="text-foreground">Podverse</span>
+            <a
+              href={PODVERSE_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sats glitch-hover hover:text-cyan"
+            >
+              open player -&gt;
+            </a>
+          </li>
+          <li className="flex flex-wrap items-baseline justify-between gap-2">
+            <span className="text-foreground">Podcast Index</span>
+            <a
+              href={PODCAST_INDEX_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sats glitch-hover hover:text-cyan"
+            >
+              browse the index -&gt;
+            </a>
+          </li>
+        </ul>
       </article>
     </div>
   );
