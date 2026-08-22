@@ -3778,6 +3778,409 @@ body:has(.graffiti-page) .site-watermark {
   }
 }
 
+.story-page {
+  position: relative;
+  min-height: calc(100dvh - 8.25rem);
+  padding: 1.25rem 1rem 3rem;
+  color: #2c1c10;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(90, 50, 18, 0.28), transparent 46%),
+    radial-gradient(ellipse at 8% 88%, rgba(0, 0, 0, 0.55), transparent 40%),
+    #120c08;
+}
+
+.story-veil {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 3px,
+      rgba(0, 0, 0, 0.08) 3px 4px
+    );
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+}
+
+body:has(.story-page) .site-watermark {
+  display: none;
+}
+
+.story-column {
+  position: relative;
+  z-index: 1;
+  width: min(42rem, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.story-book {
+  position: relative;
+  padding: 1.75rem 1.35rem 2.1rem;
+  background-color: #e4cf9a;
+  background-image:
+    radial-gradient(ellipse at 12% 8%, rgba(90, 50, 20, 0.16), transparent 36%),
+    radial-gradient(ellipse at 88% 92%, rgba(70, 40, 10, 0.18), transparent 32%),
+    radial-gradient(ellipse at 70% 22%, rgba(40, 70, 20, 0.07), transparent 28%),
+    linear-gradient(180deg, #efe0b4 0%, #e4cf9a 48%, #d9bf86 100%);
+  border: 1px solid #8a6a32;
+  box-shadow:
+    0 0 0 6px #1a120c,
+    0 0 0 7px #c4a056,
+    0 0 0 12px #2a1c10,
+    18px 22px 0 rgba(0, 0, 0, 0.45);
+}
+
+.story-book-frame {
+  pointer-events: none;
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(90, 60, 20, 0.35);
+  box-shadow: inset 0 0 40px rgba(90, 50, 10, 0.12);
+}
+
+.story-head {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0.4rem 0.5rem 1.1rem;
+}
+
+.story-kicker {
+  margin: 0;
+  font-family: var(--font-story-2), serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6a4a22;
+}
+
+.story-title {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-story-title), serif;
+  font-size: clamp(2.4rem, 8vw, 3.8rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: #2a1608;
+  text-shadow: 0 1px 0 #f7ead0;
+}
+
+.story-blurb {
+  margin: 0.7rem auto 0;
+  max-width: 22rem;
+  font-family: var(--font-story-5), serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  color: #4a3218;
+}
+
+.story-rule {
+  width: min(14rem, 70%);
+  height: 1px;
+  margin: 1.1rem auto 0;
+  background: linear-gradient(90deg, transparent, #8a6a32, transparent);
+}
+
+.story-lines {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1.15rem;
+  margin: 0;
+  padding: 0.2rem 0.4rem 0.4rem;
+  list-style: none;
+}
+
+.story-line {
+  margin: 0;
+}
+
+.story-line-text {
+  margin: 0;
+  line-height: 1.45;
+  color: #24160c;
+}
+
+.story-line-meta {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-story-5), serif;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: #6a4a28;
+}
+
+.story-face-0 .story-line-text {
+  font-family: var(--font-story-0), serif;
+  font-size: 1.35rem;
+}
+
+.story-face-1 .story-line-text {
+  font-family: var(--font-story-1), serif;
+  font-size: 1.28rem;
+}
+
+.story-face-2 .story-line-text {
+  font-family: var(--font-story-2), serif;
+  font-size: 1.22rem;
+}
+
+.story-face-3 .story-line-text {
+  font-family: var(--font-story-3), serif;
+  font-size: 1.32rem;
+}
+
+.story-face-4 .story-line-text {
+  font-family: var(--font-story-4), cursive;
+  font-size: 1.7rem;
+}
+
+.story-face-5 .story-line-text {
+  font-family: var(--font-story-5), serif;
+  font-size: 1.28rem;
+  font-style: italic;
+}
+
+.story-line-fresh .story-line-text {
+  animation: story-ink 0.8s ease-out both;
+}
+
+@keyframes story-ink {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+.story-compose {
+  position: relative;
+  padding: 1.2rem 1.15rem 1.3rem;
+  background:
+    linear-gradient(180deg, #efe0b4, #dcc48a);
+  border: 1px solid #8a6a32;
+  box-shadow: 8px 10px 0 rgba(0, 0, 0, 0.4);
+}
+
+.story-compose-kicker {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6a4a22;
+}
+
+.story-compose-title {
+  margin: 0.35rem 0 0.85rem;
+  font-family: var(--font-story-title), serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.story-field {
+  display: grid;
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+}
+
+.story-field span,
+.story-field em {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6a4a22;
+}
+
+.story-field em {
+  justify-self: end;
+}
+
+.story-field textarea,
+.story-field input {
+  width: 100%;
+  border: 1px solid #8a6a32;
+  background: rgba(247, 234, 208, 0.8);
+  color: #24160c;
+  font-family: var(--font-story-5), Georgia, serif;
+  font-size: 1.05rem;
+}
+
+.story-field textarea {
+  resize: none;
+  min-height: 5.2rem;
+  padding: 0.65rem 0.7rem;
+}
+
+.story-field input {
+  padding: 0.55rem 0.7rem;
+}
+
+.story-pay-btn {
+  display: inline-flex;
+  min-height: 2.7rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.8rem;
+  background: #3a220c;
+  color: #f3e6c4;
+  font-family: var(--font-story-title), serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.story-pay-btn:disabled {
+  opacity: 0.4;
+}
+
+.story-pay-link {
+  text-decoration: none;
+}
+
+.story-error {
+  margin: 0 0 0.7rem;
+  font-size: 0.78rem;
+  color: #8a1c12;
+}
+
+.story-done {
+  margin: 0 0 0.7rem;
+  font-family: var(--font-story-5), serif;
+  font-style: italic;
+  color: #3a5a22;
+}
+
+.story-again {
+  margin-top: 0.55rem;
+  width: 100%;
+  color: #6a4a22;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.story-pay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+  overflow: auto;
+}
+
+.story-pay-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(10, 6, 2, 0.78);
+}
+
+.story-pay-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: min(26rem, 100%);
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin: auto;
+  padding: 1.2rem 1.1rem 1.25rem;
+  background: #efe0b4;
+  border: 2px solid #8a6a32;
+  box-shadow: 0 0 0 8px #1a120c;
+  color: #2c1c10;
+}
+
+.story-pay-kicker {
+  margin: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #6a4a22;
+}
+
+.story-pay-title {
+  margin: 0;
+  font-family: var(--font-story-title), serif;
+  font-size: 1.45rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.story-pay-memo,
+.story-pay-status,
+.story-pay-remain {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-story-5), serif;
+  font-style: italic;
+}
+
+.story-pay-qr {
+  flex-shrink: 0;
+  width: min(16rem, calc(100vw - 3.5rem));
+  height: min(16rem, calc(100vw - 3.5rem));
+  object-fit: contain;
+  background: #f3e6c4;
+}
+
+.story-pay-qr-wait {
+  display: grid;
+  place-items: center;
+  border: 1px dashed #8a6a32;
+  font-size: 0.85rem;
+}
+
+.story-pay-bolt {
+  margin: 0;
+  width: 100%;
+  max-height: 4.2rem;
+  overflow: auto;
+  padding: 0.45rem 0.5rem;
+  background: #1a120c;
+  color: #efe0b4;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.story-pay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.story-pay-actions .story-pay-btn {
+  flex: 1 1 8rem;
+}
+
+.story-pay-ghost {
+  background: transparent;
+  border: 1px solid #8a6a32;
+  color: #3a220c;
+}
+
+@media (min-width: 640px) {
+  .story-page {
+    padding: 1.75rem 1.5rem 3.5rem;
+  }
+
+  .story-book {
+    padding: 2.2rem 2rem 2.6rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flicker,
   .panel-hover,
@@ -3798,7 +4201,8 @@ body:has(.graffiti-page) .site-watermark {
   .swell-art img,
   .cab-crt-blink,
   .cab-wave-ride,
-  .cab-joint-smoke {
+  .cab-joint-smoke,
+  .story-line-fresh .story-line-text {
     animation: none;
     transform: none;
   }

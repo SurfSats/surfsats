@@ -12,6 +12,9 @@ import { arcadeStoreKind } from "@/lib/arcade-store";
 import { graffitiLog, hashRef } from "@/lib/graffiti-log";
 import { settleGraffitiPayment } from "@/lib/graffiti-payments";
 import { graffitiStoreKind } from "@/lib/graffiti-store";
+import { storyLog } from "@/lib/story-log";
+import { settleStoryPayment } from "@/lib/story-payments";
+import { storyStoreKind } from "@/lib/story-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -93,11 +96,29 @@ export async function POST(request: Request) {
       });
     }
 
-    if (graffiti.paid || arcade.paid) {
+    const story = await settleStoryPayment(paymentHash);
+    if (story.line) {
+      storyLog("info", "webhook.settled", {
+        hash: hashRef(paymentHash),
+        paid: true,
+        live: true,
+        kind: "story",
+        store: storyStoreKind(),
+      });
+      return NextResponse.json({
+        ok: true,
+        paid: true,
+        live: true,
+        kind: "story",
+      });
+    }
+
+    if (graffiti.paid || arcade.paid || story.paid) {
       graffitiLog("error", "webhook.paid_without_claim", {
         hash: hashRef(paymentHash),
         graffiti: Boolean(graffiti.paid),
         arcade: Boolean(arcade.paid),
+        story: Boolean(story.paid),
       });
       return NextResponse.json(
         { ok: false, paid: true, live: false },
