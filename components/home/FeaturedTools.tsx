@@ -34,8 +34,17 @@ const tools = [
     accent: "sats",
   },
   {
-    href: "/graffiti",
+    href: "/music",
     code: "04",
+    name: "Surf Radio",
+    hook: "Explore permissionless music.",
+    body: "Stream, zap, and discover.",
+    cta: "open_surf_radio",
+    accent: "cyan",
+  },
+  {
+    href: "/graffiti",
+    code: "05",
     name: "Graffiti Wall",
     hook: "21 sats. 21 hours.",
     body: "Pay Lightning. Leave a mark. Bitcoin Is Hope stays forever.",
@@ -51,9 +60,9 @@ export function FeaturedTools() {
         <SectionHeading
           eyebrow="live_tools"
           title="The machines"
-          description="Not a blog with a tip jar. Four things you can actually use."
+          description="Not a blog with a tip jar. Things you can actually use."
         />
-        <div className="mt-10 grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {tools.map((tool) => (
             <Link
               key={tool.href}
@@ -77,7 +86,7 @@ export function FeaturedTools() {
                 </span>
                 <span className="text-muted">tool</span>
               </div>
-              <h3 className="mt-4 font-display text-2xl font-bold uppercase tracking-tight">
+              <h3 className="mt-4 break-words font-display text-2xl font-bold uppercase tracking-tight">
                 {tool.name}
               </h3>
               <p

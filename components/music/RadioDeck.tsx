@@ -1,4 +1,5 @@
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { cn } from "@/lib/cn";
 import { JUKEBOX_PRICE_SATS } from "@/lib/jukebox";
 import {
   FOUNTAIN_URL,
@@ -16,227 +17,291 @@ import {
   ZAPTRAX_URL,
 } from "@/lib/music";
 
+const actionClass =
+  "w-full min-w-0 whitespace-normal text-center leading-snug sm:w-auto";
+
+const accentText = {
+  sats: "text-sats",
+  cyan: "text-cyan",
+  magenta: "text-magenta",
+} as const;
+
+function DeckLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="pt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted lg:col-span-2">
+      {children}
+    </p>
+  );
+}
+
+function RadioCard({
+  code,
+  kicker,
+  title,
+  accent,
+  wide = false,
+  split = false,
+  children,
+  actions,
+}: {
+  code: string;
+  kicker: string;
+  title: string;
+  accent: keyof typeof accentText;
+  wide?: boolean;
+  split?: boolean;
+  children: React.ReactNode;
+  actions: React.ReactNode;
+}) {
+  return (
+    <article
+      className={cn(
+        "panel panel-hover flex min-w-0 flex-col p-5 sm:p-6",
+        wide && "lg:col-span-2",
+        split && "lg:flex-row lg:items-center lg:justify-between lg:gap-8",
+      )}
+    >
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            "font-mono text-[11px] uppercase tracking-[0.18em]",
+            accentText[accent],
+          )}
+        >
+          {code} · {kicker}
+        </p>
+        <h2 className="mt-3 break-words font-display text-2xl font-bold uppercase tracking-tight">
+          {title}
+        </h2>
+        <div className="mt-3 min-w-0 text-sm leading-relaxed text-muted">
+          {children}
+        </div>
+      </div>
+      <div
+        className={cn(
+          "mt-6 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap",
+          split && "lg:mt-0 lg:shrink-0",
+        )}
+      >
+        {actions}
+      </div>
+    </article>
+  );
+}
+
 export function RadioDeck() {
   return (
-    <div className="mt-12 grid gap-4 lg:grid-cols-2">
-      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-sats">
-          01 · pirate_queue
-        </p>
-        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
-          Live Jukebox
-        </h2>
-        <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">
-          Pay {JUKEBOX_PRICE_SATS} sats, queue a track, ride the pirate ship.
-        </p>
-        <div className="mt-6">
-          <ButtonLink href="/jukebox">open jukebox</ButtonLink>
-        </div>
-      </article>
+    <div className="mt-10 grid items-stretch gap-4 sm:mt-12">
+      <RadioCard
+        code="01"
+        kicker="pirate_queue"
+        title="Live Jukebox"
+        accent="sats"
+        wide
+        split
+        actions={
+          <ButtonLink href="/jukebox" className={actionClass}>
+            open jukebox
+          </ButtonLink>
+        }
+      >
+        Pay {JUKEBOX_PRICE_SATS} sats, queue a track, ride the pirate ship.
+      </RadioCard>
 
-      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cyan">
-          02 · value_for_value
-        </p>
-        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
-          Wavlake
-        </h2>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
-          Value-for-value tracks. Stream and zap artists directly.
-        </p>
-        <div className="radio-embed mt-5 overflow-hidden border border-cyan/20 bg-black/50">
+      <RadioCard
+        code="02"
+        kicker="value_for_value"
+        title="Wavlake"
+        accent="cyan"
+        wide
+        actions={
+          <ButtonLink href={WAVLAKE_URL} external className={actionClass}>
+            open wavlake
+          </ButtonLink>
+        }
+      >
+        <p>Value-for-value tracks. Stream and zap artists directly.</p>
+        <div className="radio-embed mt-5 max-w-full overflow-hidden border border-cyan/20 bg-black/50">
           <iframe
             src={WAVLAKE_EMBED_SRC}
             title="Wavlake 21-day chart"
-            className="h-[22rem] w-full"
+            className="block h-[18rem] w-full max-w-full sm:h-[22rem]"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
             allow="encrypted-media; clipboard-write; fullscreen"
           />
         </div>
-        <div className="mt-5">
-          <ButtonLink href={WAVLAKE_URL} external variant="ghost">
-            open wavlake
-          </ButtonLink>
-        </div>
-      </article>
+      </RadioCard>
 
-      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-magenta">
-          03 · live_sets
-        </p>
-        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
-          Live Streams
-        </h2>
-        <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">
+      <div className="grid items-stretch gap-4 lg:grid-cols-2">
+        <RadioCard
+          code="03"
+          kicker="live_sets"
+          title="Live Streams"
+          accent="magenta"
+          actions={
+            <>
+              <ButtonLink href={ZAP_STREAM_URL} external className={actionClass}>
+                open zap.stream
+              </ButtonLink>
+              <ButtonLink
+                href={TUNESTR_URL}
+                external
+                variant="ghost"
+                className={actionClass}
+              >
+                open tunestr
+              </ButtonLink>
+            </>
+          }
+        >
           Live sets and radio on Nostr. Zap while it plays.
-        </p>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <ButtonLink href={ZAP_STREAM_URL} external>
-            open zap.stream
-          </ButtonLink>
-          <ButtonLink href={TUNESTR_URL} external variant="ghost">
-            open tunestr
-          </ButtonLink>
-        </div>
-      </article>
+        </RadioCard>
 
-      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-sats">
-          04 · nostr_native
-        </p>
-        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
-          ZapTrax
-        </h2>
-        <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">
+        <RadioCard
+          code="04"
+          kicker="nostr_native"
+          title="ZapTrax"
+          accent="sats"
+          actions={
+            <ButtonLink href={ZAPTRAX_URL} external className={actionClass}>
+              open zaptrax
+            </ButtonLink>
+          }
+        >
           Nostr-native music player, playlists, and Lightning zaps.
-        </p>
-        <div className="mt-6">
-          <ButtonLink href={ZAPTRAX_URL} external>
-            open zaptrax
-          </ButtonLink>
-        </div>
-      </article>
+        </RadioCard>
+      </div>
 
-      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cyan">
-          05 · v4v_shows
-        </p>
-        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
-          Fountain
-        </h2>
-        <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">
+      <DeckLabel>shows · longform</DeckLabel>
+
+      <div className="grid items-stretch gap-4 lg:grid-cols-2">
+        <RadioCard
+          code="05"
+          kicker="v4v_shows"
+          title="Fountain"
+          accent="cyan"
+          actions={
+            <ButtonLink href={FOUNTAIN_URL} external className={actionClass}>
+              open fountain
+            </ButtonLink>
+          }
+        >
           Value-for-value podcasts and live shows. Support creators with sats.
-        </p>
-        <div className="mt-6">
-          <ButtonLink href={FOUNTAIN_URL} external>
-            open fountain
-          </ButtonLink>
-        </div>
-      </article>
+        </RadioCard>
 
-      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-magenta">
-          06 · longform
-        </p>
-        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
-          Podcasts / Longform
-        </h2>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
+        <RadioCard
+          code="06"
+          kicker="longform"
+          title="Podcasts / Longform"
+          accent="magenta"
+          actions={
+            <>
+              <ButtonLink href={FOUNTAIN_URL} external className={actionClass}>
+                open fountain
+              </ButtonLink>
+              <ButtonLink
+                href={PODVERSE_URL}
+                external
+                variant="ghost"
+                className={actionClass}
+              >
+                open podverse
+              </ButtonLink>
+              <ButtonLink
+                href={PODCAST_INDEX_URL}
+                external
+                variant="ghost"
+                className={actionClass}
+              >
+                open podcast index
+              </ButtonLink>
+            </>
+          }
+        >
           Permissionless audio for Bitcoiners — listen, zap, no middleman.
-        </p>
-        <ul className="mt-5 space-y-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
-          <li className="flex flex-wrap items-baseline justify-between gap-2 border-b border-cyan/15 pb-2">
-            <span className="text-foreground">Fountain</span>
-            <a
-              href={FOUNTAIN_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sats glitch-hover hover:text-cyan"
-            >
-              listen / boost -&gt;
-            </a>
-          </li>
-          <li className="flex flex-wrap items-baseline justify-between gap-2 border-b border-cyan/15 pb-2">
-            <span className="text-foreground">Podverse</span>
-            <a
-              href={PODVERSE_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sats glitch-hover hover:text-cyan"
-            >
-              open player -&gt;
-            </a>
-          </li>
-          <li className="flex flex-wrap items-baseline justify-between gap-2">
-            <span className="text-foreground">Podcast Index</span>
-            <a
-              href={PODCAST_INDEX_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sats glitch-hover hover:text-cyan"
-            >
-              browse the index -&gt;
-            </a>
-          </li>
-        </ul>
-      </article>
+        </RadioCard>
+      </div>
 
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted lg:col-span-2 lg:mt-2">
-        sovereign · own / share
-      </p>
+      <DeckLabel>sovereign · own / share</DeckLabel>
 
-      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-sats">
-          07 · own_your_files
-        </p>
-        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
-          Napstr
-        </h2>
-        <div className="mt-3 flex-1">
-          <p className="text-sm leading-relaxed text-muted">
+      <div className="grid items-stretch gap-4 lg:grid-cols-2">
+        <RadioCard
+          code="07"
+          kicker="own_your_files"
+          title="Napstr"
+          accent="sats"
+          actions={
+            <ButtonLink href={NAPSTR_URL} external className={actionClass}>
+              open napstr
+            </ButtonLink>
+          }
+        >
+          <p>
             Own your music again. Nostr discovery, private transfers — no
             Spotify middleman.
           </p>
-          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan/80">
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan">
             Desktop app · Windows / Linux · Discovery via Nostr
           </p>
-        </div>
-        <div className="mt-6">
-          <ButtonLink href={NAPSTR_URL} external>
-            open napstr
-          </ButtonLink>
-        </div>
-      </article>
+        </RadioCard>
 
-      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cyan">
-          08 · share_collab
-        </p>
-        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
-          Share & Collab
-        </h2>
-        <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">
+        <RadioCard
+          code="08"
+          kicker="share_collab"
+          title="Share & Collab"
+          accent="cyan"
+          actions={
+            <>
+              <ButtonLink href={ZAPSTR_URL} external className={actionClass}>
+                open zapstr
+              </ButtonLink>
+              <ButtonLink
+                href={STEMSTR_URL}
+                external
+                className={actionClass}
+              >
+                open stemstr
+              </ButtonLink>
+            </>
+          }
+        >
           Upload, share, and collab on tracks. Zap artists on Nostr.
-        </p>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <ButtonLink href={ZAPSTR_URL} external>
-            open zapstr
-          </ButtonLink>
-          <ButtonLink href={STEMSTR_URL} external variant="ghost">
-            open stemstr
-          </ButtonLink>
-        </div>
-      </article>
+        </RadioCard>
+      </div>
 
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted lg:col-span-2">
+      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
         Share files. Seed catalogs. Keep the keys.
       </p>
 
-      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-magenta">
-          09 · now_playing
+      <RadioCard
+        code="09"
+        kicker="now_playing"
+        title="Now Playing"
+        accent="magenta"
+        wide
+        split
+        actions={
+          <>
+            <ButtonLink href={TRACKSTR_URL} external className={actionClass}>
+              open the global now-playing wall
+            </ButtonLink>
+            <ButtonLink
+              href={TRACKSTR_GITHUB_URL}
+              external
+              variant="ghost"
+              className={actionClass}
+            >
+              trackstr on github
+            </ButtonLink>
+          </>
+        }
+      >
+        <p>What the network is listening to — live scrobbles on Nostr.</p>
+        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan">
+          No central chart. Just relays and ears.
         </p>
-        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
-          Now Playing
-        </h2>
-        <div className="mt-3 flex-1">
-          <p className="text-sm leading-relaxed text-muted">
-            What the network is listening to — live scrobbles on Nostr.
-          </p>
-          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan/80">
-            No central chart. Just relays and ears.
-          </p>
-        </div>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <ButtonLink href={TRACKSTR_URL} external>
-            open the global now-playing wall
-          </ButtonLink>
-          <ButtonLink href={TRACKSTR_GITHUB_URL} external variant="ghost">
-            trackstr on github
-          </ButtonLink>
-        </div>
-      </article>
+      </RadioCard>
     </div>
   );
 }
