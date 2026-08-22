@@ -2,12 +2,15 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import { JUKEBOX_PRICE_SATS } from "@/lib/jukebox";
 import {
   FOUNTAIN_URL,
+  NAPSTR_URL,
   PODCAST_INDEX_URL,
   PODVERSE_URL,
+  STEMSTR_URL,
   TUNESTR_URL,
   WAVLAKE_EMBED_SRC,
   WAVLAKE_URL,
   ZAP_STREAM_URL,
+  ZAPSTR_URL,
   ZAPTRAX_URL,
 } from "@/lib/music";
 
@@ -156,6 +159,57 @@ export function RadioDeck() {
           </li>
         </ul>
       </article>
+
+      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted lg:col-span-2 lg:mt-2">
+        sovereign · own / share
+      </p>
+
+      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-sats">
+          07 · own_your_files
+        </p>
+        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
+          Napstr
+        </h2>
+        <div className="mt-3 flex-1">
+          <p className="text-sm leading-relaxed text-muted">
+            Own your music again. Nostr discovery, private transfers — no
+            Spotify middleman.
+          </p>
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan/80">
+            Desktop app · Windows / Linux · Discovery via Nostr
+          </p>
+        </div>
+        <div className="mt-6">
+          <ButtonLink href={NAPSTR_URL} external>
+            open napstr
+          </ButtonLink>
+        </div>
+      </article>
+
+      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cyan">
+          08 · share_collab
+        </p>
+        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
+          Share & Collab
+        </h2>
+        <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">
+          Upload, share, and collab on tracks. Zap artists on Nostr.
+        </p>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <ButtonLink href={ZAPSTR_URL} external>
+            open zapstr
+          </ButtonLink>
+          <ButtonLink href={STEMSTR_URL} external variant="ghost">
+            open stemstr
+          </ButtonLink>
+        </div>
+      </article>
+
+      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted lg:col-span-2">
+        Share files. Seed catalogs. Keep the keys.
+      </p>
     </div>
   );
 }
