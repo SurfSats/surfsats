@@ -21,12 +21,11 @@ export function Hero({ initial }: { initial: TimechainSnapshot | null }) {
           SurfSats
         </h1>
         <p className="mt-6 max-w-2xl font-display text-xl font-semibold uppercase tracking-wide text-sats sm:text-3xl">
-          Hard money. Night sessions. Zero permission.
+          No banks. No bosses. No closed beach signs.
         </p>
         <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
-          Tools and writing for people who live on ocean time and Bitcoin time.
-          The mempool is a lineup. The tide is a fee market. The jukebox takes
-          sats.
+          Welcome to the Lightning sandbox: tag the wall, feed the jukebox,
+          smash the arcade.
         </p>
         <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <ButtonLink href="/lineup">enter the lineup</ButtonLink>
