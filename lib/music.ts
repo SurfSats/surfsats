@@ -10,3 +10,5 @@ export const PODCAST_INDEX_URL = "https://podcastindex.org";
 export const NAPSTR_URL = "https://napstr.net";
 export const ZAPSTR_URL = "https://zapstr.live";
 export const STEMSTR_URL = "https://stemstr.app";
+export const TRACKSTR_URL = "https://nostrapps.github.io/trackstr/";
+export const TRACKSTR_GITHUB_URL = "https://github.com/nostrapps/trackstr";

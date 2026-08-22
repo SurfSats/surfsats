@@ -6,6 +6,8 @@ import {
   PODCAST_INDEX_URL,
   PODVERSE_URL,
   STEMSTR_URL,
+  TRACKSTR_GITHUB_URL,
+  TRACKSTR_URL,
   TUNESTR_URL,
   WAVLAKE_EMBED_SRC,
   WAVLAKE_URL,
@@ -210,6 +212,31 @@ export function RadioDeck() {
       <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted lg:col-span-2">
         Share files. Seed catalogs. Keep the keys.
       </p>
+
+      <article className="panel panel-hover flex min-w-0 flex-col p-5 sm:p-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-magenta">
+          09 · now_playing
+        </p>
+        <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-tight">
+          Now Playing
+        </h2>
+        <div className="mt-3 flex-1">
+          <p className="text-sm leading-relaxed text-muted">
+            What the network is listening to — live scrobbles on Nostr.
+          </p>
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan/80">
+            No central chart. Just relays and ears.
+          </p>
+        </div>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <ButtonLink href={TRACKSTR_URL} external>
+            open the global now-playing wall
+          </ButtonLink>
+          <ButtonLink href={TRACKSTR_GITHUB_URL} external variant="ghost">
+            trackstr on github
+          </ButtonLink>
+        </div>
+      </article>
     </div>
   );
 }
