@@ -61,6 +61,14 @@ async function ensureNeonSchema() {
         color TEXT NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )`;
+      await db`ALTER TABLE graffiti_pending
+        ADD COLUMN IF NOT EXISTS top DOUBLE PRECISION`;
+      await db`ALTER TABLE graffiti_pending
+        ADD COLUMN IF NOT EXISTS left_pos DOUBLE PRECISION`;
+      await db`ALTER TABLE graffiti_pending
+        ADD COLUMN IF NOT EXISTS rotate DOUBLE PRECISION`;
+      await db`ALTER TABLE graffiti_pending
+        ADD COLUMN IF NOT EXISTS scale DOUBLE PRECISION`;
       await db`CREATE TABLE IF NOT EXISTS graffiti_marks (
         id TEXT PRIMARY KEY,
         payment_hash TEXT NOT NULL UNIQUE,
@@ -143,19 +151,30 @@ async function neonSavePending(pending: PendingGraffiti) {
   await ensureNeonSchema();
   const db = sql();
   await db`
-    INSERT INTO graffiti_pending (payment_hash, text, style, color, created_at)
+    INSERT INTO graffiti_pending (
+      payment_hash, text, style, color, created_at,
+      top, left_pos, rotate, scale
+    )
     VALUES (
       ${pending.paymentHash},
       ${pending.text},
       ${pending.style},
       ${pending.color},
-      ${pending.createdAt}
+      ${pending.createdAt},
+      ${pending.top ?? null},
+      ${pending.left ?? null},
+      ${pending.rotate ?? null},
+      ${pending.scale ?? null}
     )
     ON CONFLICT (payment_hash) DO UPDATE SET
       text = EXCLUDED.text,
       style = EXCLUDED.style,
       color = EXCLUDED.color,
-      created_at = EXCLUDED.created_at
+      created_at = EXCLUDED.created_at,
+      top = EXCLUDED.top,
+      left_pos = EXCLUDED.left_pos,
+      rotate = EXCLUDED.rotate,
+      scale = EXCLUDED.scale
   `;
   return pending;
 }
@@ -164,7 +183,8 @@ async function neonGetPending(paymentHash: string) {
   await ensureNeonSchema();
   const db = sql();
   const rows = await db`
-    SELECT payment_hash, text, style, color, created_at
+    SELECT payment_hash, text, style, color, created_at,
+           top, left_pos, rotate, scale
     FROM graffiti_pending
     WHERE payment_hash = ${paymentHash}
     LIMIT 1
@@ -175,12 +195,20 @@ async function neonGetPending(paymentHash: string) {
   const color = row.color;
   const text = String(row.text ?? "").trim();
   if (!text || !isGraffitiStyle(style) || !isGraffitiColor(color)) return null;
+  const top = num(row.top);
+  const left = num(row.left_pos);
+  const rotate = num(row.rotate);
+  const scale = num(row.scale);
   return {
     paymentHash: String(row.payment_hash ?? paymentHash),
     text,
     style,
     color,
     createdAt: iso(row.created_at) || new Date().toISOString(),
+    ...(top != null ? { top } : {}),
+    ...(left != null ? { left } : {}),
+    ...(rotate != null ? { rotate } : {}),
+    ...(scale != null ? { scale } : {}),
   } satisfies PendingGraffiti;
 }
 

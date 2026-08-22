@@ -15,7 +15,13 @@ import { GraffitiWall } from "@/components/graffiti/GraffitiWall";
 import {
   GRAFFITI_HERO_BAND,
   GRAFFITI_STORAGE_KEY,
+  clampPlacement,
+  organicPlacement,
+  placeMark,
+  type GraffitiColor,
   type GraffitiMark,
+  type GraffitiPlacement,
+  type GraffitiStyle,
   isActiveMark,
   seedMarks,
 } from "@/lib/graffiti";
@@ -67,6 +73,15 @@ export function GraffitiApp() {
   const [ready, setReady] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [freshId, setFreshId] = useState<string | null>(null);
+  const [text, setText] = useState("");
+  const [style, setStyle] = useState<GraffitiStyle>("tag");
+  const [color, setColor] = useState<GraffitiColor>("banana");
+  const [defaultPlacement] = useState<GraffitiPlacement>(() => placeMark());
+  const [placement, setPlacement] = useState<GraffitiPlacement | null>(null);
+  const [hover, setHover] = useState<{ top: number; left: number } | null>(
+    null,
+  );
+  const [composerOpen, setComposerOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -143,6 +158,27 @@ export function GraffitiApp() {
     return [...byId.values()];
   }, [paid, now]);
 
+  const paidLive = useMemo(
+    () => paid.filter((mark) => isActiveMark(mark, now)).length,
+    [paid, now],
+  );
+
+  const ghostPlacement = useMemo(() => {
+    if (placement) return placement;
+    if (hover) {
+      const clamped = clampPlacement(hover.top, hover.left);
+      return {
+        top: clamped.top,
+        left: clamped.left,
+        rotate: defaultPlacement.rotate,
+        scale: defaultPlacement.scale,
+      };
+    }
+    return defaultPlacement;
+  }, [placement, hover, defaultPlacement]);
+
+  const showGhost = text.trim().length >= 2;
+
   const addMark = useCallback((mark: GraffitiMark) => {
     setPaid((current) => mergePaid(current, [mark]));
     setFreshId(mark.id);
@@ -157,12 +193,81 @@ export function GraffitiApp() {
     }, 5200);
   }, []);
 
+  const resetDraft = useCallback(() => {
+    setText("");
+    setStyle("tag");
+    setColor("banana");
+    setPlacement(null);
+    setHover(null);
+  }, []);
+
   return (
     <div
       className={`${marker.variable} ${throwup.variable} ${wild.variable} ${drip.variable} ${block.variable} ${fat.variable} ${stencil.variable} graffiti-page`}
     >
-      <GraffitiWall marks={live} freshId={freshId} />
-      <GraffitiForm onPaid={addMark} />
+      <div className="graffiti-stage">
+        <GraffitiWall
+          marks={live}
+          freshId={freshId}
+          placing
+          quiet={paidLive === 0}
+          ghost={
+            showGhost
+              ? {
+                  text: text.trim(),
+                  style,
+                  color,
+                  placement: ghostPlacement,
+                  locked: Boolean(placement),
+                }
+              : null
+          }
+          onPlace={(top, left) => {
+            setPlacement(organicPlacement(top, left));
+            setComposerOpen(true);
+          }}
+          onHover={(point) => {
+            if (placement) return;
+            setHover(point);
+          }}
+        />
+
+        <aside
+          className="graffiti-dock"
+          data-open={composerOpen ? "true" : "false"}
+        >
+          <div className="graffiti-dock-bar lg:hidden">
+            <button
+              type="button"
+              className="graffiti-dock-close"
+              onClick={() => setComposerOpen(false)}
+            >
+              close
+            </button>
+          </div>
+          <GraffitiForm
+            text={text}
+            style={style}
+            color={color}
+            placed={Boolean(placement)}
+            placement={placement ?? defaultPlacement}
+            onText={setText}
+            onStyle={setStyle}
+            onColor={setColor}
+            onPaid={addMark}
+            onResetDraft={resetDraft}
+          />
+        </aside>
+      </div>
+
+      <button
+        type="button"
+        className="graf-fab lg:hidden"
+        hidden={composerOpen}
+        onClick={() => setComposerOpen(true)}
+      >
+        TAG
+      </button>
     </div>
   );
 }

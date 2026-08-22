@@ -46,12 +46,23 @@ export type GraffitiMark = {
   paymentHash?: string;
 };
 
+export type GraffitiPlacement = {
+  top: number;
+  left: number;
+  rotate: number;
+  scale: number;
+};
+
 export type PendingGraffiti = {
   paymentHash: string;
   text: string;
   style: GraffitiStyle;
   color: GraffitiColor;
   createdAt: string;
+  top?: number;
+  left?: number;
+  rotate?: number;
+  scale?: number;
 };
 
 export const GRAFFITI_META_KIND = "surfsats-graffiti";
@@ -102,7 +113,82 @@ const PLACE_ZONES = [
   { topMin: 70, topMax: 86, leftMin: 48, leftMax: 58 },
 ] as const;
 
-export function placeMark(seed?: string) {
+const WALL_TOP_MIN = 28;
+const WALL_TOP_MAX = 88;
+const WALL_LEFT_MIN = 2;
+const WALL_LEFT_MAX = 62;
+const MURAL = { top: 40, bottom: 66, left: 20, right: 54 };
+
+export function clampPlacement(top: number, left: number) {
+  let nextTop = Math.min(WALL_TOP_MAX, Math.max(WALL_TOP_MIN, top));
+  let nextLeft = Math.min(WALL_LEFT_MAX, Math.max(WALL_LEFT_MIN, left));
+
+  if (
+    nextTop > MURAL.top &&
+    nextTop < MURAL.bottom &&
+    nextLeft > MURAL.left &&
+    nextLeft < MURAL.right
+  ) {
+    const dt = nextTop - MURAL.top;
+    const db = MURAL.bottom - nextTop;
+    const dl = nextLeft - MURAL.left;
+    const dr = MURAL.right - nextLeft;
+    const nearest = Math.min(dt, db, dl, dr);
+    if (nearest === dt) nextTop = MURAL.top;
+    else if (nearest === db) nextTop = MURAL.bottom;
+    else if (nearest === dl) nextLeft = MURAL.left;
+    else nextLeft = MURAL.right;
+  }
+
+  return { top: nextTop, left: nextLeft };
+}
+
+export function isGraffitiPlacement(value: unknown): value is GraffitiPlacement {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  return (
+    Number.isFinite(Number(record.top)) &&
+    Number.isFinite(Number(record.left)) &&
+    Number.isFinite(Number(record.rotate)) &&
+    Number.isFinite(Number(record.scale))
+  );
+}
+
+export function readPlacement(value: unknown): GraffitiPlacement | null {
+  if (!isGraffitiPlacement(value)) return null;
+  const record = value as Record<string, unknown>;
+  return sanitizePlacement({
+    top: Number(record.top),
+    left: Number(record.left),
+    rotate: Number(record.rotate),
+    scale: Number(record.scale),
+  });
+}
+
+export function sanitizePlacement(placement: GraffitiPlacement): GraffitiPlacement {
+  const clamped = clampPlacement(placement.top, placement.left);
+  return {
+    top: clamped.top,
+    left: clamped.left,
+    rotate: Math.min(16, Math.max(-16, placement.rotate)),
+    scale: Math.min(1.18, Math.max(0.72, placement.scale)),
+  };
+}
+
+export function organicPlacement(top: number, left: number): GraffitiPlacement {
+  const jittered = clampPlacement(
+    top + (Math.random() - 0.5) * 2.2,
+    left + (Math.random() - 0.5) * 2.2,
+  );
+  return sanitizePlacement({
+    top: jittered.top,
+    left: jittered.left,
+    rotate: -13 + Math.random() * 26,
+    scale: 0.82 + Math.random() * 0.28,
+  });
+}
+
+export function placeMark(seed?: string): GraffitiPlacement {
   const index = seed
     ? Math.floor(hashUnit(seed, 40) * PLACE_ZONES.length)
     : Math.floor(Math.random() * PLACE_ZONES.length);
@@ -115,8 +201,8 @@ export function placeMark(seed?: string) {
   return {
     top: zone.topMin + topUnit * (zone.topMax - zone.topMin),
     left: zone.leftMin + leftUnit * (zone.leftMax - zone.leftMin),
-    rotate: -10 + rotateUnit * 20,
-    scale: 0.78 + scaleUnit * 0.24,
+    rotate: -12 + rotateUnit * 24,
+    scale: 0.78 + scaleUnit * 0.28,
   };
 }
 
@@ -124,11 +210,18 @@ export function createMark(
   text: string,
   style: GraffitiStyle,
   color: GraffitiColor,
-  options?: { paidAt?: number; paymentHash?: string },
+  options?: {
+    paidAt?: number;
+    paymentHash?: string;
+    placement?: GraffitiPlacement | null;
+  },
 ) {
   const created = options?.paidAt ?? Date.now();
   const paymentHash = options?.paymentHash;
   const id = paymentHash ? `g-${paymentHash.slice(0, 12)}` : `g-${created}`;
+  const placement = options?.placement
+    ? sanitizePlacement(options.placement)
+    : placeMark(paymentHash);
   return {
     id,
     text,
@@ -137,7 +230,7 @@ export function createMark(
     createdAt: new Date(created).toISOString(),
     expiresAt: new Date(created + GRAFFITI_TTL_MS).toISOString(),
     paymentHash,
-    ...placeMark(paymentHash),
+    ...placement,
   } satisfies GraffitiMark;
 }
 

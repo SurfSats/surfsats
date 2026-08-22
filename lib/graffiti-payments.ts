@@ -12,9 +12,11 @@ import {
   createMark,
   isGraffitiColor,
   isGraffitiStyle,
+  readPlacement,
   sanitizeGraffiti,
   type GraffitiColor,
   type GraffitiMark,
+  type GraffitiPlacement,
   type GraffitiStyle,
 } from "@/lib/graffiti";
 import { graffitiLog, hashRef } from "@/lib/graffiti-log";
@@ -31,7 +33,21 @@ export type GraffitiInvoicePayload = {
   text: string;
   style: GraffitiStyle;
   color: GraffitiColor;
+  placement?: GraffitiPlacement;
 };
+
+function placementFromRecord(
+  record: Record<string, unknown>,
+): GraffitiPlacement | undefined {
+  return (
+    readPlacement({
+      top: record.top,
+      left: record.left ?? record.left_pos,
+      rotate: record.rotate,
+      scale: record.scale,
+    }) ?? undefined
+  );
+}
 
 export function parseGraffitiPayload(
   value: unknown,
@@ -50,7 +66,13 @@ export function parseGraffitiPayload(
   }
   const clean = sanitizeGraffiti(String(record.text ?? ""));
   if (!clean.ok) return null;
-  return { text: clean.text, style: record.style, color: record.color };
+  const placement = placementFromRecord(record);
+  return {
+    text: clean.text,
+    style: record.style,
+    color: record.color,
+    ...(placement ? { placement } : {}),
+  };
 }
 
 async function createInvoice(input: GraffitiInvoicePayload) {
@@ -59,6 +81,14 @@ async function createInvoice(input: GraffitiInvoicePayload) {
     text: input.text,
     style: input.style,
     color: input.color,
+    ...(input.placement
+      ? {
+          top: input.placement.top,
+          left: input.placement.left,
+          rotate: input.placement.rotate,
+          scale: input.placement.scale,
+        }
+      : {}),
   };
   try {
     return await createAlbyInvoice({
@@ -86,6 +116,14 @@ export async function createGraffitiInvoice(input: GraffitiInvoicePayload) {
     style: input.style,
     color: input.color,
     createdAt: new Date().toISOString(),
+    ...(input.placement
+      ? {
+          top: input.placement.top,
+          left: input.placement.left,
+          rotate: input.placement.rotate,
+          scale: input.placement.scale,
+        }
+      : {}),
   });
   graffitiLog("info", "invoice.created", {
     hash: hashRef(paymentHash),
@@ -161,9 +199,11 @@ async function promotePaidInvoice(invoice: AlbyInvoice) {
   const paidAt = invoice.settled_at
     ? new Date(invoice.settled_at).getTime()
     : Date.now();
+  const placement = readPlacement(pending);
   const mark = createMark(pending.text, pending.style, pending.color, {
     paidAt: Number.isFinite(paidAt) ? paidAt : Date.now(),
     paymentHash,
+    placement,
   });
   await savePaidMark(mark);
   return mark;
@@ -185,5 +225,11 @@ export function pendingFromBody(
   }
   const clean = sanitizeGraffiti(String(record.text ?? ""));
   if (!clean.ok) return { error: clean.reason };
-  return { text: clean.text, style: record.style, color: record.color };
+  const placement = placementFromRecord(record);
+  return {
+    text: clean.text,
+    style: record.style,
+    color: record.color,
+    ...(placement ? { placement } : {}),
+  };
 }
