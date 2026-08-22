@@ -6,16 +6,13 @@ export function JukeboxPreview({ className }: { className?: string }) {
   return (
     <Link
       href="/jukebox"
-      className={cn(
-        "group relative block min-h-[11rem] overflow-hidden border border-sats/50 bg-black/60 aspect-[16/10] sm:min-h-[13rem] lg:h-full lg:min-h-[14rem] lg:aspect-auto hover:border-sats",
-        className,
-      )}
+      className={cn("group relative block h-full min-h-[14rem] w-full", className)}
     >
       <Image
         src="/jukebox-ship.png"
         alt="Pirate ship jukebox — open the live queue"
         fill
-        sizes="(max-width: 1024px) 100vw, 26rem"
+        sizes="(max-width: 1024px) 100vw, 72rem"
         className="object-cover object-[center_38%] transition-transform duration-150 group-hover:scale-[1.03]"
       />
       <div

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { RadioDeck } from "@/components/music/RadioDeck";
+import { RadioNav } from "@/components/music/RadioNav";
 import { Container } from "@/components/ui/Container";
 import { TerminalLabel } from "@/components/ui/TerminalLabel";
 
@@ -11,10 +12,10 @@ export const metadata: Metadata = {
 
 export default function MusicPage() {
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative">
       <div className="hero-glow pointer-events-none absolute inset-x-0 top-0 h-[22rem]" />
 
-      <Container className="relative py-14 sm:py-20">
+      <Container className="relative pt-14 sm:pt-20">
         <section>
           <TerminalLabel>surf_radio · permissionless audio</TerminalLabel>
           <h1
@@ -32,8 +33,17 @@ export default function MusicPage() {
             of the dial.
           </p>
         </section>
+      </Container>
 
+      <div className="relative mt-8 sm:mt-10">
+        <RadioNav />
+      </div>
+
+      <Container className="relative pb-14 sm:pb-20">
         <RadioDeck />
+        <p className="mt-10 max-w-2xl font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
+          Jukebox is the 21-sat machine. Everything else is the dial.
+        </p>
       </Container>
     </div>
   );

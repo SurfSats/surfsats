@@ -472,6 +472,51 @@ body {
   transform: translate(-2px, -2px);
 }
 
+.panel-hover:focus-within {
+  border-color: var(--cyan);
+  box-shadow: 5px 5px 0 var(--magenta);
+}
+
+.radio-subnav {
+  top: 7.25rem;
+}
+
+@media (min-width: 640px) {
+  .radio-subnav {
+    top: 7.75rem;
+  }
+}
+
+.radio-section {
+  scroll-margin-top: 10.75rem;
+}
+
+.radio-media {
+  background:
+    linear-gradient(rgba(61, 255, 243, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61, 255, 243, 0.035) 1px, transparent 1px),
+    rgba(0, 0, 0, 0.5);
+  background-size:
+    18px 18px,
+    18px 18px,
+    auto;
+}
+
+.radio-media iframe {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  min-height: 18rem;
+  background: #08080b;
+}
+
+@media (min-width: 640px) {
+  .radio-media iframe {
+    min-height: 22rem;
+  }
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

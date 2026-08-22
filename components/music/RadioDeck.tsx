@@ -1,6 +1,10 @@
 import { JukeboxPreview } from "@/components/music/JukeboxPreview";
+import {
+  RadioCard,
+  RadioStationPreview,
+  radioActionClass,
+} from "@/components/music/RadioCard";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-import { cn } from "@/lib/cn";
 import { JUKEBOX_PRICE_SATS } from "@/lib/jukebox";
 import {
   FOUNTAIN_URL,
@@ -18,297 +22,331 @@ import {
   ZAPTRAX_URL,
 } from "@/lib/music";
 
-const actionClass =
-  "w-full min-w-0 whitespace-normal text-center leading-snug sm:w-auto";
-
-const accentText = {
-  sats: "text-sats",
-  cyan: "text-cyan",
-  magenta: "text-magenta",
-} as const;
-
 function DeckLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="pt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted lg:col-span-2">
+    <p className="pt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
       {children}
     </p>
   );
 }
 
-function RadioCard({
-  code,
-  kicker,
-  title,
-  accent,
-  wide = false,
-  split = false,
-  children,
-  actions,
-}: {
-  code: string;
-  kicker: string;
-  title: string;
-  accent: keyof typeof accentText;
-  wide?: boolean;
-  split?: boolean;
-  children: React.ReactNode;
-  actions: React.ReactNode;
-}) {
+function PreviewSplit({ children }: { children: React.ReactNode }) {
   return (
-    <article
-      className={cn(
-        "panel panel-hover flex min-w-0 flex-col p-5 sm:p-6",
-        wide && "lg:col-span-2",
-        split && "lg:flex-row lg:items-center lg:justify-between lg:gap-8",
-      )}
-    >
-      <div className="min-w-0 flex-1">
-        <p
-          className={cn(
-            "font-mono text-[11px] uppercase tracking-[0.18em]",
-            accentText[accent],
-          )}
-        >
-          {code} · {kicker}
-        </p>
-        <h2 className="mt-3 break-words font-display text-2xl font-bold uppercase tracking-tight">
-          {title}
-        </h2>
-        <div className="mt-3 min-w-0 text-sm leading-relaxed text-muted">
-          {children}
-        </div>
-      </div>
-      <div
-        className={cn(
-          "mt-6 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap",
-          split && "lg:mt-0 lg:shrink-0",
-        )}
-      >
-        {actions}
-      </div>
-    </article>
+    <div className="grid h-full min-h-[12rem] divide-y divide-cyan/20 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+      {children}
+    </div>
   );
 }
 
 export function RadioDeck() {
   return (
-    <div className="mt-10 grid items-stretch gap-4 sm:mt-12">
-      <article className="panel panel-hover grid min-w-0 gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(16rem,26rem)] lg:grid-rows-[auto_1fr_auto] lg:items-stretch lg:gap-x-8 lg:gap-y-0">
-        <div className="min-w-0">
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-sats">
-            01 · pirate_queue
-          </p>
-          <h2 className="mt-3 break-words font-display text-2xl font-bold uppercase tracking-tight">
-            Live Jukebox
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-muted">
-            Pay {JUKEBOX_PRICE_SATS} sats, queue a track, ride the pirate ship.
-          </p>
-        </div>
-
-        <JukeboxPreview className="lg:col-start-2 lg:row-span-3" />
-
-        <div className="lg:col-start-1 lg:row-start-3 lg:mt-6">
-          <ButtonLink href="/jukebox" className={actionClass}>
+    <div className="mt-8 grid items-stretch gap-4 sm:mt-10">
+      <RadioCard
+        id="jukebox"
+        code="01"
+        kicker="pirate_queue"
+        title="Live Jukebox"
+        accent="sats"
+        chips={[{ label: "21 sats", tone: "sats" }]}
+        blurb={`Pay ${JUKEBOX_PRICE_SATS} sats, queue a track, ride the pirate ship.`}
+        media={<JukeboxPreview />}
+        mediaClassName="h-[14rem] min-h-[14rem] sm:h-[16rem] lg:h-[18rem]"
+        actions={
+          <ButtonLink href="/jukebox" className={radioActionClass}>
             open jukebox
           </ButtonLink>
-        </div>
-      </article>
+        }
+      />
 
       <RadioCard
+        id="wavlake"
         code="02"
         kicker="value_for_value"
         title="Wavlake"
         accent="cyan"
-        wide
-        actions={
-          <ButtonLink href={WAVLAKE_URL} external className={actionClass}>
-            open wavlake
-          </ButtonLink>
-        }
-      >
-        <p>Value-for-value tracks. Stream and zap artists directly.</p>
-        <div className="radio-embed mt-5 max-w-full overflow-hidden border border-cyan/20 bg-black/50">
+        chips={[{ label: "embed", tone: "cyan" }]}
+        blurb="Value-for-value tracks. Stream and zap artists directly."
+        media={
           <iframe
             src={WAVLAKE_EMBED_SRC}
             title="Wavlake 21-day chart"
-            className="block h-[18rem] w-full max-w-full sm:h-[22rem]"
+            className="h-[18rem] w-full sm:h-[22rem]"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
             allow="encrypted-media; clipboard-write; fullscreen"
           />
-        </div>
-      </RadioCard>
+        }
+        mediaClassName="min-h-[18rem] sm:min-h-[22rem]"
+        actions={
+          <ButtonLink href={WAVLAKE_URL} external className={radioActionClass}>
+            open wavlake
+          </ButtonLink>
+        }
+      />
 
       <div className="grid items-stretch gap-4 lg:grid-cols-2">
         <RadioCard
+          id="live"
           code="03"
           kicker="live_sets"
           title="Live Streams"
           accent="magenta"
+          chips={[{ label: "external", tone: "muted" }]}
+          blurb="Live sets and radio on Nostr. Zap while it plays."
+          media={
+            <PreviewSplit>
+              <RadioStationPreview
+                href={ZAP_STREAM_URL}
+                external
+                kicker="zap.stream"
+                title="Live video"
+                detail="Sets · chat · zaps"
+              />
+              <RadioStationPreview
+                href={TUNESTR_URL}
+                external
+                kicker="tunestr"
+                title="Live radio"
+                detail="Value-for-value audio"
+              />
+            </PreviewSplit>
+          }
           actions={
             <>
-              <ButtonLink href={ZAP_STREAM_URL} external className={actionClass}>
+              <ButtonLink href={ZAP_STREAM_URL} external className={radioActionClass}>
                 open zap.stream
               </ButtonLink>
               <ButtonLink
                 href={TUNESTR_URL}
                 external
                 variant="ghost"
-                className={actionClass}
+                className={radioActionClass}
               >
                 open tunestr
               </ButtonLink>
             </>
           }
-        >
-          Live sets and radio on Nostr. Zap while it plays.
-        </RadioCard>
+        />
 
         <RadioCard
+          id="zaptrax"
           code="04"
           kicker="nostr_native"
           title="ZapTrax"
           accent="sats"
+          chips={[{ label: "external", tone: "muted" }]}
+          blurb="Nostr-native music player, playlists, and Lightning zaps."
+          media={
+            <RadioStationPreview
+              href={ZAPTRAX_URL}
+              external
+              kicker="player"
+              title="ZapTrax"
+              detail="Playlists · search · zap tracks"
+            />
+          }
           actions={
-            <ButtonLink href={ZAPTRAX_URL} external className={actionClass}>
+            <ButtonLink href={ZAPTRAX_URL} external className={radioActionClass}>
               open zaptrax
             </ButtonLink>
           }
-        >
-          Nostr-native music player, playlists, and Lightning zaps.
-        </RadioCard>
+        />
       </div>
 
-      <DeckLabel>shows · longform</DeckLabel>
-
-      <div className="grid items-stretch gap-4 lg:grid-cols-2">
-        <RadioCard
-          code="05"
-          kicker="v4v_shows"
-          title="Fountain"
-          accent="cyan"
-          actions={
-            <ButtonLink href={FOUNTAIN_URL} external className={actionClass}>
-              open fountain
-            </ButtonLink>
-          }
-        >
-          Value-for-value podcasts and live shows. Support creators with sats.
-        </RadioCard>
-
-        <RadioCard
-          code="06"
-          kicker="longform"
-          title="Podcasts / Longform"
-          accent="magenta"
-          actions={
-            <>
-              <ButtonLink href={FOUNTAIN_URL} external className={actionClass}>
+      <section id="podcasts" className="radio-section grid items-stretch gap-4">
+        <DeckLabel>shows · longform</DeckLabel>
+        <div className="grid items-stretch gap-4 lg:grid-cols-2">
+          <RadioCard
+            code="05"
+            kicker="v4v_shows"
+            title="Fountain"
+            accent="cyan"
+            chips={[{ label: "external", tone: "muted" }]}
+            blurb="Value-for-value podcasts and live shows. Support creators with sats."
+            media={
+              <RadioStationPreview
+                href={FOUNTAIN_URL}
+                external
+                kicker="fountain.fm"
+                title="Boost while you listen"
+                detail="Podcasts · live shows · sats"
+              />
+            }
+            actions={
+              <ButtonLink href={FOUNTAIN_URL} external className={radioActionClass}>
                 open fountain
               </ButtonLink>
-              <ButtonLink
-                href={PODVERSE_URL}
+            }
+          />
+
+          <RadioCard
+            code="06"
+            kicker="longform"
+            title="Podcasts / Longform"
+            accent="magenta"
+            chips={[{ label: "external", tone: "muted" }]}
+            blurb="Permissionless audio for Bitcoiners — listen, zap, no middleman."
+            media={
+              <PreviewSplit>
+                <RadioStationPreview
+                  href={PODVERSE_URL}
+                  external
+                  kicker="podverse"
+                  title="Player"
+                  detail="Open podcasts"
+                />
+                <RadioStationPreview
+                  href={PODCAST_INDEX_URL}
+                  external
+                  kicker="podcast index"
+                  title="Directory"
+                  detail="Browse the index"
+                />
+              </PreviewSplit>
+            }
+            actions={
+              <>
+                <ButtonLink href={FOUNTAIN_URL} external className={radioActionClass}>
+                  open fountain
+                </ButtonLink>
+                <ButtonLink
+                  href={PODVERSE_URL}
+                  external
+                  variant="ghost"
+                  className={radioActionClass}
+                >
+                  open podverse
+                </ButtonLink>
+                <ButtonLink
+                  href={PODCAST_INDEX_URL}
+                  external
+                  variant="ghost"
+                  className={radioActionClass}
+                >
+                  open podcast index
+                </ButtonLink>
+              </>
+            }
+          />
+        </div>
+      </section>
+
+      <section id="own" className="radio-section grid items-stretch gap-4">
+        <DeckLabel>sovereign · own / share</DeckLabel>
+        <div className="grid items-stretch gap-4 lg:grid-cols-2">
+          <RadioCard
+            code="07"
+            kicker="own_your_files"
+            title="Napstr"
+            accent="sats"
+            chips={[{ label: "desktop app", tone: "sats" }]}
+            blurb="Own your music again. Nostr discovery, private transfers — no Spotify middleman."
+            note={
+              <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan">
+                Desktop app · Windows / Linux · Discovery via Nostr
+              </p>
+            }
+            media={
+              <RadioStationPreview
+                href={NAPSTR_URL}
                 external
-                variant="ghost"
-                className={actionClass}
-              >
-                open podverse
+                kicker="napstr.net"
+                title="Own the files"
+                detail="Catalogs over Nostr · transfers over Tor"
+              />
+            }
+            actions={
+              <ButtonLink href={NAPSTR_URL} external className={radioActionClass}>
+                open napstr
               </ButtonLink>
-              <ButtonLink
-                href={PODCAST_INDEX_URL}
-                external
-                variant="ghost"
-                className={actionClass}
-              >
-                open podcast index
-              </ButtonLink>
-            </>
-          }
-        >
-          Permissionless audio for Bitcoiners — listen, zap, no middleman.
-        </RadioCard>
-      </div>
+            }
+          />
 
-      <DeckLabel>sovereign · own / share</DeckLabel>
-
-      <div className="grid items-stretch gap-4 lg:grid-cols-2">
-        <RadioCard
-          code="07"
-          kicker="own_your_files"
-          title="Napstr"
-          accent="sats"
-          actions={
-            <ButtonLink href={NAPSTR_URL} external className={actionClass}>
-              open napstr
-            </ButtonLink>
-          }
-        >
-          <p>
-            Own your music again. Nostr discovery, private transfers — no
-            Spotify middleman.
-          </p>
-          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan">
-            Desktop app · Windows / Linux · Discovery via Nostr
-          </p>
-        </RadioCard>
-
-        <RadioCard
-          code="08"
-          kicker="share_collab"
-          title="Share & Collab"
-          accent="cyan"
-          actions={
-            <>
-              <ButtonLink href={ZAPSTR_URL} external className={actionClass}>
-                open zapstr
-              </ButtonLink>
-              <ButtonLink
-                href={STEMSTR_URL}
-                external
-                className={actionClass}
-              >
-                open stemstr
-              </ButtonLink>
-            </>
-          }
-        >
-          Upload, share, and collab on tracks. Zap artists on Nostr.
-        </RadioCard>
-      </div>
-
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
-        Share files. Seed catalogs. Keep the keys.
-      </p>
+          <RadioCard
+            code="08"
+            kicker="share_collab"
+            title="Share & Collab"
+            accent="cyan"
+            chips={[{ label: "external", tone: "muted" }]}
+            blurb="Upload, share, and collab on tracks. Zap artists on Nostr."
+            media={
+              <PreviewSplit>
+                <RadioStationPreview
+                  href={ZAPSTR_URL}
+                  external
+                  kicker="zapstr"
+                  title="Share tracks"
+                  detail="Upload · zap artists"
+                />
+                <RadioStationPreview
+                  href={STEMSTR_URL}
+                  external
+                  kicker="stemstr"
+                  title="Collab"
+                  detail="Stems · sessions"
+                />
+              </PreviewSplit>
+            }
+            actions={
+              <>
+                <ButtonLink href={ZAPSTR_URL} external className={radioActionClass}>
+                  open zapstr
+                </ButtonLink>
+                <ButtonLink
+                  href={STEMSTR_URL}
+                  external
+                  variant="ghost"
+                  className={radioActionClass}
+                >
+                  open stemstr
+                </ButtonLink>
+              </>
+            }
+          />
+        </div>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
+          Share files. Seed catalogs. Keep the keys.
+        </p>
+      </section>
 
       <RadioCard
+        id="now-playing"
         code="09"
         kicker="now_playing"
         title="Now Playing"
         accent="magenta"
-        wide
-        split
+        chips={[{ label: "feed", tone: "magenta" }]}
+        blurb="What the network is listening to — live scrobbles on Nostr."
+        note={
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan">
+            No central chart. Just relays and ears.
+          </p>
+        }
+        media={
+          <RadioStationPreview
+            href={TRACKSTR_URL}
+            external
+            kicker="trackstr"
+            title="Global now-playing wall"
+            detail="Kind 1073 scrobbles · no central chart"
+          />
+        }
         actions={
           <>
-            <ButtonLink href={TRACKSTR_URL} external className={actionClass}>
+            <ButtonLink href={TRACKSTR_URL} external className={radioActionClass}>
               open the global now-playing wall
             </ButtonLink>
             <ButtonLink
               href={TRACKSTR_GITHUB_URL}
               external
               variant="ghost"
-              className={actionClass}
+              className={radioActionClass}
             >
               trackstr on github
             </ButtonLink>
           </>
         }
-      >
-        <p>What the network is listening to — live scrobbles on Nostr.</p>
-        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan">
-          No central chart. Just relays and ears.
-        </p>
-      </RadioCard>
+      />
     </div>
   );
 }

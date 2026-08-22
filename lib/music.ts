@@ -12,3 +12,13 @@ export const ZAPSTR_URL = "https://zapstr.live";
 export const STEMSTR_URL = "https://stemstr.app";
 export const TRACKSTR_URL = "https://nostrapps.github.io/trackstr/";
 export const TRACKSTR_GITHUB_URL = "https://github.com/nostrapps/trackstr";
+
+export const RADIO_NAV = [
+  { id: "jukebox", label: "Jukebox" },
+  { id: "wavlake", label: "Wavlake" },
+  { id: "live", label: "Live" },
+  { id: "zaptrax", label: "ZapTrax" },
+  { id: "podcasts", label: "Podcasts" },
+  { id: "own", label: "Own" },
+  { id: "now-playing", label: "Now Playing" },
+] as const;
