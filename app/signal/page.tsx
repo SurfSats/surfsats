@@ -14,7 +14,7 @@ export const revalidate = 1800;
 export const metadata: Metadata = {
   title: "Signal",
   description:
-    "Hand-picked Bitcoin + surf culture signal, SurfSats articles, and a live wire of Bitcoin headlines.",
+    "Hand-picked Bitcoin + surf culture signal, SurfSats articles, and underground pleb feeds.",
 };
 
 export default async function SignalPage() {

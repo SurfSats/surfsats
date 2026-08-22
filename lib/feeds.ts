@@ -5,26 +5,32 @@ export type FeedSource = {
   url: string;
 };
 
-// Add or swap sources here. Each fetch is isolated — one dead feed
-// will not take down the rest of THE_WIRE.
+// Pleb / cypherpunk / independent sources. Each fetch is isolated —
+// one dead feed will not take down the rest of THE_WIRE.
 export const feedSources: FeedSource[] = [
+  { name: "No Bullshit Bitcoin", url: "https://nobsbitcoin.com/rss/" },
+  { name: "Bitcoin Optech", url: "https://bitcoinops.org/feed.xml" },
+  { name: "Cypherpunk Cogitations", url: "https://blog.lopp.net/rss/" },
+  { name: "dergigi", url: "https://dergigi.com/feed.xml" },
   {
-    name: "Bitcoin Magazine",
-    url: "https://bitcoinmagazine.com/feed",
+    name: "This Month in Bitcoin Privacy",
+    url: "https://enegnei.github.io/This-Month-In-Bitcoin-Privacy/feed.xml",
   },
+  { name: "Stacker News ~bitcoin", url: "https://stacker.news/~bitcoin/rss" },
   {
-    name: "Stacker News",
-    url: "https://stacker.news/rss",
+    name: "Bitcoin Core announcements",
+    url: "https://bitcoincore.org/en/announcements.xml",
   },
-  {
-    name: "Bitcoin Optech",
-    url: "https://bitcoinops.org/feed.xml",
-  },
+  { name: "TFTC / Marty Bent", url: "https://tftc.io/martys-bent/rss/" },
+  { name: "Diverter", url: "https://diverter.hostyourown.tools/rss/" },
+  { name: "The Bitcoin Manual", url: "https://thebitcoinmanual.com/feed/" },
+  { name: "Econoalchemist", url: "https://econoalchemist.com/feed.xml" },
+  { name: "Bitcoin Audible", url: "https://bitcoinaudible.com/feed" },
 ];
 
-const FETCH_MS = 6000;
-const PER_FEED = 3;
-const MAX_ITEMS = 8;
+const FETCH_MS = 7000;
+const PER_FEED = 2;
+const MAX_ITEMS = 16;
 
 export async function getLiveFeeds(): Promise<{
   items: FeedItem[];
