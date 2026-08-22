@@ -1,3 +1,4 @@
+import { JukeboxPreview } from "@/components/music/JukeboxPreview";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { cn } from "@/lib/cn";
 import { JUKEBOX_PRICE_SATS } from "@/lib/jukebox";
@@ -92,21 +93,27 @@ function RadioCard({
 export function RadioDeck() {
   return (
     <div className="mt-10 grid items-stretch gap-4 sm:mt-12">
-      <RadioCard
-        code="01"
-        kicker="pirate_queue"
-        title="Live Jukebox"
-        accent="sats"
-        wide
-        split
-        actions={
+      <article className="panel panel-hover grid min-w-0 gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(16rem,26rem)] lg:grid-rows-[auto_1fr_auto] lg:items-stretch lg:gap-x-8 lg:gap-y-0">
+        <div className="min-w-0">
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-sats">
+            01 · pirate_queue
+          </p>
+          <h2 className="mt-3 break-words font-display text-2xl font-bold uppercase tracking-tight">
+            Live Jukebox
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            Pay {JUKEBOX_PRICE_SATS} sats, queue a track, ride the pirate ship.
+          </p>
+        </div>
+
+        <JukeboxPreview className="lg:col-start-2 lg:row-span-3" />
+
+        <div className="lg:col-start-1 lg:row-start-3 lg:mt-6">
           <ButtonLink href="/jukebox" className={actionClass}>
             open jukebox
           </ButtonLink>
-        }
-      >
-        Pay {JUKEBOX_PRICE_SATS} sats, queue a track, ride the pirate ship.
-      </RadioCard>
+        </div>
+      </article>
 
       <RadioCard
         code="02"
