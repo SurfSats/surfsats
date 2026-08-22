@@ -7,9 +7,11 @@ import { ArcadeCabinet } from "@/components/arcade/ArcadeCabinet";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import type { WaveRunnerHandle } from "@/components/arcade/WaveRunner";
 import {
+  ARCADE_CREDITS_PER_PAY,
   ARCADE_GAME_ID,
   ARCADE_PRICE_SATS,
   ARCADE_STORAGE_KEY,
+  arcadeScoreSnippet,
   isPlayerId,
   sanitizeAlias,
   type ArcadeHighScore,
@@ -48,6 +50,7 @@ export function ArcadeApp() {
   const [ready, setReady] = useState(false);
   const [playId, setPlayId] = useState<string | null>(null);
   const [lastScore, setLastScore] = useState<number | null>(null);
+  const [scoreCopied, setScoreCopied] = useState(false);
   const gameRef = useRef<WaveRunnerHandle | null>(null);
   const startLock = useRef(false);
   const playIdRef = useRef<string | null>(null);
@@ -210,7 +213,7 @@ export function ArcadeApp() {
   async function requestInvoice() {
     const next = sanitizeAlias(alias);
     if (!next.ok) {
-      setError(next.reason);
+      setError("SET CALLSIGN FIRST · 2–16 CHARS");
       return;
     }
     setAlias(next.alias);
@@ -257,11 +260,11 @@ export function ArcadeApp() {
     if (mode === "invoice" || mode === "playing" || startLock.current) return;
     const next = sanitizeAlias(alias);
     if (!next.ok) {
-      setError(next.reason);
+      setError("SET CALLSIGN FIRST · 2–16 CHARS");
       return;
     }
     if (credits < 1) {
-      setError("insert sats for credits");
+      setError(`INSERT ${ARCADE_PRICE_SATS} SATS FOR ${ARCADE_CREDITS_PER_PAY} CREDITS`);
       return;
     }
     setError(null);
@@ -298,6 +301,7 @@ export function ArcadeApp() {
   const handleWipeout = useCallback(
     async (score: number) => {
       setLastScore(score);
+      setScoreCopied(false);
       setMode("result");
       try {
         await fetch("/api/arcade/score", {
@@ -327,11 +331,12 @@ export function ArcadeApp() {
       if (event.code !== "Space" && event.code !== "ArrowUp") return;
       if (mode === "playing" || mode === "invoice") return;
       event.preventDefault();
-      void play();
+      if (credits > 0) void play();
+      else void requestInvoice();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [mode, play]);
+  }, [credits, mode, play]);
 
   async function copyInvoice() {
     if (!paymentRequest) return;
@@ -341,6 +346,45 @@ export function ArcadeApp() {
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
       setCopied(false);
+    }
+  }
+
+  const scoreRank = useMemo(() => {
+    if (lastScore == null) return null;
+    const parsed = sanitizeAlias(alias);
+    const tag = parsed.ok ? parsed.alias : alias.trim().toUpperCase();
+    const hit = highScores.find(
+      (row) => row.alias === tag && row.score === lastScore,
+    );
+    if (hit) return hit.rank;
+    const tenth = highScores[9]?.score ?? 0;
+    if (highScores.length < 10 || lastScore >= tenth) {
+      return highScores.filter((row) => row.score > lastScore).length + 1;
+    }
+    return null;
+  }, [alias, highScores, lastScore]);
+
+  async function copyScore() {
+    if (lastScore == null) return;
+    const parsed = sanitizeAlias(alias);
+    const tag = parsed.ok ? parsed.alias : alias.trim().toUpperCase() || "PLAYER";
+    const text = arcadeScoreSnippet(tag, lastScore);
+    try {
+      if (typeof navigator.share === "function") {
+        await navigator.share({ text });
+        setScoreCopied(true);
+        window.setTimeout(() => setScoreCopied(false), 1800);
+        return;
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setScoreCopied(true);
+      window.setTimeout(() => setScoreCopied(false), 1800);
+    } catch {
+      setScoreCopied(false);
     }
   }
 
@@ -373,6 +417,8 @@ export function ArcadeApp() {
           copied={copied}
           error={error}
           lastScore={lastScore}
+          scoreRank={scoreRank}
+          scoreCopied={scoreCopied}
           gameRef={gameRef}
           onAlias={setAlias}
           onInsert={() => void requestInvoice()}
@@ -380,6 +426,7 @@ export function ArcadeApp() {
           onHop={hop}
           onWipeout={(score) => void handleWipeout(score)}
           onCopy={() => void copyInvoice()}
+          onCopyScore={() => void copyScore()}
           onCancel={cancelPay}
         />
         <ArcadeBoards
@@ -389,11 +436,11 @@ export function ArcadeApp() {
         />
       </div>
       <div className="arcade-rail">
-        <p>REAL SATS. REAL FAST. REAL ARCADE.</p>
-        <button type="button" onClick={() => void requestInvoice()}>
-          ⚡ PLAY NOW {ARCADE_PRICE_SATS} SATS
-        </button>
-        <p>WE DON&apos;T HODL. DEMO PLAY.</p>
+        <p>
+          {ARCADE_PRICE_SATS} SATS = {ARCADE_CREDITS_PER_PAY} CREDITS ·{" "}
+          WAVE RUNNER
+        </p>
+        <p>HIGH SCORES ARE GLOBAL WHEN THE CABINET IS LIVE</p>
       </div>
     </div>
   );

@@ -12,11 +12,11 @@ const H = 360;
 const PLAYER_X = 108;
 const PLAYER_W = 20;
 const PLAYER_H = 26;
-const GRAVITY = 980;
-const JUMP_V = -390;
-const COYOTE = 0.1;
-const MAX_SPEED = 310;
-const BASE_SPEED = 148;
+const GRAVITY = 1040;
+const JUMP_V = -412;
+const COYOTE = 0.13;
+const MAX_SPEED = 288;
+const BASE_SPEED = 132;
 
 export type WaveRunnerHandle = {
   hop: () => void;
@@ -27,6 +27,8 @@ type Obstacle = {
   w: number;
   h: number;
   kind: "block" | "spike";
+  cleared: boolean;
+  near: boolean;
 };
 
 type Pickup = {
@@ -34,6 +36,13 @@ type Pickup = {
   y: number;
   r: number;
   taken: boolean;
+};
+
+type Floater = {
+  x: number;
+  y: number;
+  text: string;
+  t: number;
 };
 
 type Game = {
@@ -47,10 +56,15 @@ type Game = {
   dead: boolean;
   deadT: number;
   sats: number;
+  scoreShow: number;
+  shake: number;
+  flash: number;
+  near: number;
   nextObstacle: number;
   nextSat: number;
   obstacles: Obstacle[];
   pickups: Pickup[];
+  floaters: Floater[];
   ended: boolean;
 };
 
@@ -74,10 +88,15 @@ function emptyGame(): Game {
     dead: false,
     deadT: 0,
     sats: 0,
-    nextObstacle: 420,
-    nextSat: 240,
+    scoreShow: 0,
+    shake: 0,
+    flash: 0,
+    near: 0,
+    nextObstacle: 560,
+    nextSat: 280,
     obstacles: [],
     pickups: [],
+    floaters: [],
     ended: false,
   };
 }
@@ -90,7 +109,7 @@ function playerBox(game: Game) {
   const worldX = game.scroll + PLAYER_X;
   const ground = surfaceY(worldX) - PLAYER_H;
   const y = ground - game.hop;
-  return { x: PLAYER_X + 3, y: y + 4, w: PLAYER_W - 6, h: PLAYER_H - 6 };
+  return { x: PLAYER_X + 4, y: y + 6, w: PLAYER_W - 8, h: PLAYER_H - 8 };
 }
 
 function overlaps(
@@ -109,9 +128,11 @@ function spawnAhead(game: Game) {
       x: game.nextObstacle,
       w,
       h,
-      kind: Math.random() < 0.35 ? "spike" : "block",
+      kind: Math.random() < 0.32 ? "spike" : "block",
+      cleared: false,
+      near: false,
     });
-    game.nextObstacle += 170 + Math.random() * 150 + game.speed * 0.12;
+    game.nextObstacle += 210 + Math.random() * 165 + game.speed * 0.22;
   }
   while (game.nextSat < horizon) {
     const x = game.nextSat;
@@ -134,10 +155,20 @@ function hopGame(game: Game) {
     game.hopV = JUMP_V;
     game.grounded = false;
     game.coyote = 0;
+    game.shake = Math.max(game.shake, 0.08);
   }
 }
 
 function step(game: Game, dt: number) {
+  game.shake = Math.max(0, game.shake - dt * 2.8);
+  game.flash = Math.max(0, game.flash - dt * 3.2);
+  game.near = Math.max(0, game.near - dt * 2.4);
+  const target = scoreOf(game);
+  game.scoreShow += (target - game.scoreShow) * Math.min(1, dt * 14);
+  if (Math.abs(target - game.scoreShow) < 0.5) game.scoreShow = target;
+  for (const floater of game.floaters) floater.t += dt;
+  game.floaters = game.floaters.filter((item) => item.t < 0.7);
+
   if (game.dead) {
     game.deadT += dt;
     game.hopV += GRAVITY * dt;
@@ -146,7 +177,7 @@ function step(game: Game, dt: number) {
   }
 
   game.t += dt;
-  game.speed = Math.min(MAX_SPEED, BASE_SPEED + game.t * 2.15);
+  game.speed = Math.min(MAX_SPEED, BASE_SPEED + game.t * 1.72);
   game.scroll += game.speed * dt;
   spawnAhead(game);
 
@@ -177,8 +208,25 @@ function step(game: Game, dt: number) {
     ) {
       game.dead = true;
       game.deadT = 0;
-      game.hopV = -80;
+      game.hopV = -110;
+      game.shake = 0.7;
+      game.flash = 1;
       return;
+    }
+    const overlappingX = box.x < ox + obs.w && box.x + box.w > ox;
+    const gap = box.y - (top + obs.h);
+    if (overlappingX && gap > 0 && gap < 16 && !obs.near) {
+      obs.near = true;
+      game.near = 1;
+      game.floaters.push({
+        x: PLAYER_X + PLAYER_W / 2,
+        y: box.y - 8,
+        text: "CLOSE",
+        t: 0,
+      });
+    }
+    if (!obs.cleared && ox + obs.w < box.x) {
+      obs.cleared = true;
     }
   }
 
@@ -191,6 +239,12 @@ function step(game: Game, dt: number) {
     if (dx * dx + dy * dy < (sat.r + 10) * (sat.r + 10)) {
       sat.taken = true;
       game.sats += 1;
+      game.floaters.push({
+        x: sx,
+        y: sat.y,
+        text: "+21",
+        t: 0,
+      });
     }
   }
 
@@ -218,6 +272,11 @@ function roundRect(
 
 function draw(ctx: CanvasRenderingContext2D, game: Game) {
   ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  if (game.shake > 0) {
+    const mag = game.shake * 10;
+    ctx.translate((Math.random() - 0.5) * mag, (Math.random() - 0.5) * mag);
+  }
   const glow = ctx.createRadialGradient(W * 0.5, H * 0.35, 20, W * 0.5, H * 0.5, H);
   glow.addColorStop(0, "#12384a");
   glow.addColorStop(1, "#041018");
@@ -313,16 +372,36 @@ function draw(ctx: CanvasRenderingContext2D, game: Game) {
   drawSurfer(ctx, PLAYER_X, y, game.grounded, game.t);
   ctx.restore();
 
+  for (const floater of game.floaters) {
+    const lift = floater.t * 28;
+    ctx.globalAlpha = Math.max(0, 1 - floater.t / 0.7);
+    ctx.font = "12px monospace";
+    ctx.fillStyle = floater.text === "CLOSE" ? "#3dfff3" : "#ff7a18";
+    ctx.textAlign = "center";
+    ctx.fillText(floater.text, floater.x, floater.y - lift);
+    ctx.globalAlpha = 1;
+  }
+
   ctx.font = "11px monospace";
   ctx.fillStyle = "#7cffb2";
   ctx.textAlign = "left";
   ctx.fillText("WAVE RUNNER", 16, 22);
-  ctx.fillStyle = "#efe6d4";
+  ctx.fillStyle = game.near > 0.2 ? "#3dfff3" : "#efe6d4";
   ctx.font = "14px monospace";
-  ctx.fillText(String(scoreOf(game)).padStart(6, "0"), 16, 40);
+  ctx.fillText(String(Math.floor(game.scoreShow)).padStart(6, "0"), 16, 40);
   ctx.textAlign = "right";
   ctx.fillStyle = "#ff7a18";
   ctx.fillText(`${game.sats} SATS`, W - 16, 28);
+
+  if (game.flash > 0) {
+    ctx.fillStyle = `rgba(255, 46, 196, ${game.flash * 0.28})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+  if (game.near > 0) {
+    ctx.fillStyle = `rgba(61, 255, 243, ${game.near * 0.12})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+  ctx.restore();
 }
 
 function drawSat(

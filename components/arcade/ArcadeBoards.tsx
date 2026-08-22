@@ -36,15 +36,19 @@ export function ArcadeBoards({
           <span>ALIAS</span>
           <span>SCORE</span>
         </div>
-        <ol className="arcade-board-list">
-          {rows.map((row, index) => (
-            <li key={row?.rank ?? index} className={row ? undefined : "is-empty"}>
-              <span>{index + 1}</span>
-              <span>{row?.alias ?? "--------"}</span>
-              <span>{row ? formatScore(row.score) : "--------"}</span>
-            </li>
-          ))}
-        </ol>
+        {highScores.length ? (
+          <ol className="arcade-board-list">
+            {rows.map((row, index) => (
+              <li key={row?.rank ?? index} className={row ? undefined : "is-empty"}>
+                <span>{index + 1}</span>
+                <span>{row?.alias ?? "--------"}</span>
+                <span>{row ? formatScore(row.score) : "--------"}</span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="arcade-board-empty">NO LEGENDS YET · INSERT COIN</p>
+        )}
       </section>
 
       <section className="arcade-board arcade-board-recent" aria-label="Last 10 players">
@@ -76,7 +80,7 @@ export function ArcadeBoards({
             ))}
           </ol>
         ) : (
-          <p className="arcade-board-empty">WAITING FOR THE FIRST COIN DROP</p>
+          <p className="arcade-board-empty">NO COINS YET · BE FIRST</p>
         )}
         <p className="arcade-board-foot">
           STAY LIGHTNING. STAY LEGEND.

@@ -5,7 +5,12 @@ import {
   WaveRunner,
   type WaveRunnerHandle,
 } from "@/components/arcade/WaveRunner";
-import { ARCADE_GAME_LABEL, ARCADE_PRICE_SATS, formatScore } from "@/lib/arcade";
+import {
+  ARCADE_CREDITS_PER_PAY,
+  ARCADE_GAME_LABEL,
+  ARCADE_PRICE_SATS,
+  formatScore,
+} from "@/lib/arcade";
 
 export type ArcadeScreenMode =
   | "attract"
@@ -21,9 +26,13 @@ export function ArcadeScreen({
   invoiceError,
   expired,
   lastScore,
+  scoreRank,
+  scoreCopied,
   gameRef,
   onPlay,
+  onInsert,
   onWipeout,
+  onCopyScore,
   photoCrt = false,
 }: {
   mode: ArcadeScreenMode;
@@ -32,12 +41,17 @@ export function ArcadeScreen({
   invoiceError: string | null;
   expired: boolean;
   lastScore: number | null;
+  scoreRank: number | null;
+  scoreCopied: boolean;
   gameRef: RefObject<WaveRunnerHandle | null>;
   onPlay: () => void;
+  onInsert: () => void;
   onWipeout: (score: number) => void;
+  onCopyScore: () => void;
   photoCrt?: boolean;
 }) {
   const live = mode === "playing" || mode === "result";
+  const high = scoreRank !== null && scoreRank <= 10;
 
   return (
     <div
@@ -57,14 +71,29 @@ export function ArcadeScreen({
       ) : null}
 
       {mode === "result" ? (
-        <button type="button" className="cab-crt-result" onClick={onPlay}>
-          <p className="cab-crt-insert">WIPEOUT</p>
+        <div className="cab-crt-result">
+          {high ? (
+            <p className="cab-crt-hi">
+              {scoreRank === 1 ? "NEW HIGH SCORE" : `TOP 10 · RANK ${scoreRank}`}
+            </p>
+          ) : (
+            <p className="cab-crt-insert">WIPEOUT</p>
+          )}
           <p className="cab-crt-score">{formatScore(lastScore ?? 0)}</p>
           <p className="cab-crt-sub">{ARCADE_GAME_LABEL}</p>
-          <p className="cab-crt-insert cab-crt-blink">
-            {credits > 0 ? "PRESS START" : "INSERT COIN"}
-          </p>
-        </button>
+          <div className="cab-crt-result-actions">
+            <button
+              type="button"
+              className="cab-crt-next"
+              onClick={credits > 0 ? onPlay : onInsert}
+            >
+              {credits > 0 ? "PLAY AGAIN" : `INSERT ${ARCADE_PRICE_SATS} SATS`}
+            </button>
+            <button type="button" className="cab-crt-share" onClick={onCopyScore}>
+              {scoreCopied ? "COPIED" : "COPY SCORE"}
+            </button>
+          </div>
+        </div>
       ) : null}
 
       {mode === "invoice" ? (
@@ -92,10 +121,14 @@ export function ArcadeScreen({
       ) : null}
 
       {mode === "attract" ? (
-        <button type="button" className="cab-crt-attract cab-crt-hit" onClick={onPlay}>
-          <p className="cab-crt-insert cab-crt-blink">INSERT COIN</p>
+        <button
+          type="button"
+          className="cab-crt-attract cab-crt-hit"
+          onClick={onInsert}
+        >
+          <p className="cab-crt-insert cab-crt-blink">INSERT {ARCADE_PRICE_SATS} SATS</p>
           <p className="cab-crt-sub">
-            {ARCADE_PRICE_SATS} SATS · 3 CREDITS · {ARCADE_GAME_LABEL}
+            {ARCADE_CREDITS_PER_PAY} CREDITS · {ARCADE_GAME_LABEL}
           </p>
         </button>
       ) : null}

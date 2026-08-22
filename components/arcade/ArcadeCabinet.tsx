@@ -3,6 +3,7 @@
 import Image from "next/image";
 import {
   ARCADE_ALIAS_MAX,
+  ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
   formatCredits,
 } from "@/lib/arcade";
@@ -27,6 +28,8 @@ export function ArcadeCabinet({
   copied,
   error,
   lastScore,
+  scoreRank,
+  scoreCopied,
   gameRef,
   onAlias,
   onInsert,
@@ -34,6 +37,7 @@ export function ArcadeCabinet({
   onHop,
   onWipeout,
   onCopy,
+  onCopyScore,
   onCancel,
 }: {
   alias: string;
@@ -49,6 +53,8 @@ export function ArcadeCabinet({
   copied: boolean;
   error: string | null;
   lastScore: number | null;
+  scoreRank: number | null;
+  scoreCopied: boolean;
   gameRef: RefObject<WaveRunnerHandle | null>;
   onAlias: (value: string) => void;
   onInsert: () => void;
@@ -56,9 +62,12 @@ export function ArcadeCabinet({
   onHop: () => void;
   onWipeout: (score: number) => void;
   onCopy: () => void;
+  onCopyScore: () => void;
   onCancel: () => void;
 }) {
-  const stickAction = mode === "playing" ? onHop : onPlay;
+  const canPlay = credits > 0 && mode !== "invoice" && mode !== "playing";
+  const stickAction =
+    mode === "playing" ? onHop : canPlay ? onPlay : onInsert;
   const paying = mode === "invoice";
   const liveInvoice =
     Boolean(paymentRequest) && paymentRequest.toLowerCase().startsWith("ln");
@@ -85,9 +94,13 @@ export function ArcadeCabinet({
             invoiceError={invoiceError}
             expired={expired}
             lastScore={lastScore}
+            scoreRank={scoreRank}
+            scoreCopied={scoreCopied}
             gameRef={gameRef}
             onPlay={onPlay}
+            onInsert={onInsert}
             onWipeout={onWipeout}
+            onCopyScore={onCopyScore}
             photoCrt
           />
         </div>
@@ -96,34 +109,56 @@ export function ArcadeCabinet({
           type="button"
           className="cab-hit cab-hit-stick"
           onClick={stickAction}
-          aria-label={mode === "playing" ? "Hop" : "Play"}
+          aria-label={
+            mode === "playing" ? "Hop" : canPlay ? "Play" : "Insert coin"
+          }
         />
         <button
           type="button"
           className="cab-hit cab-hit-start"
           onClick={stickAction}
-          aria-label={mode === "playing" ? "Hop" : "Start"}
+          aria-label={
+            mode === "playing" ? "Hop" : canPlay ? "Start" : "Insert coin"
+          }
         />
 
         <div className="cab-coin" id="arcade-coin">
         <div className="cab-coin-top">
-          <button
-            type="button"
-            className="cab-insert"
-            disabled={pending || paying || mode === "playing"}
-            onClick={onInsert}
-          >
-            INSERT
-            <span>{ARCADE_PRICE_SATS} SATS</span>
-          </button>
+          {canPlay ? (
+            <button type="button" className="cab-play" onClick={onPlay}>
+              PLAY
+              <span>1 CREDIT</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="cab-insert"
+              disabled={pending || paying || mode === "playing"}
+              onClick={onInsert}
+            >
+              INSERT {ARCADE_PRICE_SATS} SATS
+              <span>{ARCADE_CREDITS_PER_PAY} CREDITS</span>
+            </button>
+          )}
           <div className="cab-led">
             <p>CREDITS</p>
             <p className="cab-led-num">{formatCredits(credits)}</p>
           </div>
         </div>
 
+        {canPlay ? (
+          <button
+            type="button"
+            className="cab-insert-more"
+            disabled={pending || paying}
+            onClick={onInsert}
+          >
+            INSERT {ARCADE_PRICE_SATS} SATS · {ARCADE_CREDITS_PER_PAY} MORE CREDITS
+          </button>
+        ) : null}
+
         <label className="cab-alias">
-          <span>CALLSIGN</span>
+          <span>CALLSIGN · REQUIRED</span>
           <input
             value={alias}
             maxLength={ARCADE_ALIAS_MAX}
@@ -136,7 +171,10 @@ export function ArcadeCabinet({
           />
         </label>
 
-        <p className="cab-coin-note">LIGHTNING · NO FIAT · NO KYC</p>
+        <p className="cab-coin-note">
+          {ARCADE_PRICE_SATS} SATS = {ARCADE_CREDITS_PER_PAY} CREDITS · LIGHTNING
+          · NO KYC
+        </p>
 
         {error ? <p className="cab-error">{error}</p> : null}
 

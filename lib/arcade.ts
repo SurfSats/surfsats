@@ -78,6 +78,11 @@ export function formatScore(score: number) {
   return Math.floor(Math.abs(score)).toLocaleString("en-US");
 }
 
+export function arcadeScoreSnippet(alias: string, score: number) {
+  const tag = alias.trim() || "PLAYER";
+  return `${tag} scored ${formatScore(score)} on WAVE RUNNER — surfsats.com/arcade`;
+}
+
 export function formatTimeAgo(iso: string, now = Date.now()) {
   const then = new Date(iso).getTime();
   if (!Number.isFinite(then)) return "JUST NOW";
