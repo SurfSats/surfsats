@@ -3,7 +3,6 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { cn } from "@/lib/cn";
 import { JUKEBOX_PRICE_SATS } from "@/lib/jukebox";
-import { WAVE_POOL_GOAL_SATS } from "@/lib/wavepool";
 
 const tools = [
   {
@@ -16,17 +15,8 @@ const tools = [
     accent: "cyan",
   },
   {
-    href: "/wavepool",
-    code: "02",
-    name: "Wave Pool",
-    hook: `${WAVE_POOL_GOAL_SATS} sats. One shared set.`,
-    body: "Zap the pool. Bitcoin up on the day: barrel. Down: closeout. Collective energy with a violent break.",
-    cta: "feed_the_wave",
-    accent: "magenta",
-  },
-  {
     href: "/jukebox",
-    code: "03",
+    code: "02",
     name: "Global Jukebox",
     hook: `${JUKEBOX_PRICE_SATS} sats. Any song.`,
     body: "Pay Lightning. Be the DJ. No playlist committee. Stream is live on Noderunners Radio.",
@@ -35,7 +25,7 @@ const tools = [
   },
   {
     href: "/music",
-    code: "04",
+    code: "03",
     name: "Surf Radio",
     hook: "Explore permissionless music.",
     body: "Stream, zap, and discover.",
@@ -44,7 +34,7 @@ const tools = [
   },
   {
     href: "/graffiti",
-    code: "05",
+    code: "04",
     name: "Graffiti Wall",
     hook: "21 sats. 21 hours.",
     body: "Pay Lightning. Leave a mark. Bitcoin Is Hope stays forever.",
@@ -62,7 +52,7 @@ export function FeaturedTools() {
           title="The machines"
           description="Not a blog with a tip jar. Things you can actually use."
         />
-        <div className="mt-10 grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {tools.map((tool) => (
             <Link
               key={tool.href}
@@ -70,7 +60,6 @@ export function FeaturedTools() {
               className={cn(
                 "panel panel-hover group flex min-w-0 flex-col p-5 sm:p-6",
                 tool.accent === "cyan" && "hover:border-cyan/60",
-                tool.accent === "magenta" && "hover:border-magenta/60",
                 tool.accent === "sats" && "hover:border-sats/60",
               )}
             >
@@ -78,7 +67,6 @@ export function FeaturedTools() {
                 <span
                   className={cn(
                     tool.accent === "cyan" && "text-cyan",
-                    tool.accent === "magenta" && "text-magenta",
                     tool.accent === "sats" && "text-sats",
                   )}
                 >
@@ -93,7 +81,6 @@ export function FeaturedTools() {
                 className={cn(
                   "mt-2 font-mono text-xs uppercase tracking-[0.12em]",
                   tool.accent === "cyan" && "text-cyan",
-                  tool.accent === "magenta" && "text-magenta",
                   tool.accent === "sats" && "text-sats",
                 )}
               >

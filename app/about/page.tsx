@@ -31,7 +31,7 @@ export default function AboutPage() {
             a normie what Bitcoin actually feels like.
           </p>
           <p>
-            Jukebox. Graffiti Wall. Wave Pool. Move 21 sats and the thing
+            Jukebox. Graffiti Wall. Arcade. Move 21 sats and the thing
             happens. That&apos;s the whole argument. Experience over lectures.
           </p>
           <p>

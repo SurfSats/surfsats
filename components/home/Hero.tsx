@@ -29,9 +29,6 @@ export function Hero({ initial }: { initial: TimechainSnapshot | null }) {
         </p>
         <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <ButtonLink href="/lineup">enter the lineup</ButtonLink>
-          <ButtonLink href="/wavepool" variant="ghost">
-            feed the wave
-          </ButtonLink>
           <ButtonLink href="/jukebox" variant="ghost">
             drop 21 sats
           </ButtonLink>
