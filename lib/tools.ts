@@ -247,6 +247,26 @@ export const directoryTools: DirectoryTool[] = [
     section: "fun",
   },
   {
+    id: "lightning-piggy",
+    name: "Lightning Piggy",
+    url: "https://lightningpiggy.com",
+    blurb:
+      "Pay and stack sats into a physical Lightning piggy bank.",
+    why: "A jar on the shelf that speaks BOLT11. Kids get it. So do you.",
+    tag: "Fun",
+    section: "fun",
+  },
+  {
+    id: "seedsigner",
+    name: "SeedSigner",
+    url: "https://seedsigner.com",
+    blurb: "Offline seed + PSBT signing for self-custody.",
+    why: "Air-gapped, DIY, no vendor holding your keys. Sovereignty you can assemble.",
+    tag: "Fun",
+    section: "fun",
+  },
+
+  {
     id: "bitrefill",
     name: "Bitrefill",
     url: "https://www.bitrefill.com",
