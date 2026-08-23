@@ -3778,29 +3778,43 @@ body:has(.graffiti-page) .site-watermark {
   }
 }
 
+.story-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100dvh - 8.25rem);
+}
+
+.story-bg {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.story-bg img {
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+.story-bg-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 4, 12, 0.38) 0%,
+      rgba(8, 4, 12, 0.32) 42%,
+      rgba(8, 4, 12, 0.42) 100%
+    );
+}
+
 .story-page {
   position: relative;
+  z-index: 1;
   min-height: calc(100dvh - 8.25rem);
   padding: 1.25rem 1rem 3rem;
   color: #2c1c10;
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(90, 50, 18, 0.28), transparent 46%),
-    radial-gradient(ellipse at 8% 88%, rgba(0, 0, 0, 0.55), transparent 40%),
-    #120c08;
-}
-
-.story-veil {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 3px,
-      rgba(0, 0, 0, 0.08) 3px 4px
-    );
-  opacity: 0.35;
-  mix-blend-mode: multiply;
+  background: transparent;
 }
 
 body:has(.story-page) .site-watermark {
@@ -4206,6 +4220,12 @@ body:has(.story-page) .site-watermark {
   background: transparent;
   border: 1px solid #8a6a32;
   color: #3a220c;
+}
+
+@media (max-width: 700px) {
+  .story-bg img {
+    object-position: 46% 58%;
+  }
 }
 
 @media (min-width: 640px) {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { StoryApp } from "@/components/story/StoryApp";
 import { STORY_PRICE_SATS } from "@/lib/story";
 
@@ -8,5 +9,19 @@ export const metadata: Metadata = {
 };
 
 export default function StoryPage() {
-  return <StoryApp />;
+  return (
+    <div className="story-shell">
+      <div className="story-bg" aria-hidden="true">
+        <Image
+          src="/story-writer-quarters.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+        />
+        <div className="story-bg-scrim" />
+      </div>
+      <StoryApp />
+    </div>
+  );
 }

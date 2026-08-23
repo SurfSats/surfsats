@@ -89,7 +89,6 @@ export function StoryApp() {
     <div
       className={`${titleFace.variable} ${faceBlackletter.variable} ${faceFell.variable} ${faceGaramond.variable} story-page`}
     >
-      <div className="story-veil" aria-hidden="true" />
       <div className="story-column">
         <StoryBook lines={lines} freshId={freshId} />
         <StoryComposer onPaid={addLine} />
