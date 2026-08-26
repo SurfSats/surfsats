@@ -1,6 +1,14 @@
-import type { JukeboxTrack } from "@/lib/types";
+import type { JukeboxLiveTrack } from "@/lib/jukebox";
 
-export function NowPlaying({ track }: { track: JukeboxTrack | null }) {
+export function NowPlaying({
+  track,
+  status,
+}: {
+  track: JukeboxLiveTrack | null;
+  status: "loading" | "live" | "offline";
+}) {
+  const live = status === "live" && Boolean(track?.title);
+
   return (
     <section className="panel p-5 sm:p-7">
       <div className="flex items-center justify-between gap-3">
@@ -12,17 +20,19 @@ export function NowPlaying({ track }: { track: JukeboxTrack | null }) {
         </span>
       </div>
 
-      {track ? (
+      {live && track ? (
         <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-center">
           <Equalizer />
-          <div>
-            <h2 className="font-display text-3xl font-bold uppercase tracking-tight">
+          <div className="min-w-0">
+            <h2 className="break-words font-display text-3xl font-bold uppercase tracking-tight">
               {track.title}
             </h2>
-            <p className="mt-1 font-mono text-sm text-cyan">{track.artist}</p>
-            <p className="mt-4 font-mono text-xs uppercase tracking-[0.08em] text-muted">
-              requested_by {track.requestedBy ?? "anon"} · {track.duration}
-              {track.satsPaid ? ` · ${track.satsPaid} sats` : ""}
+            <p className="mt-1 font-mono text-sm text-cyan">
+              {track.artist}
+              {track.album ? ` — ${track.album}` : ""}
+            </p>
+            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-sats">
+              signal active — listen above
             </p>
           </div>
         </div>
@@ -36,13 +46,14 @@ export function NowPlaying({ track }: { track: JukeboxTrack | null }) {
             <Equalizer />
             <div>
               <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-cyan sm:text-3xl">
-                Live on Noderunners Radio
+                {status === "loading"
+                  ? "Tuning the deck"
+                  : "Stream live · track data offline"}
               </h2>
               <p className="mt-2 font-mono text-xs uppercase tracking-[0.12em] text-muted">
-                track data coming soon · stream is live
-              </p>
-              <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-sats">
-                signal active — listen above
+                {status === "loading"
+                  ? "asking the ship for the current cut"
+                  : "listen above · metadata silent"}
               </p>
             </div>
           </div>
@@ -52,7 +63,7 @@ export function NowPlaying({ track }: { track: JukeboxTrack | null }) {
       <div className="mt-6 h-2 overflow-hidden border border-cyan/20 bg-background">
         <div
           className={
-            track
+            live
               ? "h-full w-2/5 bg-sats"
               : "h-full w-3/5 animate-pulse bg-gradient-to-r from-cyan via-magenta to-sats"
           }

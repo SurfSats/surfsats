@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { AddSongCard } from "@/components/jukebox/AddSongCard";
-import { HowItWorks } from "@/components/jukebox/HowItWorks";
+import { JukeboxDeck } from "@/components/jukebox/JukeboxDeck";
 import { LiveStream } from "@/components/jukebox/LiveStream";
-import { NowPlaying } from "@/components/jukebox/NowPlaying";
-import { Queue } from "@/components/jukebox/Queue";
 import { SignalStatus } from "@/components/jukebox/SignalStatus";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Container } from "@/components/ui/Container";
@@ -14,8 +12,7 @@ import {
   JUKEBOX_LIVE_URL,
   JUKEBOX_PRICE_SATS,
   JUKEBOX_TELEGRAM_URL,
-  getNowPlaying,
-  getQueue,
+  fetchNowPlayingSnapshot,
 } from "@/lib/jukebox";
 
 export const metadata: Metadata = {
@@ -24,10 +21,8 @@ export const metadata: Metadata = {
     "The Jukebox — located on a pirate ship sailing in international waters. Listen on the ship. Request a track for 21 sats — anti-spam, not a record deal.",
 };
 
-export default function JukeboxPage() {
-  // Swap these helpers for a live queue API when one exists.
-  const current = getNowPlaying();
-  const queue = getQueue();
+export default async function JukeboxPage() {
+  const initial = await fetchNowPlayingSnapshot();
 
   return (
     <div className="relative">
@@ -95,14 +90,7 @@ export default function JukeboxPage() {
           to artists.
         </p>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-          <NowPlaying track={current} />
-          <HowItWorks />
-        </div>
-
-        <div className="mt-10">
-          <Queue tracks={queue} />
-        </div>
+        <JukeboxDeck initial={initial} />
 
         <div className="mt-10">
           <AddSongCard />
