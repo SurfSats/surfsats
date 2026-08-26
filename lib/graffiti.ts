@@ -4,8 +4,8 @@ export const GRAFFITI_MAX_CHARS = 100;
 export const GRAFFITI_TTL_MS = GRAFFITI_TTL_HOURS * 60 * 60 * 1000;
 export const GRAFFITI_STORAGE_KEY = "surfsats.graffiti.v5";
 export const GRAFFITI_CENTER = "Bitcoin Is Hope";
-/** Keep tags below the hero title band (~first 26% of the wall). */
-export const GRAFFITI_HERO_BAND = 26;
+/** Keep tags out of the thin status strip. */
+export const GRAFFITI_HERO_BAND = 4;
 
 export const graffitiStyles = [
   { id: "tag", label: "classic tag" },
@@ -113,8 +113,8 @@ const PLACE_ZONES = [
   { topMin: 70, topMax: 86, leftMin: 48, leftMax: 58 },
 ] as const;
 
-const WALL_TOP_MIN = 28;
-const WALL_TOP_MAX = 88;
+const WALL_TOP_MIN = 8;
+const WALL_TOP_MAX = 90;
 const WALL_LEFT_MIN = 2;
 const WALL_LEFT_MAX = 62;
 const MURAL = { top: 40, bottom: 66, left: 20, right: 54 };

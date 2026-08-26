@@ -793,9 +793,10 @@ body {
 .graffiti-page {
   position: relative;
   z-index: 0;
-  display: flow-root;
+  display: flex;
   isolation: isolate;
-  min-height: 160vh;
+  min-height: calc(100dvh - 7.5rem);
+  flex-direction: column;
   color: #efe6d4;
   background-color: #3a3832;
   background-image:
@@ -846,61 +847,42 @@ body {
     );
 }
 
-.graffiti-hero {
+.graffiti-strip {
   position: relative;
   z-index: 20;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.45);
+  background: rgba(10, 8, 7, 0.72);
+  padding: 0.45rem 1rem;
 }
 
-.graffiti-hero-copy {
-  position: relative;
-  padding: 1rem 1.25rem 1.25rem;
+.graffiti-strip p {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c9b8a4;
 }
 
 body:has(.graffiti-page) .site-watermark {
   display: none;
 }
 
-@media (max-width: 639px) {
-  .graffiti-hero-copy {
-    padding: 0.85rem 1.1rem 1.1rem;
-  }
-
-  .graffiti-hero-title {
-    font-size: clamp(2rem, 11vw, 2.6rem);
-    line-height: 1.02;
-  }
-}
-
-.graffiti-hero-title {
-  margin-top: 0.55rem;
-  max-width: 18ch;
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(2.15rem, 8vw, 3.75rem);
-  font-weight: 800;
-  line-height: 0.96;
-  letter-spacing: -0.03em;
-  text-transform: uppercase;
-  color: #efe6d4;
-  text-shadow:
-    0 1px 0 #1a1612,
-    0 3px 0 rgba(0, 0, 0, 0.75),
-    0 10px 28px rgba(0, 0, 0, 0.7);
-}
-
-.graffiti-hero-tagline {
-  margin-top: 0.85rem;
-  max-width: 28rem;
-  font-size: 0.95rem;
-  line-height: 1.45;
-  color: #d7d0c4;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+.graffiti-shell {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1.85fr) minmax(20rem, 0.95fr);
 }
 
 .graffiti-stage {
   position: relative;
   z-index: 2;
-  display: flow-root;
-  min-height: 160vh;
+  min-height: calc(100dvh - 11rem);
+  container-type: size;
 }
 
 .graffiti-wall {
@@ -908,6 +890,109 @@ body:has(.graffiti-page) .site-watermark {
   inset: 0;
   z-index: 2;
   min-height: 100%;
+}
+
+.graffiti-deck {
+  position: sticky;
+  top: 7.5rem;
+  z-index: 12;
+  display: flex;
+  max-height: calc(100dvh - 7.7rem);
+  flex-direction: column;
+  align-self: start;
+  overflow: auto;
+  border-left: 2px solid #2a2620;
+  background: rgba(10, 8, 7, 0.92);
+}
+
+.graffiti-deck-tabs {
+  display: grid;
+  flex-shrink: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid #3a342c;
+}
+
+.graffiti-deck-tabs button {
+  min-height: 2.7rem;
+  border-right: 1px solid #3a342c;
+  background: transparent;
+  color: #a8a29a;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.graffiti-deck-tabs button:last-child {
+  border-right: 0;
+}
+
+.graffiti-deck-tabs button.is-on {
+  background: #2a2110;
+  color: #f59e0b;
+}
+
+.graffiti-deck-body {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}
+
+.graffiti-feed {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.65rem;
+}
+
+.graffiti-feed-row {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid transparent;
+  background: rgba(0, 0, 0, 0.28);
+  text-align: left;
+}
+
+.graffiti-feed-row.is-on {
+  border-color: #f59e0b;
+  background: #2a2110;
+}
+
+.graffiti-feed-msg {
+  color: #efe6d4;
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+
+.graffiti-feed-meta {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a8a29a;
+}
+
+.graffiti-feed-empty,
+.graffiti-how {
+  padding: 1.1rem 1.15rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #d7d0c4;
+}
+
+.graffiti-how p + p {
+  margin-top: 0.7rem;
+}
+
+.graf-highlight .graf-inner {
+  outline: 1px solid #f59e0b;
+  outline-offset: 6px;
+}
+
+.graf-invoice-pane {
+  overflow: visible;
 }
 
 .graffiti-wall-placing {
@@ -933,8 +1018,8 @@ body:has(.graffiti-page) .site-watermark {
   left: 50%;
   top: 48%;
   z-index: 7;
-  width: min(94vw, 1100px);
-  max-width: min(94vw, 1100px);
+  width: min(92%, 46rem);
+  max-width: 92%;
   transform: translate(-50%, -50%) rotate(-3deg);
   text-align: center;
   pointer-events: none;
@@ -952,13 +1037,13 @@ body:has(.graffiti-page) .site-watermark {
 .graf-center-line {
   display: block;
   white-space: nowrap;
-  font-size: clamp(1.55rem, 7.4vw, 5.1rem);
+  font-size: clamp(1.4rem, 9cqw, 4.4rem);
 }
 
 .graf-center-hope {
   display: block;
   white-space: nowrap;
-  font-size: clamp(2.5rem, 13vw, 7.2rem);
+  font-size: clamp(2.2rem, 16cqw, 6.4rem);
   margin-top: 0.04em;
 }
 
@@ -1209,10 +1294,9 @@ body:has(.graffiti-page) .site-watermark {
   z-index: 8;
   margin: 0;
   padding: 1.25rem;
-  background: rgba(10, 8, 7, 0.94);
-  border: 2px solid #3a342c;
-  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(10px);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .graf-style-grid {
@@ -1312,56 +1396,40 @@ body:has(.graffiti-page) .site-watermark {
 
 .graf-invoice-qr {
   display: block;
-  width: min(100%, 16rem);
+  width: min(100%, 18rem);
+  max-width: 100%;
   height: auto;
   aspect-ratio: 1;
   background: #efe6d4;
 }
 
 @media (max-width: 1023px) {
-  .graffiti-dock {
-    position: fixed;
+  .graffiti-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .graffiti-stage {
+    min-height: min(68dvh, 34rem);
+  }
+
+  .graffiti-deck {
+    position: relative;
     top: auto;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 40;
-    width: 100%;
-    max-height: 64dvh;
-    margin: 0;
-    overflow: hidden;
-    transform: translateY(110%);
-    transition: transform 180ms ease;
-    pointer-events: none;
+    max-height: none;
+    border-left: 0;
+    border-top: 2px solid #2a2620;
   }
 
-  .graffiti-dock[data-open="true"] {
-    transform: translateY(0);
-    pointer-events: auto;
+  .graffiti-form {
+    box-shadow: none;
   }
 
-  .graffiti-dock[data-open="true"] .graffiti-dock-bar {
-    border-radius: 14px 14px 0 0;
-  }
-
-  .graffiti-dock .graffiti-form {
-    max-height: calc(64dvh - 2.5rem);
-    overflow: auto;
-    border-top: 0;
-    border-radius: 0;
-    box-shadow: 0 -10px 0 rgba(0, 0, 0, 0.35);
+  .graf-invoice-qr {
+    width: min(100%, 20rem);
   }
 }
 
 @media (min-width: 640px) {
-  .graffiti-hero-copy {
-    padding: 1.15rem 2rem 1.35rem;
-  }
-
-  .graffiti-hero-tagline {
-    font-size: 1.05rem;
-  }
-
   .graffiti-form {
     padding: 1.6rem;
   }

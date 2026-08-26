@@ -10,7 +10,9 @@ import {
   Rubik_Glitch,
   Stardos_Stencil,
 } from "next/font/google";
+import { GraffitiFeed } from "@/components/graffiti/GraffitiFeed";
 import { GraffitiForm } from "@/components/graffiti/GraffitiForm";
+import { GraffitiHow } from "@/components/graffiti/GraffitiHow";
 import { GraffitiWall } from "@/components/graffiti/GraffitiWall";
 import {
   GRAFFITI_HERO_BAND,
@@ -27,6 +29,7 @@ import {
   isActiveMark,
   seedMarks,
 } from "@/lib/graffiti";
+import { cn } from "@/lib/cn";
 
 const marker = Permanent_Marker({
   weight: "400",
@@ -70,11 +73,15 @@ const stencil = Stardos_Stencil({
   variable: "--font-graf-stencil",
 });
 
+type DeckTab = "spray" | "wall" | "how";
+
 export function GraffitiApp() {
   const [paid, setPaid] = useState<GraffitiMark[]>([]);
   const [ready, setReady] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [freshId, setFreshId] = useState<string | null>(null);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [tab, setTab] = useState<DeckTab>("spray");
   const [text, setText] = useState("");
   const [style, setStyle] = useState<GraffitiStyle>("tag");
   const [color, setColor] = useState<GraffitiColor>("banana");
@@ -83,7 +90,6 @@ export function GraffitiApp() {
   const [hover, setHover] = useState<{ top: number; left: number } | null>(
     null,
   );
-  const [composerOpen, setComposerOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -179,11 +185,13 @@ export function GraffitiApp() {
     return defaultPlacement;
   }, [placement, hover, defaultPlacement]);
 
-  const showGhost = text.trim().length >= 2;
+  const showGhost = tab === "spray" && text.trim().length >= 2;
 
   const addMark = useCallback((mark: GraffitiMark) => {
     setPaid((current) => mergePaid(current, [mark]));
     setFreshId(mark.id);
+    setHighlightId(mark.id);
+    setTab("spray");
     window.setTimeout(() => {
       document.getElementById(`graf-${mark.id}`)?.scrollIntoView({
         behavior: "smooth",
@@ -203,86 +211,104 @@ export function GraffitiApp() {
     setHover(null);
   }, []);
 
+  function selectMark(id: string) {
+    setHighlightId(id);
+    window.setTimeout(() => {
+      document.getElementById(`graf-${id}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 40);
+  }
+
   return (
     <div
       className={`${marker.variable} ${throwup.variable} ${wild.variable} ${drip.variable} ${block.variable} ${fat.variable} ${stencil.variable} graffiti-page`}
     >
-      <header className="graffiti-hero">
-        <div className="graffiti-hero-copy">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-stone-300/90">
-            city wall · no accounts
-          </p>
-          <h1 className="graffiti-hero-title">Graffiti Wall</h1>
-          <p className="graffiti-hero-tagline">
-            {GRAFFITI_PRICE_SATS} sats. {GRAFFITI_TTL_HOURS} hours. Then it
-            fades. Bitcoin Is Hope does not.
-          </p>
-        </div>
+      <header className="graffiti-strip">
+        <p>
+          city wall · {GRAFFITI_PRICE_SATS} sats · {GRAFFITI_TTL_HOURS} hours
+        </p>
       </header>
 
-      <div className="graffiti-stage">
-        <GraffitiWall
-          marks={live}
-          freshId={freshId}
-          placing
-          quiet={paidLive === 0}
-          ghost={
-            showGhost
-              ? {
-                  text: text.trim(),
-                  style,
-                  color,
-                  placement: ghostPlacement,
-                  locked: Boolean(placement),
-                }
-              : null
-          }
-          onPlace={(top, left) => {
-            setPlacement(organicPlacement(top, left));
-            setComposerOpen(true);
-          }}
-          onHover={(point) => {
-            if (placement) return;
-            setHover(point);
-          }}
-        />
-
-        <aside
-          className="graffiti-dock"
-          data-open={composerOpen ? "true" : "false"}
-        >
-          <div className="graffiti-dock-bar lg:hidden">
-            <button
-              type="button"
-              className="graffiti-dock-close"
-              onClick={() => setComposerOpen(false)}
-            >
-              close
-            </button>
-          </div>
-          <GraffitiForm
-            text={text}
-            style={style}
-            color={color}
-            placed={Boolean(placement)}
-            placement={placement ?? defaultPlacement}
-            onText={setText}
-            onStyle={setStyle}
-            onColor={setColor}
-            onPaid={addMark}
-            onResetDraft={resetDraft}
+      <div className="graffiti-shell">
+        <div className="graffiti-stage">
+          <GraffitiWall
+            marks={live}
+            freshId={freshId}
+            highlightId={highlightId}
+            placing
+            quiet={paidLive === 0}
+            ghost={
+              showGhost
+                ? {
+                    text: text.trim(),
+                    style,
+                    color,
+                    placement: ghostPlacement,
+                    locked: Boolean(placement),
+                  }
+                : null
+            }
+            onPlace={(top, left) => {
+              setPlacement(organicPlacement(top, left));
+              setTab("spray");
+            }}
+            onHover={(point) => {
+              if (placement) return;
+              setHover(point);
+            }}
           />
+        </div>
+
+        <aside className="graffiti-deck">
+          <nav className="graffiti-deck-tabs" aria-label="Deck">
+            {(
+              [
+                ["spray", "SPRAY"],
+                ["wall", "WALL"],
+                ["how", "HOW"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={cn(tab === id && "is-on")}
+                aria-selected={tab === id}
+                onClick={() => setTab(id)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="graffiti-deck-body">
+            {tab === "spray" ? (
+              <GraffitiForm
+                text={text}
+                style={style}
+                color={color}
+                placed={Boolean(placement)}
+                placement={placement ?? defaultPlacement}
+                onText={setText}
+                onStyle={setStyle}
+                onColor={setColor}
+                onPaid={addMark}
+                onResetDraft={resetDraft}
+              />
+            ) : null}
+            {tab === "wall" ? (
+              <GraffitiFeed
+                marks={live}
+                highlightId={highlightId}
+                now={now}
+                onSelect={selectMark}
+              />
+            ) : null}
+            {tab === "how" ? <GraffitiHow /> : null}
+          </div>
         </aside>
       </div>
-
-      <button
-        type="button"
-        className="graf-fab lg:hidden"
-        hidden={composerOpen}
-        onClick={() => setComposerOpen(true)}
-      >
-        TAG
-      </button>
     </div>
   );
 }

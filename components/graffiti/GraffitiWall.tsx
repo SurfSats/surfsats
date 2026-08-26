@@ -15,6 +15,7 @@ export function GraffitiWall({
   ghost,
   placing,
   quiet,
+  highlightId,
   onPlace,
   onHover,
 }: {
@@ -29,6 +30,7 @@ export function GraffitiWall({
   } | null;
   placing?: boolean;
   quiet?: boolean;
+  highlightId?: string | null;
   onPlace?: (top: number, left: number) => void;
   onHover?: (point: { top: number; left: number } | null) => void;
 }) {
@@ -72,11 +74,16 @@ export function GraffitiWall({
 
       {marks.map((mark) => {
         const fresh = freshId === mark.id;
+        const lit = highlightId === mark.id;
         return (
           <div
             key={mark.id}
             id={`graf-${mark.id}`}
-            className={cn("graf graf-temp", fresh && "graf-fresh")}
+            className={cn(
+              "graf graf-temp",
+              fresh && "graf-fresh",
+              lit && "graf-highlight",
+            )}
             style={{
               top: `${mark.top}%`,
               left: `${mark.left}%`,

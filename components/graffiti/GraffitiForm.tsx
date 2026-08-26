@@ -16,7 +16,7 @@ import {
   sanitizeGraffiti,
 } from "@/lib/graffiti";
 
-type Step = "compose" | "invoice" | "done";
+type Step = "compose" | "invoice";
 
 const STYLE_SAMPLES: Record<GraffitiStyle, string> = {
   tag: "Aa",
@@ -95,6 +95,12 @@ export function GraffitiForm({
   useEffect(() => {
     if (step !== "invoice") return;
     const id = window.setInterval(() => setNowTick(Date.now()), 1000);
+    window.requestAnimationFrame(() => {
+      document.getElementById("graf-invoice")?.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+    });
     return () => window.clearInterval(id);
   }, [step]);
 
@@ -128,7 +134,7 @@ export function GraffitiForm({
           setInvoiceError(null);
           setWaiting(false);
           onPaid(data.mark);
-          setStep("done");
+          reset();
           return;
         }
         if (data.paid && !data.mark) {
@@ -324,7 +330,20 @@ export function GraffitiForm({
             ))}
           </div>
 
-          <p className="mt-4 text-[11px] uppercase tracking-[0.14em] text-stone-400">
+          <p className="mt-4 text-[11px] uppercase tracking-[0.16em] text-stone-400">
+            live preview
+          </p>
+          <div className="graf-preview-wall graf-preview-wall--compact mt-2">
+            <div className="graf-preview-tag">
+              <GraffitiTag
+                text={previewText}
+                style={style}
+                color={color}
+                className="text-2xl sm:text-3xl"
+              />
+            </div>
+          </div>
+          <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-stone-400">
             {previewText === "your mark" ? "your mark" : `“${previewText}”`} ·{" "}
             {styleLabel} · {colorLabel}
           </p>
@@ -352,7 +371,7 @@ export function GraffitiForm({
       ) : null}
 
       {step === "invoice" ? (
-        <div className="mt-5 border border-stone-600 bg-black/70 p-4">
+        <div id="graf-invoice" className="graf-invoice-pane mt-5 border border-stone-600 bg-black/70 p-4">
           <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
             invoice · {GRAFFITI_PRICE_SATS} sats ·{" "}
             {expired ? "expired" : "unpaid"}
@@ -466,23 +485,6 @@ export function GraffitiForm({
         </div>
       ) : null}
 
-      {step === "done" ? (
-        <div className="graf-success mt-5 border bg-black/70 px-4 py-4">
-          <p className="font-display text-lg font-bold uppercase tracking-tight text-amber-400">
-            Your mark is up for {GRAFFITI_TTL_HOURS} hours
-          </p>
-          <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-stone-400">
-            look for the pulse on the wall
-          </p>
-          <button
-            type="button"
-            onClick={reset}
-            className="mt-4 min-h-11 text-[11px] uppercase tracking-[0.14em] text-stone-300 hover:text-amber-400"
-          >
-            another mark -&gt;
-          </button>
-        </div>
-      ) : null}
     </section>
   );
 }
