@@ -122,6 +122,103 @@ body {
   filter: saturate(0.85);
 }
 
+.bottle-qr {
+  display: block;
+  width: min(100%, 14rem);
+  height: auto;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  background: #efe6d4;
+}
+
+.bottle-qr-wait {
+  display: grid;
+  place-items: center;
+  border: 1px dashed #5a4030;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5a4030;
+}
+
+.bottle-reveal {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(61, 255, 243, 0.28);
+  background:
+    linear-gradient(180deg, rgba(20, 36, 40, 0.9), rgba(8, 8, 11, 0.92));
+  padding: 1.1rem 1rem 1rem;
+}
+
+.bottle-cork {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.7rem;
+  width: 0.7rem;
+  height: 1.05rem;
+  border-radius: 2px 2px 3px 3px;
+  background: linear-gradient(180deg, #c8a070, #8a5a18);
+  animation: bottle-cork-pop 0.55s ease-out both;
+}
+
+.bottle-reveal-line {
+  margin: 0;
+  max-width: 42rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #efe6d4;
+}
+
+.bottle-wash {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.bottle-wash-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(61, 255, 243, 0.18);
+  background:
+    linear-gradient(180deg, rgba(30, 50, 48, 0.45), rgba(8, 8, 11, 0.72));
+  transform: rotate(var(--tilt, 0deg));
+}
+
+.bottle-wash-neck {
+  flex-shrink: 0;
+  width: 0.55rem;
+  height: 1.7rem;
+  margin-top: 0.1rem;
+  border-radius: 3px 3px 8px 8px;
+  background:
+    linear-gradient(180deg, #3dfff3 0 18%, #1a4a4a 18% 100%);
+  opacity: 0.8;
+}
+
+.bottle-wash-item p {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #d7d0c4;
+}
+
+@keyframes bottle-cork-pop {
+  0% {
+    transform: translateY(8px) rotate(0deg);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-10px) rotate(18deg);
+    opacity: 0.85;
+  }
+}
+
 .jukebox-tune {
   display: flex;
   width: 100%;

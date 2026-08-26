@@ -12,6 +12,9 @@ import { arcadeStoreKind } from "@/lib/arcade-store";
 import { graffitiLog, hashRef } from "@/lib/graffiti-log";
 import { settleGraffitiPayment } from "@/lib/graffiti-payments";
 import { graffitiStoreKind } from "@/lib/graffiti-store";
+import { bottleLog } from "@/lib/bottle-log";
+import { settleBottlePayment } from "@/lib/bottle-payments";
+import { bottleStoreKind } from "@/lib/bottle-store";
 import { storyLog } from "@/lib/story-log";
 import { settleStoryPayment } from "@/lib/story-payments";
 import { storyStoreKind } from "@/lib/story-store";
@@ -113,12 +116,30 @@ export async function POST(request: Request) {
       });
     }
 
-    if (graffiti.paid || arcade.paid || story.paid) {
+    const bottle = await settleBottlePayment(paymentHash);
+    if (bottle.pull) {
+      bottleLog("info", "webhook.settled", {
+        hash: hashRef(paymentHash),
+        paid: true,
+        live: true,
+        kind: "bottle",
+        store: bottleStoreKind(),
+      });
+      return NextResponse.json({
+        ok: true,
+        paid: true,
+        live: true,
+        kind: "bottle",
+      });
+    }
+
+    if (graffiti.paid || arcade.paid || story.paid || bottle.paid) {
       graffitiLog("error", "webhook.paid_without_claim", {
         hash: hashRef(paymentHash),
         graffiti: Boolean(graffiti.paid),
         arcade: Boolean(arcade.paid),
         story: Boolean(story.paid),
+        bottle: Boolean(bottle.paid),
       });
       return NextResponse.json(
         { ok: false, paid: true, live: false },

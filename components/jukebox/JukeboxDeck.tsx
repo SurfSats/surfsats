@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BottleRack } from "@/components/jukebox/BottleRack";
 import { HowItWorks } from "@/components/jukebox/HowItWorks";
 import { JukeboxSearch } from "@/components/jukebox/JukeboxSearch";
 import { NowPlaying } from "@/components/jukebox/NowPlaying";
@@ -81,6 +82,7 @@ export function JukeboxDeck({
         <HowItWorks />
       </div>
       <JukeboxSearch />
+      <BottleRack />
       <div className="mt-10">
         <Queue tracks={payload?.queue ?? []} ready={ready} />
       </div>
