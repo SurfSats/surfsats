@@ -20,6 +20,7 @@ export function RetroScreen({
   scoreRank,
   scoreCopied,
   padRef,
+  armed = true,
   onPlay,
   onInsert,
   onGameOver,
@@ -32,6 +33,7 @@ export function RetroScreen({
   scoreRank: number | null;
   scoreCopied: boolean;
   padRef: MutableRefObject<RetroPad>;
+  armed?: boolean;
   onPlay: () => void;
   onInsert: () => void;
   onGameOver: (score: number) => void;
@@ -47,12 +49,18 @@ export function RetroScreen({
         .filter(Boolean)
         .join(" ")}
     >
+      <div className="cab-crt-well">
+        {mode === "playing" && game ? (
+          <RetroGame
+            game={game}
+            padRef={padRef}
+            armed={armed}
+            onGameOver={onGameOver}
+          />
+        ) : null}
+      </div>
       <div className="cab-crt-glass" aria-hidden="true" />
       <div className="cab-crt-scan" aria-hidden="true" />
-
-      {mode === "playing" && game ? (
-        <RetroGame game={game} padRef={padRef} onGameOver={onGameOver} />
-      ) : null}
 
       {mode === "result" ? (
         <div className="cab-crt-result">

@@ -26,6 +26,7 @@ export function RetroCabinet({
   scoreCopied,
   game,
   padRef,
+  armed = true,
   onAlias,
   onInsert,
   onPlay,
@@ -44,6 +45,7 @@ export function RetroCabinet({
   scoreCopied: boolean;
   game: RetroGameId | null;
   padRef: MutableRefObject<RetroPad>;
+  armed?: boolean;
   onAlias: (value: string) => void;
   onInsert: () => void;
   onPlay: () => void;
@@ -63,50 +65,51 @@ export function RetroCabinet({
   return (
     <div className="cab-wrap">
       <div className="cab-machine cab-machine-retro">
-        <p className="cab-plate">RETRO</p>
-        <Image
-          src="/arcade-cabinet-wide.png"
-          alt="SurfSats retro arcade cabinet"
-          width={1712}
-          height={1152}
-          unoptimized
-          className="cab-art"
-          sizes="(max-width: 900px) 96vw, 46rem"
-        />
-
-        <div className="cab-crt-slot">
-          <RetroScreen
-            mode={mode}
-            credits={credits}
-            game={game}
-            lastScore={lastScore}
-            scoreRank={scoreRank}
-            scoreCopied={scoreCopied}
-            padRef={padRef}
-            onPlay={onPlay}
-            onInsert={onInsert}
-            onGameOver={onGameOver}
-            onCopyScore={onCopyScore}
+        <div className="cab-body">
+          <p className="cab-plate">RETRO</p>
+          <Image
+            src="/arcade-cabinet-wide.png"
+            alt="SurfSats retro arcade cabinet"
+            width={1712}
+            height={1152}
+            unoptimized
+            className="cab-art"
+            sizes="(max-width: 900px) 96vw, 58rem"
           />
+
+          <div className="cab-crt-slot">
+            <RetroScreen
+              mode={mode}
+              credits={credits}
+              game={game}
+              lastScore={lastScore}
+              scoreRank={scoreRank}
+              scoreCopied={scoreCopied}
+              padRef={padRef}
+              armed={armed}
+              onPlay={onPlay}
+              onInsert={onInsert}
+              onGameOver={onGameOver}
+              onCopyScore={onCopyScore}
+            />
+          </div>
+        </div>
+
+        <div className="cab-games" role="group" aria-label="Select retro game">
+          {RETRO_GAMES.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={game === item.id ? "cab-game-btn is-on" : "cab-game-btn"}
+              disabled={playing}
+              onClick={() => onSelectGame(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
 
         <div className="cab-coin" id="arcade-coin-retro">
-          <div className="cab-game-row" role="group" aria-label="Select retro game">
-            {RETRO_GAMES.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={
-                  game === item.id ? "cab-game-btn is-on" : "cab-game-btn"
-                }
-                disabled={playing}
-                onClick={() => onSelectGame(item.id)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
           <div className="cab-coin-top">
             {canPlay ? (
               <button type="button" className="cab-play" onClick={onPlay}>

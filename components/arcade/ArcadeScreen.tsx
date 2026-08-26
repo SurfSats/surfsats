@@ -63,12 +63,13 @@ export function ArcadeScreen({
         .filter(Boolean)
         .join(" ")}
     >
+      <div className="cab-crt-well">
+        {mode === "playing" ? (
+          <WaveRunner ref={gameRef} onWipeout={onWipeout} />
+        ) : null}
+      </div>
       <div className="cab-crt-glass" aria-hidden="true" />
       <div className="cab-crt-scan" aria-hidden="true" />
-
-      {mode === "playing" ? (
-        <WaveRunner ref={gameRef} onWipeout={onWipeout} />
-      ) : null}
 
       {mode === "result" ? (
         <div className="cab-crt-result">

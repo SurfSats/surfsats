@@ -502,6 +502,7 @@ export const WaveRunner = forwardRef<WaveRunnerHandle, {
     }
 
     function onKey(event: KeyboardEvent) {
+      if (document.body.dataset.arcadeFront === "retro") return;
       if (event.code === "Space" || event.code === "ArrowUp") {
         event.preventDefault();
         hopGame(game);

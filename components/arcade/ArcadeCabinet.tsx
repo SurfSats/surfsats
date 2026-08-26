@@ -58,53 +58,55 @@ export function ArcadeCabinet({
   return (
     <div className="cab-wrap">
       <div className="cab-machine">
-        <p className="cab-plate">WAVE RUNNER</p>
-        <Image
-          src="/arcade-cabinet-wide.png"
-          alt="SurfSats arcade cabinet"
-          width={1712}
-          height={1152}
-          priority
-          unoptimized
-          className="cab-art"
-          sizes="(max-width: 900px) 96vw, 58rem"
-        />
+        <div className="cab-body">
+          <p className="cab-plate">WAVE RUNNER</p>
+          <Image
+            src="/arcade-cabinet-wide.png"
+            alt="SurfSats arcade cabinet"
+            width={1712}
+            height={1152}
+            priority
+            unoptimized
+            className="cab-art"
+            sizes="(max-width: 900px) 96vw, 58rem"
+          />
 
-        <div className="cab-crt-slot">
-          <ArcadeScreen
-            mode={mode}
-            credits={credits}
-            waiting={paying}
-            invoiceError={null}
-            expired={false}
-            lastScore={lastScore}
-            scoreRank={scoreRank}
-            scoreCopied={scoreCopied}
-            gameRef={gameRef}
-            onPlay={onPlay}
-            onInsert={onInsert}
-            onWipeout={onWipeout}
-            onCopyScore={onCopyScore}
-            photoCrt
+          <div className="cab-crt-slot">
+            <ArcadeScreen
+              mode={mode}
+              credits={credits}
+              waiting={paying}
+              invoiceError={null}
+              expired={false}
+              lastScore={lastScore}
+              scoreRank={scoreRank}
+              scoreCopied={scoreCopied}
+              gameRef={gameRef}
+              onPlay={onPlay}
+              onInsert={onInsert}
+              onWipeout={onWipeout}
+              onCopyScore={onCopyScore}
+              photoCrt
+            />
+          </div>
+
+          <button
+            type="button"
+            className="cab-hit cab-hit-stick"
+            onClick={stickAction}
+            aria-label={
+              mode === "playing" ? "Hop" : canPlay ? "Play" : "Insert coin"
+            }
+          />
+          <button
+            type="button"
+            className="cab-hit cab-hit-start"
+            onClick={stickAction}
+            aria-label={
+              mode === "playing" ? "Hop" : canPlay ? "Start" : "Insert coin"
+            }
           />
         </div>
-
-        <button
-          type="button"
-          className="cab-hit cab-hit-stick"
-          onClick={stickAction}
-          aria-label={
-            mode === "playing" ? "Hop" : canPlay ? "Play" : "Insert coin"
-          }
-        />
-        <button
-          type="button"
-          className="cab-hit cab-hit-start"
-          onClick={stickAction}
-          aria-label={
-            mode === "playing" ? "Hop" : canPlay ? "Start" : "Insert coin"
-          }
-        />
 
         <div className="cab-coin" id="arcade-coin">
           <div className="cab-coin-top">

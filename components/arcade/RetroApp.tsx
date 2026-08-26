@@ -27,7 +27,13 @@ type SessionCache = {
   game?: string;
 };
 
-export function RetroApp() {
+export function RetroApp({
+  front = true,
+  onBringForward,
+}: {
+  front?: boolean;
+  onBringForward?: () => void;
+}) {
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
@@ -132,14 +138,14 @@ export function RetroApp() {
   }, []);
 
   useEffect(() => {
-    if (mode !== "playing" && mode !== "invoice") return;
+    if (!front || (mode !== "playing" && mode !== "invoice")) return;
     document.body.dataset.arcadeFocus = "retro";
     return () => {
       if (document.body.dataset.arcadeFocus === "retro") {
         delete document.body.dataset.arcadeFocus;
       }
     };
-  }, [mode]);
+  }, [front, mode]);
 
   useEffect(() => {
     if (!paymentRequest) {
@@ -463,7 +469,17 @@ export function RetroApp() {
     : "3 credits · RETRO · SurfSats Arcade";
 
   return (
-    <div className="arcade-bay arcade-bay-retro">
+    <div className={`arcade-bay arcade-bay-retro ${front ? "is-front" : "is-back"}`}>
+      {!front ? (
+        <button
+          type="button"
+          className="cab-bring"
+          onClick={onBringForward}
+          aria-label="Bring RETRO to the front"
+        >
+          RETRO
+        </button>
+      ) : null}
       <RetroCabinet
         alias={alias}
         credits={credits}
@@ -475,6 +491,7 @@ export function RetroApp() {
         scoreCopied={scoreCopied}
         game={game}
         padRef={padRef}
+        armed={front}
         onAlias={setAlias}
         onInsert={() => void requestInvoice()}
         onPlay={() => void play()}
@@ -483,14 +500,16 @@ export function RetroApp() {
         onCopyScore={() => void copyScore()}
         onPad={onPad}
       />
-      <ArcadeBoards
-        highScores={highScores}
-        lastPlayers={lastPlayers}
-        now={nowTick}
-        title="RETRO LEGENDS"
-        recentTitle="LAST 10 RETRO"
-        showGame
-      />
+      {front ? (
+        <ArcadeBoards
+          highScores={highScores}
+          lastPlayers={lastPlayers}
+          now={nowTick}
+          title="RETRO LEGENDS"
+          recentTitle="LAST 10 RETRO"
+          showGame
+        />
+      ) : null}
       {showInvoice ? (
         <ArcadeInvoice
           qrSrc={qrSrc}

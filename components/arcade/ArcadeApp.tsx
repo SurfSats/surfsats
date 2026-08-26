@@ -23,7 +23,13 @@ type SessionCache = {
   alias: string;
 };
 
-export function ArcadeApp() {
+export function ArcadeApp({
+  front = true,
+  onBringForward,
+}: {
+  front?: boolean;
+  onBringForward?: () => void;
+}) {
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
@@ -330,6 +336,7 @@ export function ArcadeApp() {
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
+      if (!front) return;
       if (event.code !== "Space" && event.code !== "ArrowUp") return;
       if (mode === "playing" || mode === "invoice") return;
       if (event.target instanceof HTMLInputElement) return;
@@ -340,7 +347,7 @@ export function ArcadeApp() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [credits, mode, play]);
+  }, [credits, front, mode, play]);
 
   async function copyInvoice() {
     if (!paymentRequest) return;
@@ -419,7 +426,17 @@ export function ArcadeApp() {
   }, [showInvoice]);
 
   return (
-    <div className="arcade-bay arcade-bay-wave">
+    <div className={`arcade-bay arcade-bay-wave ${front ? "is-front" : "is-back"}`}>
+      {!front ? (
+        <button
+          type="button"
+          className="cab-bring"
+          onClick={onBringForward}
+          aria-label="Bring WAVE RUNNER to the front"
+        >
+          WAVE RUNNER
+        </button>
+      ) : null}
       <ArcadeCabinet
         alias={alias}
         credits={credits}
@@ -437,11 +454,13 @@ export function ArcadeApp() {
         onWipeout={(score) => void handleWipeout(score)}
         onCopyScore={() => void copyScore()}
       />
-      <ArcadeBoards
-        highScores={highScores}
-        lastPlayers={lastPlayers}
-        now={nowTick}
-      />
+      {front ? (
+        <ArcadeBoards
+          highScores={highScores}
+          lastPlayers={lastPlayers}
+          now={nowTick}
+        />
+      ) : null}
       {showInvoice ? (
         <ArcadeInvoice
           qrSrc={qrSrc}

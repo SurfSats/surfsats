@@ -21,15 +21,19 @@ export function applyRetroKey(pad: RetroPad, code: string, down: boolean) {
 export function RetroGame({
   game,
   padRef,
+  armed = true,
   onGameOver,
 }: {
   game: RetroGameId;
   padRef: MutableRefObject<RetroPad>;
+  armed?: boolean;
   onGameOver: (score: number) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const overRef = useRef(onGameOver);
+  const armedRef = useRef(armed);
   overRef.current = onGameOver;
+  armedRef.current = armed;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -41,6 +45,7 @@ export function RetroGame({
       onGameOver: (score) => overRef.current(score),
     });
     function onDown(event: KeyboardEvent) {
+      if (!armedRef.current) return;
       if (applyRetroKey(pad, event.code, true)) event.preventDefault();
     }
     function onUp(event: KeyboardEvent) {
