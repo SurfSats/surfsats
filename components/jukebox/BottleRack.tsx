@@ -141,10 +141,10 @@ export function BottleStage() {
   const paying = Boolean(paymentRequest);
 
   return (
-    <div className="bottle-stage">
+    <div className={face === "message" ? "bottle-stage is-message" : "bottle-stage"}>
       <button
         type="button"
-        className="bottle-hit"
+        className={face === "message" ? "bottle-hit is-message" : "bottle-hit"}
         disabled={pending || paying || face === "crack"}
         onClick={() => void pullBottle()}
         aria-label={`Pull a bottle, ${BOTTLE_PRICE_SATS} sats`}
@@ -153,21 +153,31 @@ export function BottleStage() {
           <Image
             src={src}
             alt=""
-            width={640}
-            height={860}
+            width={face === "message" ? 1168 : 640}
+            height={face === "message" ? 784 : 860}
             unoptimized
             className="bottle-cutout-img"
-            sizes="(max-width: 640px) 11rem, 15rem"
+            sizes={
+              face === "message"
+                ? "(max-width: 640px) 92vw, 26rem"
+                : "(max-width: 640px) 11rem, 15rem"
+            }
             priority
           />
         </span>
         {face === "message" && reveal ? (
-          <span className="bottle-parchment">{reveal}</span>
+          <span
+            className={
+              reveal.length > 72 ? "bottle-parchment is-long" : "bottle-parchment"
+            }
+          >
+            {reveal}
+          </span>
         ) : null}
       </button>
       <div className="hidden" aria-hidden="true">
         <Image src="/bottle-crack.png" alt="" width={640} height={860} unoptimized />
-        <Image src="/bottle-message.png" alt="" width={640} height={860} unoptimized />
+        <Image src="/bottle-message.png" alt="" width={1168} height={784} unoptimized />
       </div>
       <p className="bottle-caption">
         {pending
