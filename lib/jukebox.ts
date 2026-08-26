@@ -12,9 +12,9 @@ export const JUKEBOX_LIVE_URL =
 // Radio hangout: https://t.me/noderunnersradio
 export const JUKEBOX_TELEGRAM_URL = "https://t.me/Jukebox_Lightning_bot";
 
-// Noderunners Radio on zap.stream. Many hosts block iframe embeds —
-// keep STREAM_LIVE_URL as the new-tab fallback if the player is blank.
-export const STREAM_LIVE_URL = "https://zap.stream/noderunnersradio";
+export const STREAM_LIVE_URL = "https://noderunnersradio.com/";
+export const STREAM_AUDIO_URL = "https://noderunnersradio.com/api/listen.m3u";
+export const FUNDING_URL = "https://noderunnersradio.com/funding";
 
 export const JUKEBOX_BACKEND_NAME = "Lightning Jukebox / Noderunners";
 

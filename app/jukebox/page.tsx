@@ -21,7 +21,7 @@ import {
 export const metadata: Metadata = {
   title: "The Jukebox",
   description:
-    "The Global Jukebox. Pay 21 sats. Be the DJ. Located on a pirate ship sailing in international waters.",
+    "The Jukebox — located on a pirate ship sailing in international waters. Listen on the ship. Request a track for 21 sats — anti-spam, not a record deal.",
 };
 
 export default function JukeboxPage() {
@@ -55,11 +55,13 @@ export default function JukeboxPage() {
             located on a pirate ship sailing in international waters
           </p>
           <p className="mt-5 font-display text-xl font-semibold uppercase tracking-wide text-sats sm:text-2xl">
-            Pay {JUKEBOX_PRICE_SATS} sats. Be the DJ.
+            Listen on the ship. Request a track for {JUKEBOX_PRICE_SATS} sats —
+            anti-spam, not a record deal.
           </p>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-foreground/90 sm:text-base">
-            One shared queue. No borders, no committee, no permission. Same as
-            Bitcoin. Drop {JUKEBOX_PRICE_SATS} sats and the whole ship hears it.
+            The public is the DJ. Drop {JUKEBOX_PRICE_SATS} sats and the whole
+            ship hears it. That tip keeps the queue honest and the station on
+            air — it is not a royalty, and it is not buying the song.
           </p>
           <div className="mt-6">
             <SignalStatus />
@@ -88,7 +90,9 @@ export default function JukeboxPage() {
           </ButtonLink>
         </div>
         <p className="mt-3 max-w-xl text-sm text-muted">
-          Web can stall. Telegram is usually faster for requests.
+          Web can stall. Telegram is usually faster for requests. Wavlake
+          requests on their station are a separate 210-sat value-for-value lane
+          to artists.
         </p>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">

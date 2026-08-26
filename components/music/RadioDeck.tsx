@@ -48,7 +48,7 @@ export function RadioDeck() {
         title="Live Jukebox"
         accent="sats"
         chips={[{ label: "21 sats", tone: "sats" }]}
-        blurb={`Pay ${JUKEBOX_PRICE_SATS} sats, queue a track, ride the pirate ship.`}
+        blurb={`Listen on the ship. Request a track for ${JUKEBOX_PRICE_SATS} sats — anti-spam, not a record deal.`}
         media={<JukeboxPreview />}
         mediaClassName="h-[14rem] min-h-[14rem] sm:h-[16rem] lg:h-[18rem]"
         actions={

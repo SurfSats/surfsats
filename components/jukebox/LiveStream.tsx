@@ -1,8 +1,41 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { TerminalLabel } from "@/components/ui/TerminalLabel";
-import { STREAM_LIVE_URL } from "@/lib/jukebox";
+import {
+  FUNDING_URL,
+  STREAM_AUDIO_URL,
+  STREAM_LIVE_URL,
+} from "@/lib/jukebox";
+
+function parsePlaylistSrc(text: string) {
+  const line = text
+    .split(/\r?\n/)
+    .map((entry) => entry.trim())
+    .find((entry) => /^https?:\/\//i.test(entry) && !entry.toLowerCase().includes(".m3u"));
+  return line || "";
+}
 
 export function LiveStream() {
+  const [src, setSrc] = useState(STREAM_AUDIO_URL);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(STREAM_AUDIO_URL)
+      .then((response) => (response.ok ? response.text() : Promise.reject()))
+      .then((text) => {
+        const next = parsePlaylistSrc(text);
+        if (!cancelled && next) setSrc(next);
+      })
+      .catch(() => {
+        // CORS or playlist parse failed — keep the m3u on the audio element.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -22,28 +55,50 @@ export function LiveStream() {
           <span className="text-cyan">deck://radio</span>
           <span>noderunnersradio</span>
         </div>
-        <iframe
-          src={STREAM_LIVE_URL}
-          title="Noderunners Radio live stream"
-          className="block h-[320px] w-full bg-black sm:h-[400px] lg:h-[460px]"
-          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; fullscreen"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
+        <div className="bg-black px-4 py-5 sm:px-5">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-sats">
+            listen on the ship
+          </p>
+          <audio
+            className="jukebox-audio mt-4 w-full"
+            controls
+            preload="none"
+            src={src}
+          >
+            Your browser does not play this stream. Open Noderunners Radio or
+            load the playlist in a player.
+          </audio>
+        </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted">
-          If the player doesn&apos;t load, click here to listen live.
-        </p>
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <ButtonLink
           href={STREAM_LIVE_URL}
+          external
+          className="w-full px-5 py-3 sm:w-auto"
+        >
+          Open Noderunners Radio ↗
+        </ButtonLink>
+        <ButtonLink
+          href={FUNDING_URL}
           external
           variant="ghost"
           className="w-full px-5 py-3 sm:w-auto"
         >
-          open live stream
+          Support the ship ↗
+        </ButtonLink>
+        <ButtonLink
+          href={STREAM_AUDIO_URL}
+          external
+          variant="ghost"
+          className="w-full px-5 py-3 sm:w-auto"
+        >
+          Open in player ↗
         </ButtonLink>
       </div>
+      <p className="mt-3 max-w-xl text-sm text-muted">
+        Support the ship if you just want to keep the transmitter warm.
+      </p>
     </section>
   );
 }

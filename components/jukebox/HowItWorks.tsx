@@ -4,17 +4,17 @@ const steps = [
   {
     n: "01",
     title: "Board the deck",
-    body: "Open the live jukebox or Telegram. Pick any track. Do not ask a captain.",
+    body: "Listen on the ship. Then open Lightning Jukebox web or Telegram to request a track. Do not ask a captain.",
   },
   {
     n: "02",
-    title: `Pay ${JUKEBOX_PRICE_SATS} sats`,
-    body: "Lightning invoice. Instant. Tiny. No middleman taking a cut of the vibe.",
+    title: `Tip ${JUKEBOX_PRICE_SATS} sats`,
+    body: "Anti-spam, not a record deal. The tip keeps the queue honest and the transmitter warm.",
   },
   {
     n: "03",
-    title: "Own the queue",
-    body: "Your song hits the hold. The whole ship hears it. No flag required.",
+    title: "The public is the DJ",
+    body: `Drop ${JUKEBOX_PRICE_SATS} sats and the whole ship hears it. No flag required.`,
   },
 ];
 

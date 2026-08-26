@@ -18,8 +18,9 @@ export function AddSongCard() {
         Add a song — {JUKEBOX_PRICE_SATS} sats
       </h2>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        No account. No playlist committee. Pay {JUKEBOX_PRICE_SATS} sats over
-        Lightning and you are the DJ.
+        {JUKEBOX_PRICE_SATS} sats on the ship library is an anti-spam tip so the
+        queue stays honest and the station stays on air. Not a record deal. Not
+        a royalty.
       </p>
       <div className="mt-6 flex flex-col gap-3">
         <ButtonLink
