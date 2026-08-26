@@ -16,7 +16,8 @@ export const STREAM_LIVE_URL = "https://noderunnersradio.com/";
 export const STREAM_AUDIO_URL = "https://noderunnersradio.com/api/listen.m3u";
 export const FUNDING_URL = "https://noderunnersradio.com/funding";
 export const NOWPLAYING_URL = "https://noderunnersradio.com/api/nowplaying";
-export const NOWPLAYING_CACHE_MS = 18_000;
+export const NOWPLAYING_CACHE_MS = 12_000;
+export const NOWPLAYING_POLL_MS = 12_000;
 
 export const JUKEBOX_BACKEND_NAME = "Lightning Jukebox / Noderunners";
 

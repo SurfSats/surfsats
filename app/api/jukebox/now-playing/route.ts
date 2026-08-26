@@ -8,7 +8,7 @@ export async function GET() {
   const snapshot = await fetchNowPlayingSnapshot();
   return NextResponse.json(snapshot, {
     headers: {
-      "Cache-Control": "public, s-maxage=15, stale-while-revalidate=20",
+      "Cache-Control": "public, s-maxage=12, stale-while-revalidate=15",
     },
   });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { TerminalLabel } from "@/components/ui/TerminalLabel";
 import {
@@ -17,24 +17,102 @@ function parsePlaylistSrc(text: string) {
   return line || "";
 }
 
+let tabWantsPlay = true;
+
+async function resolveStreamUrl() {
+  try {
+    const response = await fetch(STREAM_AUDIO_URL);
+    if (!response.ok) return STREAM_AUDIO_URL;
+    const next = parsePlaylistSrc(await response.text());
+    return next || STREAM_AUDIO_URL;
+  } catch {
+    return STREAM_AUDIO_URL;
+  }
+}
+
+async function attemptAutoplay(el: HTMLAudioElement) {
+  try {
+    el.muted = false;
+    await el.play();
+    return el.paused ? "blocked" : "playing";
+  } catch {
+    // unmuted autoplay blocked
+  }
+  try {
+    el.muted = true;
+    await el.play();
+    if (el.paused) return "blocked";
+    el.muted = false;
+    return el.paused ? "blocked" : "playing";
+  } catch {
+    el.muted = false;
+    return "blocked";
+  }
+}
+
 export function LiveStream() {
-  const [src, setSrc] = useState(STREAM_AUDIO_URL);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ignorePause = useRef(false);
+  const [blocked, setBlocked] = useState(false);
 
   useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
     let cancelled = false;
-    fetch(STREAM_AUDIO_URL)
-      .then((response) => (response.ok ? response.text() : Promise.reject()))
-      .then((text) => {
-        const next = parsePlaylistSrc(text);
-        if (!cancelled && next) setSrc(next);
-      })
-      .catch(() => {
-        // CORS or playlist parse failed — keep the m3u on the audio element.
-      });
+
+    function onPlay() {
+      tabWantsPlay = true;
+      setBlocked(false);
+    }
+
+    function onPause() {
+      if (ignorePause.current) return;
+      tabWantsPlay = false;
+    }
+
+    el.addEventListener("play", onPlay);
+    el.addEventListener("pause", onPause);
+
+    async function tune() {
+      const url = await resolveStreamUrl();
+      if (cancelled || !audioRef.current) return;
+      const node = audioRef.current;
+      if (node.getAttribute("src") !== url) {
+        node.src = url;
+        node.preload = "auto";
+      }
+      if (!tabWantsPlay) {
+        setBlocked(false);
+        return;
+      }
+      const result = await attemptAutoplay(node);
+      if (!cancelled) setBlocked(result === "blocked");
+    }
+
+    void tune();
+
     return () => {
       cancelled = true;
+      el.removeEventListener("play", onPlay);
+      el.removeEventListener("pause", onPause);
+      ignorePause.current = true;
+      el.pause();
     };
   }, []);
+
+  async function tapToTune() {
+    const el = audioRef.current;
+    if (!el) return;
+    tabWantsPlay = true;
+    el.muted = false;
+    try {
+      if (!el.src) el.src = STREAM_AUDIO_URL;
+      await el.play();
+      setBlocked(false);
+    } catch {
+      setBlocked(true);
+    }
+  }
 
   return (
     <section>
@@ -55,15 +133,24 @@ export function LiveStream() {
           <span className="text-cyan">deck://radio</span>
           <span>noderunnersradio</span>
         </div>
-        <div className="bg-black px-4 py-5 sm:px-5">
+        <div className="relative bg-black px-4 py-5 sm:px-5">
           <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-sats">
             listen on the ship
           </p>
+          {blocked ? (
+            <button
+              type="button"
+              className="jukebox-tune mt-4"
+              onClick={() => void tapToTune()}
+            >
+              TAP TO TUNE IN / PLAY
+            </button>
+          ) : null}
           <audio
+            ref={audioRef}
             className="jukebox-audio mt-4 w-full"
             controls
-            preload="none"
-            src={src}
+            preload="auto"
           >
             Your browser does not play this stream. Open Noderunners Radio or
             load the playlist in a player.

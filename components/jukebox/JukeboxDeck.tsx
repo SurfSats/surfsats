@@ -5,12 +5,11 @@ import { HowItWorks } from "@/components/jukebox/HowItWorks";
 import { NowPlaying } from "@/components/jukebox/NowPlaying";
 import { Queue } from "@/components/jukebox/Queue";
 import {
+  NOWPLAYING_POLL_MS,
   emptyLivePayload,
   liveTrackFromPayload,
   type JukeboxLivePayload,
 } from "@/lib/jukebox";
-
-const POLL_MS = 25_000;
 
 export function JukeboxDeck({
   initial,
@@ -32,11 +31,29 @@ export function JukeboxDeck({
         });
         const data = (await response.json()) as JukeboxLivePayload;
         if (cancelled) return;
-        setPayload({
+        const next: JukeboxLivePayload = {
           artist: data.artist ?? null,
           title: data.title ?? null,
           album: data.album ?? null,
           queue: Array.isArray(data.queue) ? data.queue : [],
+        };
+        setPayload((prev) => {
+          if (
+            prev &&
+            prev.title === next.title &&
+            prev.artist === next.artist &&
+            prev.album === next.album &&
+            prev.queue.length === next.queue.length &&
+            prev.queue.every(
+              (item, index) =>
+                item.id === next.queue[index]?.id &&
+                item.title === next.queue[index]?.title &&
+                item.artist === next.queue[index]?.artist,
+            )
+          ) {
+            return prev;
+          }
+          return next;
         });
       } catch {
         if (!cancelled) setPayload(emptyLivePayload());
@@ -46,7 +63,7 @@ export function JukeboxDeck({
     }
 
     void load();
-    const id = window.setInterval(() => void load(), POLL_MS);
+    const id = window.setInterval(() => void load(), NOWPLAYING_POLL_MS);
     return () => {
       cancelled = true;
       window.clearInterval(id);
