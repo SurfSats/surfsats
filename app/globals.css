@@ -813,24 +813,6 @@ body {
     );
 }
 
-/* Faded under-tags stay well below the hero and never compete with the title. */
-.graffiti-page::before {
-  content: "HOPE    STACK    NO KINGS";
-  position: absolute;
-  top: 34%;
-  right: 8%;
-  bottom: 12%;
-  left: 8%;
-  font-family: Impact, Haettenschweiler, sans-serif;
-  font-size: clamp(2.4rem, 9vw, 7rem);
-  line-height: 1.55;
-  letter-spacing: 0.14em;
-  color: rgba(0, 0, 0, 0.055);
-  transform: rotate(-7deg);
-  pointer-events: none;
-  z-index: 0;
-}
-
 .graffiti-page::after {
   content: "";
   position: absolute;

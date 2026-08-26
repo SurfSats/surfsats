@@ -27,7 +27,6 @@ import {
   type GraffitiPlacement,
   type GraffitiStyle,
   isActiveMark,
-  seedMarks,
 } from "@/lib/graffiti";
 import { cn } from "@/lib/cn";
 
@@ -154,7 +153,7 @@ export function GraffitiApp() {
 
   const live = useMemo(() => {
     const byId = new Map<string, GraffitiMark>();
-    for (const mark of [...seedMarks, ...paid]) {
+    for (const mark of paid) {
       if (
         isActiveMark(mark, now) &&
         typeof mark.scale === "number" &&
