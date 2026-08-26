@@ -3,9 +3,24 @@ export const ARCADE_CREDITS_PER_PAY = 3;
 export const ARCADE_GAME_ID = "wave-runner";
 export const ARCADE_GAME_LABEL = "WAVE RUNNER";
 export const ARCADE_STORAGE_KEY = "surfsats.arcade.v1";
+export const RETRO_STORAGE_KEY = "surfsats.arcade.retro.v1";
 export const ARCADE_META_KIND = "surfsats-arcade";
 export const ARCADE_ALIAS_MIN = 2;
 export const ARCADE_ALIAS_MAX = 16;
+
+export const ARCADE_MACHINE_WAVE = "wave";
+export const ARCADE_MACHINE_RETRO = "retro";
+
+export const RETRO_GAMES = [
+  { id: "pong", label: "Pong" },
+  { id: "tetris", label: "Tetris" },
+  { id: "snake", label: "Snake" },
+  { id: "breakout", label: "Breakout" },
+  { id: "invaders", label: "Space Invaders" },
+] as const;
+
+export type ArcadeMachine = "wave" | "retro";
+export type RetroGameId = (typeof RETRO_GAMES)[number]["id"];
 
 export type ArcadePlayer = {
   playerId: string;
@@ -18,6 +33,8 @@ export type ArcadePending = {
   playerId: string;
   alias: string;
   createdAt: string;
+  machine?: ArcadeMachine;
+  game?: string;
 };
 
 export type ArcadeGrant = {
@@ -26,6 +43,8 @@ export type ArcadeGrant = {
   alias: string;
   credits: number;
   createdAt: string;
+  machine?: ArcadeMachine;
+  game?: string;
 };
 
 export type ArcadePlay = {
@@ -42,6 +61,7 @@ export type ArcadeHighScore = {
   alias: string;
   score: number;
   createdAt: string;
+  game?: string;
 };
 
 export type ArcadeRecentPlay = {
@@ -78,10 +98,44 @@ export function formatScore(score: number) {
   return Math.floor(Math.abs(score)).toLocaleString("en-US");
 }
 
-export function arcadeScoreSnippet(alias: string, score: number) {
+export function arcadeScoreSnippet(
+  alias: string,
+  score: number,
+  gameLabel = ARCADE_GAME_LABEL,
+) {
   const tag = alias.trim() || "PLAYER";
-  return `${tag} scored ${formatScore(score)} on WAVE RUNNER — surfsats.com/arcade`;
+  return `${tag} scored ${formatScore(score)} on ${gameLabel} — surfsats.com/arcade`;
 }
+
+export function isArcadeMachine(value: unknown): value is ArcadeMachine {
+  return value === ARCADE_MACHINE_WAVE || value === ARCADE_MACHINE_RETRO;
+}
+
+export function parseArcadeMachine(value: unknown): ArcadeMachine {
+  return value === ARCADE_MACHINE_RETRO
+    ? ARCADE_MACHINE_RETRO
+    : ARCADE_MACHINE_WAVE;
+}
+
+export function isRetroGameId(value: unknown): value is RetroGameId {
+  return (
+    typeof value === "string" &&
+    RETRO_GAMES.some((game) => game.id === value)
+  );
+}
+
+export function retroGameLabel(id: string) {
+  return RETRO_GAMES.find((game) => game.id === id)?.label ?? id.toUpperCase();
+}
+
+export function normalizePlayGame(raw: string): string | null {
+  const id = raw.trim().toLowerCase();
+  if (!id || id === "wave" || id === ARCADE_GAME_ID) return ARCADE_GAME_ID;
+  if (isRetroGameId(id)) return id;
+  return null;
+}
+
+export const RETRO_GAME_IDS: RetroGameId[] = RETRO_GAMES.map((game) => game.id);
 
 export function formatTimeAgo(iso: string, now = Date.now()) {
   const then = new Date(iso).getTime();

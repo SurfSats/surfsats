@@ -7,10 +7,14 @@ import {
   type AlbyInvoice,
 } from "@/lib/alby";
 import {
+  ARCADE_MACHINE_WAVE,
   ARCADE_META_KIND,
   ARCADE_PRICE_SATS,
   isPlayerId,
+  isRetroGameId,
+  parseArcadeMachine,
   sanitizeAlias,
+  type ArcadeMachine,
   type ArcadePlayer,
 } from "@/lib/arcade";
 import { arcadeLog, hashRef } from "@/lib/arcade-log";
@@ -26,6 +30,8 @@ import {
 export type ArcadeInvoicePayload = {
   playerId: string;
   alias: string;
+  machine: ArcadeMachine;
+  game?: string;
 };
 
 export function parseArcadePayload(
@@ -45,9 +51,14 @@ export function parseArcadePayload(
   }
   const clean = sanitizeAlias(String(record.alias ?? ""));
   if (!clean.ok) return null;
+  const machine = parseArcadeMachine(record.machine);
+  const gameRaw = String(record.game ?? "").trim().toLowerCase();
+  const game = isRetroGameId(gameRaw) ? gameRaw : undefined;
   return {
     playerId: String(record.playerId || record.player_id),
     alias: clean.alias,
+    machine,
+    game,
   };
 }
 
@@ -56,15 +67,22 @@ export function isArcadeInvoiceAmount(invoice: AlbyInvoice) {
 }
 
 async function createInvoice(input: ArcadeInvoicePayload) {
+  const machine = input.machine || ARCADE_MACHINE_WAVE;
   const metadata = {
     kind: ARCADE_META_KIND,
     playerId: input.playerId,
     alias: input.alias,
+    machine,
+    game: input.game || null,
   };
+  const description =
+    machine === "retro"
+      ? `SurfSats Arcade · RETRO${input.game ? ` · ${input.game}` : ""}`
+      : "SurfSats Arcade";
   try {
     return await createAlbyInvoice({
       amountSats: ARCADE_PRICE_SATS,
-      description: "SurfSats Arcade",
+      description,
       metadata,
     });
   } catch {
@@ -73,7 +91,7 @@ async function createInvoice(input: ArcadeInvoicePayload) {
     });
     return createAlbyInvoice({
       amountSats: ARCADE_PRICE_SATS,
-      description: "SurfSats Arcade",
+      description,
     });
   }
 }
@@ -86,6 +104,8 @@ export async function createArcadeInvoice(input: ArcadeInvoicePayload) {
     playerId: input.playerId,
     alias: input.alias,
     createdAt: new Date().toISOString(),
+    machine: input.machine || ARCADE_MACHINE_WAVE,
+    game: input.game,
   });
   const paymentRequest = invoice.payment_request as string;
   arcadeLog("info", "invoice.created", {
@@ -155,6 +175,8 @@ export async function settleArcadePayment(paymentHash: string): Promise<{
     paymentHash,
     playerId: pending.playerId,
     alias: pending.alias,
+    machine: pending.machine || ARCADE_MACHINE_WAVE,
+    game: pending.game,
   });
   return {
     paid: true,
@@ -176,8 +198,13 @@ export function pendingArcadeFromBody(
   }
   const clean = sanitizeAlias(String(record.alias ?? ""));
   if (!clean.ok) return { error: clean.reason };
+  const machine = parseArcadeMachine(record.machine);
+  const gameRaw = String(record.game ?? "").trim().toLowerCase();
+  const game = isRetroGameId(gameRaw) ? gameRaw : undefined;
   return {
     playerId: String(record.playerId || record.player_id),
     alias: clean.alias,
+    machine,
+    game,
   };
 }

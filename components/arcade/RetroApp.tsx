@@ -2,31 +2,36 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArcadeBoards } from "@/components/arcade/ArcadeBoards";
-import { ArcadeCabinet } from "@/components/arcade/ArcadeCabinet";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { RetroCabinet } from "@/components/arcade/RetroCabinet";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
-import type { WaveRunnerHandle } from "@/components/arcade/WaveRunner";
+import { emptyPad, type RetroPad } from "@/components/arcade/retroGames";
 import {
   ARCADE_CREDITS_PER_PAY,
-  ARCADE_GAME_ID,
+  ARCADE_MACHINE_RETRO,
   ARCADE_PRICE_SATS,
-  ARCADE_STORAGE_KEY,
+  RETRO_STORAGE_KEY,
   arcadeScoreSnippet,
   isPlayerId,
+  isRetroGameId,
+  retroGameLabel,
   sanitizeAlias,
   type ArcadeHighScore,
   type ArcadeRecentPlay,
+  type RetroGameId,
 } from "@/lib/arcade";
 
 type SessionCache = {
   playerId: string;
   alias: string;
+  game?: string;
 };
 
-export function ArcadeApp() {
+export function RetroApp() {
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
+  const [game, setGame] = useState<RetroGameId | null>(null);
   const [highScores, setHighScores] = useState<ArcadeHighScore[]>([]);
   const [lastPlayers, setLastPlayers] = useState<ArcadeRecentPlay[]>([]);
   const [mode, setMode] = useState<ArcadeScreenMode>("attract");
@@ -45,14 +50,14 @@ export function ArcadeApp() {
   const [playId, setPlayId] = useState<string | null>(null);
   const [lastScore, setLastScore] = useState<number | null>(null);
   const [scoreCopied, setScoreCopied] = useState(false);
-  const gameRef = useRef<WaveRunnerHandle | null>(null);
   const startLock = useRef(false);
   const playIdRef = useRef<string | null>(null);
+  const padRef = useRef<RetroPad>(emptyPad());
 
   useEffect(() => {
     let cached: SessionCache | null = null;
     try {
-      const raw = window.localStorage.getItem(ARCADE_STORAGE_KEY);
+      const raw = window.localStorage.getItem(RETRO_STORAGE_KEY);
       if (raw) cached = JSON.parse(raw) as SessionCache;
     } catch {
       cached = null;
@@ -63,6 +68,7 @@ export function ArcadeApp() {
         : window.crypto.randomUUID();
     setPlayerId(id);
     if (cached?.alias) setAlias(cached.alias);
+    if (cached?.game && isRetroGameId(cached.game)) setGame(cached.game);
     setReady(true);
   }, []);
 
@@ -70,16 +76,22 @@ export function ArcadeApp() {
     if (!ready || !playerId) return;
     try {
       window.localStorage.setItem(
-        ARCADE_STORAGE_KEY,
-        JSON.stringify({ playerId, alias } satisfies SessionCache),
+        RETRO_STORAGE_KEY,
+        JSON.stringify({
+          playerId,
+          alias,
+          game: game ?? undefined,
+        } satisfies SessionCache),
       );
     } catch {
       // ignore
     }
-  }, [playerId, alias, ready]);
+  }, [playerId, alias, game, ready]);
 
   const loadBoards = useCallback(async () => {
-    const response = await fetch("/api/arcade", { cache: "no-store" });
+    const response = await fetch("/api/arcade?machine=retro", {
+      cache: "no-store",
+    });
     const data = (await response.json()) as {
       highScores?: ArcadeHighScore[];
       lastPlayers?: ArcadeRecentPlay[];
@@ -118,6 +130,16 @@ export function ArcadeApp() {
     const id = window.setInterval(() => setNowTick(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (mode !== "playing" && mode !== "invoice") return;
+    document.body.dataset.arcadeFocus = "retro";
+    return () => {
+      if (document.body.dataset.arcadeFocus === "retro") {
+        delete document.body.dataset.arcadeFocus;
+      }
+    };
+  }, [mode]);
 
   useEffect(() => {
     if (!paymentRequest) {
@@ -201,11 +223,22 @@ export function ArcadeApp() {
 
   const screenMode: ArcadeScreenMode = useMemo(() => {
     if (mode === "invoice" || mode === "playing" || mode === "result") return mode;
-    return credits > 0 ? "ready" : "attract";
-  }, [mode, credits]);
+    return credits > 0 && game ? "ready" : "attract";
+  }, [mode, credits, game]);
+
+  function selectGame(id: RetroGameId) {
+    if (mode === "playing" || mode === "invoice") return;
+    setGame(id);
+    setError(null);
+    if (mode === "result") setMode(credits > 0 ? "ready" : "attract");
+  }
 
   async function requestInvoice() {
     const next = sanitizeAlias(alias);
+    if (!game) {
+      setError("PICK A GAME FIRST");
+      return;
+    }
     if (!next.ok) {
       setError("SET CALLSIGN FIRST · 2–16 CHARS");
       return;
@@ -223,7 +256,12 @@ export function ArcadeApp() {
       const response = await fetch("/api/arcade/invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, alias: next.alias }),
+        body: JSON.stringify({
+          playerId,
+          alias: next.alias,
+          machine: ARCADE_MACHINE_RETRO,
+          game,
+        }),
       });
       const data = (await response.json()) as {
         error?: string;
@@ -260,13 +298,19 @@ export function ArcadeApp() {
 
   const play = useCallback(async () => {
     if (mode === "invoice" || mode === "playing" || startLock.current) return;
+    if (!game) {
+      setError("PICK A GAME FIRST");
+      return;
+    }
     const next = sanitizeAlias(alias);
     if (!next.ok) {
       setError("SET CALLSIGN FIRST · 2–16 CHARS");
       return;
     }
     if (credits < 1) {
-      setError(`INSERT ${ARCADE_PRICE_SATS} SATS FOR ${ARCADE_CREDITS_PER_PAY} CREDITS`);
+      setError(
+        `INSERT ${ARCADE_PRICE_SATS} SATS FOR ${ARCADE_CREDITS_PER_PAY} CREDITS`,
+      );
       return;
     }
     setError(null);
@@ -276,7 +320,7 @@ export function ArcadeApp() {
       const response = await fetch("/api/arcade/play", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, game: ARCADE_GAME_ID }),
+        body: JSON.stringify({ playerId, game }),
       });
       const data = (await response.json()) as {
         error?: string;
@@ -291,6 +335,7 @@ export function ArcadeApp() {
       playIdRef.current = data.playId ?? null;
       setPlayId(data.playId ?? null);
       setLastScore(null);
+      Object.assign(padRef.current, emptyPad());
       setMode("playing");
       void loadBoards();
     } catch {
@@ -298,9 +343,9 @@ export function ArcadeApp() {
     } finally {
       startLock.current = false;
     }
-  }, [alias, credits, loadBoards, mode, playerId]);
+  }, [alias, credits, game, loadBoards, mode, playerId]);
 
-  const handleWipeout = useCallback(
+  const handleGameOver = useCallback(
     async (score: number) => {
       setLastScore(score);
       setScoreCopied(false);
@@ -313,34 +358,16 @@ export function ArcadeApp() {
             playerId,
             playId: playIdRef.current ?? playId,
             score,
-            game: ARCADE_GAME_ID,
+            game,
           }),
         });
         await loadBoards();
       } catch {
-        // play is already on LAST 10; score retry is not worth blocking the cabinet
+        // play is already recorded; score retry is not worth blocking the cabinet
       }
     },
-    [loadBoards, playId, playerId],
+    [game, loadBoards, playId, playerId],
   );
-
-  function hop() {
-    gameRef.current?.hop();
-  }
-
-  useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      if (event.code !== "Space" && event.code !== "ArrowUp") return;
-      if (mode === "playing" || mode === "invoice") return;
-      if (event.target instanceof HTMLInputElement) return;
-      if (document.body.dataset.arcadeFocus === "retro") return;
-      event.preventDefault();
-      if (credits > 0) void play();
-      else void requestInvoice();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [credits, mode, play]);
 
   async function copyInvoice() {
     if (!paymentRequest) return;
@@ -358,7 +385,10 @@ export function ArcadeApp() {
     const parsed = sanitizeAlias(alias);
     const tag = parsed.ok ? parsed.alias : alias.trim().toUpperCase();
     const hit = highScores.find(
-      (row) => row.alias === tag && row.score === lastScore,
+      (row) =>
+        row.alias === tag &&
+        row.score === lastScore &&
+        (!row.game || !game || row.game === game),
     );
     if (hit) return hit.rank;
     const tenth = highScores[9]?.score ?? 0;
@@ -366,13 +396,17 @@ export function ArcadeApp() {
       return highScores.filter((row) => row.score > lastScore).length + 1;
     }
     return null;
-  }, [alias, highScores, lastScore]);
+  }, [alias, game, highScores, lastScore]);
 
   async function copyScore() {
     if (lastScore == null) return;
     const parsed = sanitizeAlias(alias);
     const tag = parsed.ok ? parsed.alias : alias.trim().toUpperCase() || "PLAYER";
-    const text = arcadeScoreSnippet(tag, lastScore);
+    const text = arcadeScoreSnippet(
+      tag,
+      lastScore,
+      `RETRO · ${game ? retroGameLabel(game).toUpperCase() : "RETRO"}`,
+    );
     try {
       if (typeof navigator.share === "function") {
         await navigator.share({ text });
@@ -380,8 +414,10 @@ export function ArcadeApp() {
         window.setTimeout(() => setScoreCopied(false), 1800);
         return;
       }
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
+    } catch (shareError) {
+      if (shareError instanceof DOMException && shareError.name === "AbortError") {
+        return;
+      }
     }
     try {
       await navigator.clipboard.writeText(text);
@@ -393,7 +429,7 @@ export function ArcadeApp() {
   }
 
   function cancelPay() {
-    setMode(credits > 0 ? "ready" : "attract");
+    setMode(credits > 0 && game ? "ready" : "attract");
     setPaymentHash("");
     setPaymentRequest("");
     setQrSrc("");
@@ -418,9 +454,17 @@ export function ArcadeApp() {
     };
   }, [showInvoice]);
 
+  function onPad(key: keyof RetroPad, down: boolean) {
+    padRef.current[key] = down;
+  }
+
+  const gameMemo = game
+    ? `3 credits · RETRO · ${retroGameLabel(game)} · SurfSats Arcade`
+    : "3 credits · RETRO · SurfSats Arcade";
+
   return (
-    <div className="arcade-bay arcade-bay-wave">
-      <ArcadeCabinet
+    <div className="arcade-bay arcade-bay-retro">
+      <RetroCabinet
         alias={alias}
         credits={credits}
         mode={screenMode}
@@ -429,18 +473,23 @@ export function ArcadeApp() {
         lastScore={lastScore}
         scoreRank={scoreRank}
         scoreCopied={scoreCopied}
-        gameRef={gameRef}
+        game={game}
+        padRef={padRef}
         onAlias={setAlias}
         onInsert={() => void requestInvoice()}
         onPlay={() => void play()}
-        onHop={hop}
-        onWipeout={(score) => void handleWipeout(score)}
+        onSelectGame={selectGame}
+        onGameOver={(score) => void handleGameOver(score)}
         onCopyScore={() => void copyScore()}
+        onPad={onPad}
       />
       <ArcadeBoards
         highScores={highScores}
         lastPlayers={lastPlayers}
         now={nowTick}
+        title="RETRO LEGENDS"
+        recentTitle="LAST 10 RETRO"
+        showGame
       />
       {showInvoice ? (
         <ArcadeInvoice
@@ -452,6 +501,8 @@ export function ArcadeApp() {
           remainLabel={remainLabel}
           copied={copied}
           invoiceError={invoiceError}
+          memo={gameMemo}
+          titleId="arcade-pay-title-retro"
           onCopy={() => void copyInvoice()}
           onRetry={() => void requestInvoice()}
           onCancel={cancelPay}

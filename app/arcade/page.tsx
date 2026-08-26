@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ArcadeApp } from "@/components/arcade/ArcadeApp";
+import { ArcadeFloor } from "@/components/arcade/ArcadeFloor";
 import { ARCADE_PRICE_SATS } from "@/lib/arcade";
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export default function ArcadePage() {
         />
         <div className="arcade-bg-veil" />
       </div>
-      <ArcadeApp />
+      <ArcadeFloor />
     </div>
   );
 }

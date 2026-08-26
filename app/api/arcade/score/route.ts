@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ARCADE_GAME_ID, isPlayerId } from "@/lib/arcade";
+import { ARCADE_GAME_ID, isPlayerId, normalizePlayGame } from "@/lib/arcade";
 import { arcadeLog } from "@/lib/arcade-log";
 import { arcadeStoreKind, submitArcadeScore } from "@/lib/arcade-store";
 
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const playerId = String(record.playerId || record.player_id || "").trim();
   const playId = String(record.playId || record.play_id || "").trim();
   const score = Number(record.score);
-  const game = String(record.game || ARCADE_GAME_ID).trim() || ARCADE_GAME_ID;
+  const game = normalizePlayGame(String(record.game || ARCADE_GAME_ID)) || ARCADE_GAME_ID;
 
   if (!isPlayerId(playerId)) {
     return NextResponse.json({ error: "missing player" }, { status: 400 });

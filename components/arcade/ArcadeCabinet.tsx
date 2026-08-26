@@ -58,6 +58,7 @@ export function ArcadeCabinet({
   return (
     <div className="cab-wrap">
       <div className="cab-machine">
+        <p className="cab-plate">WAVE RUNNER</p>
         <Image
           src="/arcade-cabinet-wide.png"
           alt="SurfSats arcade cabinet"

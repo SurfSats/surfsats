@@ -3,10 +3,14 @@ import path from "node:path";
 import {
   ARCADE_CREDITS_PER_PAY,
   ARCADE_GAME_ID,
+  ARCADE_MACHINE_WAVE,
   ARCADE_PRICE_SATS,
+  RETRO_GAME_IDS,
   newPlayId,
+  parseArcadeMachine,
   type ArcadeGrant,
   type ArcadeHighScore,
+  type ArcadeMachine,
   type ArcadePending,
   type ArcadePlay,
   type ArcadePlayer,
@@ -55,14 +59,18 @@ async function ensureNeonSchema() {
         payment_hash TEXT PRIMARY KEY,
         player_id TEXT NOT NULL,
         alias TEXT NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        machine TEXT NOT NULL DEFAULT 'wave',
+        game TEXT
       )`;
       await db`CREATE TABLE IF NOT EXISTS arcade_grants (
         payment_hash TEXT PRIMARY KEY,
         player_id TEXT NOT NULL,
         alias TEXT NOT NULL,
         credits INT NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        machine TEXT NOT NULL DEFAULT 'wave',
+        game TEXT
       )`;
       await db`CREATE TABLE IF NOT EXISTS arcade_players (
         player_id TEXT PRIMARY KEY,
@@ -84,6 +92,10 @@ async function ensureNeonSchema() {
         ON arcade_plays (game, score DESC)`;
       await db`CREATE INDEX IF NOT EXISTS arcade_grants_created_at
         ON arcade_grants (created_at DESC)`;
+      await db`ALTER TABLE arcade_pending ADD COLUMN IF NOT EXISTS machine TEXT NOT NULL DEFAULT 'wave'`;
+      await db`ALTER TABLE arcade_pending ADD COLUMN IF NOT EXISTS game TEXT`;
+      await db`ALTER TABLE arcade_grants ADD COLUMN IF NOT EXISTS machine TEXT NOT NULL DEFAULT 'wave'`;
+      await db`ALTER TABLE arcade_grants ADD COLUMN IF NOT EXISTS game TEXT`;
     })().catch((error) => {
       schemaReady = null;
       throw error;
@@ -167,17 +179,21 @@ export async function saveArcadePending(pending: ArcadePending) {
       await ensureNeonSchema();
       const db = sql();
       await db`
-        INSERT INTO arcade_pending (payment_hash, player_id, alias, created_at)
+        INSERT INTO arcade_pending (payment_hash, player_id, alias, created_at, machine, game)
         VALUES (
           ${pending.paymentHash},
           ${pending.playerId},
           ${pending.alias},
-          ${pending.createdAt}
+          ${pending.createdAt},
+          ${pending.machine ?? ARCADE_MACHINE_WAVE},
+          ${pending.game ?? null}
         )
         ON CONFLICT (payment_hash) DO UPDATE SET
           player_id = EXCLUDED.player_id,
           alias = EXCLUDED.alias,
-          created_at = EXCLUDED.created_at
+          created_at = EXCLUDED.created_at,
+          machine = EXCLUDED.machine,
+          game = EXCLUDED.game
       `;
       arcadeLog("info", "pending.saved", {
         hash: hashRef(pending.paymentHash),
@@ -209,7 +225,7 @@ export async function getArcadePending(paymentHash: string) {
     await ensureNeonSchema();
     const db = sql();
     const rows = await db`
-      SELECT payment_hash, player_id, alias, created_at
+      SELECT payment_hash, player_id, alias, created_at, machine, game
       FROM arcade_pending
       WHERE payment_hash = ${paymentHash}
       LIMIT 1
@@ -221,6 +237,8 @@ export async function getArcadePending(paymentHash: string) {
       playerId: String(row.player_id ?? ""),
       alias: String(row.alias ?? ""),
       createdAt: iso(row.created_at) || new Date().toISOString(),
+      machine: parseArcadeMachine(row.machine),
+      game: row.game ? String(row.game) : undefined,
     } satisfies ArcadePending;
   }
   await loadStore();
@@ -232,7 +250,7 @@ export async function findArcadeGrant(paymentHash: string) {
     await ensureNeonSchema();
     const db = sql();
     const rows = await db`
-      SELECT payment_hash, player_id, alias, credits, created_at
+      SELECT payment_hash, player_id, alias, credits, created_at, machine, game
       FROM arcade_grants
       WHERE payment_hash = ${paymentHash}
       LIMIT 1
@@ -245,6 +263,8 @@ export async function findArcadeGrant(paymentHash: string) {
       alias: String(row.alias ?? ""),
       credits: int(row.credits),
       createdAt: iso(row.created_at) || new Date().toISOString(),
+      machine: parseArcadeMachine(row.machine),
+      game: row.game ? String(row.game) : undefined,
     } satisfies ArcadeGrant;
   }
   await loadStore();
@@ -255,6 +275,8 @@ export async function grantArcadeCredits(input: {
   paymentHash: string;
   playerId: string;
   alias: string;
+  machine?: ArcadeMachine;
+  game?: string;
 }) {
   const existing = await findArcadeGrant(input.paymentHash);
   if (existing) {
@@ -281,6 +303,8 @@ export async function grantArcadeCredits(input: {
     alias: input.alias,
     credits: ARCADE_CREDITS_PER_PAY,
     createdAt,
+    machine: input.machine ?? ARCADE_MACHINE_WAVE,
+    game: input.game,
   };
 
   try {
@@ -288,13 +312,15 @@ export async function grantArcadeCredits(input: {
       await ensureNeonSchema();
       const db = sql();
       await db`
-        INSERT INTO arcade_grants (payment_hash, player_id, alias, credits, created_at)
+        INSERT INTO arcade_grants (payment_hash, player_id, alias, credits, created_at, machine, game)
         VALUES (
           ${grant.paymentHash},
           ${grant.playerId},
           ${grant.alias},
           ${grant.credits},
-          ${grant.createdAt}
+          ${grant.createdAt},
+          ${grant.machine ?? ARCADE_MACHINE_WAVE},
+          ${grant.game ?? null}
         )
         ON CONFLICT (payment_hash) DO NOTHING
       `;
@@ -490,7 +516,7 @@ export async function submitArcadeScore(input: {
       if (input.playId) {
         await db`
           UPDATE arcade_plays
-          SET score = ${score}, game = ${game}
+          SET score = ${score}
           WHERE id = ${input.playId} AND player_id = ${input.playerId}
         `;
       } else {
@@ -532,7 +558,6 @@ export async function submitArcadeScore(input: {
         );
         if (play) {
           play.score = score;
-          play.game = game;
         }
       } else {
         memory.plays.unshift({
@@ -561,30 +586,38 @@ export async function submitArcadeScore(input: {
   }
 }
 
+function mapHighScoreRows(
+  rows: Array<{ alias?: unknown; score?: unknown; created_at?: unknown; game?: unknown }>,
+): ArcadeHighScore[] {
+  const mapped: ArcadeHighScore[] = [];
+  rows.forEach((row, index) => {
+    const score = int(row.score);
+    const alias = String(row.alias ?? "").trim();
+    if (!alias) return;
+    const item: ArcadeHighScore = {
+      rank: index + 1,
+      alias,
+      score,
+      createdAt: iso(row.created_at),
+    };
+    if (row.game) item.game = String(row.game);
+    mapped.push(item);
+  });
+  return mapped.map((row, index) => ({ ...row, rank: index + 1 }));
+}
+
 export async function getArcadeHighScores(game = ARCADE_GAME_ID) {
   if (isDatabaseConfigured()) {
     await ensureNeonSchema();
     const db = sql();
     const rows = await db`
-      SELECT alias, score, created_at
+      SELECT alias, score, created_at, game
       FROM arcade_plays
       WHERE game = ${game} AND score IS NOT NULL
       ORDER BY score DESC, created_at ASC
       LIMIT 10
     `;
-    return rows
-      .map((row, index) => {
-        const score = int(row.score);
-        const alias = String(row.alias ?? "").trim();
-        if (!alias) return null;
-        return {
-          rank: index + 1,
-          alias,
-          score,
-          createdAt: iso(row.created_at),
-        } satisfies ArcadeHighScore;
-      })
-      .filter((row): row is ArcadeHighScore => Boolean(row));
+    return mapHighScoreRows(rows);
   }
   await loadStore();
   return memory.plays
@@ -596,33 +629,67 @@ export async function getArcadeHighScores(game = ARCADE_GAME_ID) {
       alias: play.alias,
       score: play.score ?? 0,
       createdAt: play.createdAt,
+      game: play.game,
     }));
 }
 
-export async function getArcadeRecentPlays() {
+export async function getRetroHighScores() {
+  const games = new Set<string>(RETRO_GAME_IDS);
   if (isDatabaseConfigured()) {
     await ensureNeonSchema();
     const db = sql();
     const rows = await db`
-      SELECT alias, created_at
+      SELECT alias, score, created_at, game
+      FROM arcade_plays
+      WHERE game IN ('pong', 'tetris', 'snake', 'breakout', 'invaders')
+        AND score IS NOT NULL
+      ORDER BY score DESC, created_at ASC
+      LIMIT 10
+    `;
+    return mapHighScoreRows(rows);
+  }
+  await loadStore();
+  return memory.plays
+    .filter((play) => games.has(play.game) && play.score != null)
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0) || a.createdAt.localeCompare(b.createdAt))
+    .slice(0, 10)
+    .map((play, index) => ({
+      rank: index + 1,
+      alias: play.alias,
+      score: play.score ?? 0,
+      createdAt: play.createdAt,
+      game: play.game,
+    }));
+}
+
+export async function getArcadeRecentPlays(machine: ArcadeMachine = ARCADE_MACHINE_WAVE) {
+  if (isDatabaseConfigured()) {
+    await ensureNeonSchema();
+    const db = sql();
+    const rows = await db`
+      SELECT alias, created_at, machine, game
       FROM arcade_grants
+      WHERE COALESCE(machine, ${ARCADE_MACHINE_WAVE}) = ${machine}
       ORDER BY created_at DESC
       LIMIT 10
     `;
     return rows.map((row) => ({
       alias: String(row.alias ?? ""),
-      game: ARCADE_GAME_ID,
+      game: String(row.game || (machine === ARCADE_MACHINE_WAVE ? ARCADE_GAME_ID : "retro")),
       sats: ARCADE_PRICE_SATS,
       createdAt: iso(row.created_at),
     })) satisfies ArcadeRecentPlay[];
   }
   await loadStore();
   return Object.values(memory.grants)
+    .filter((grant) => (grant.machine ?? ARCADE_MACHINE_WAVE) === machine)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, 10)
     .map((grant) => ({
       alias: grant.alias,
-      game: ARCADE_GAME_ID,
+      game:
+        grant.game ||
+        (machine === ARCADE_MACHINE_WAVE ? ARCADE_GAME_ID : "retro"),
       sats: ARCADE_PRICE_SATS,
       createdAt: grant.createdAt,
     }));

@@ -11,6 +11,8 @@ export function ArcadeInvoice({
   remainLabel,
   copied,
   invoiceError,
+  memo = `${ARCADE_CREDITS_PER_PAY} credits · WAVE RUNNER · SurfSats Arcade`,
+  titleId = "arcade-pay-title",
   onCopy,
   onRetry,
   onCancel,
@@ -23,6 +25,8 @@ export function ArcadeInvoice({
   remainLabel: string;
   copied: boolean;
   invoiceError: string | null;
+  memo?: string;
+  titleId?: string;
   onCopy: () => void;
   onRetry: () => void;
   onCancel: () => void;
@@ -31,16 +35,14 @@ export function ArcadeInvoice({
     Boolean(paymentRequest) && paymentRequest.toLowerCase().startsWith("ln");
 
   return (
-    <div className="arcade-pay" role="dialog" aria-modal="true" aria-labelledby="arcade-pay-title">
+    <div className="arcade-pay" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <button type="button" className="arcade-pay-scrim" onClick={onCancel} aria-label="Close invoice" />
       <div className="arcade-pay-panel">
         <p className="arcade-pay-kicker">lightning invoice</p>
-        <h2 id="arcade-pay-title" className="arcade-pay-title">
+        <h2 id={titleId} className="arcade-pay-title">
           INSERT {ARCADE_PRICE_SATS} SATS
         </h2>
-        <p className="arcade-pay-memo">
-          {ARCADE_CREDITS_PER_PAY} credits · WAVE RUNNER · SurfSats Arcade
-        </p>
+        <p className="arcade-pay-memo">{memo}</p>
 
         {qrSrc && live && !expired ? (
           // data: URL from the live BOLT11 — next/image cannot optimize it
