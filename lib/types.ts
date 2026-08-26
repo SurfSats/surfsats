@@ -23,6 +23,7 @@ export type NewsLink = {
 
 export type HandpickedItem = NewsLink & {
   featured?: boolean;
+  image?: string;
 };
 
 export type FeedItem = {

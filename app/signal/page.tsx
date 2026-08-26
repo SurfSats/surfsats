@@ -7,7 +7,10 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { TerminalLabel } from "@/components/ui/TerminalLabel";
 import { getArticles } from "@/lib/articles";
 import { getLiveFeeds } from "@/lib/feeds";
-import { getHandpicked } from "@/lib/handpicked";
+import {
+  getLatestHandpicked,
+  getStandingHandpicked,
+} from "@/lib/handpicked";
 
 export const revalidate = 1800;
 
@@ -18,7 +21,8 @@ export const metadata: Metadata = {
 };
 
 export default async function SignalPage() {
-  const curated = getHandpicked();
+  const latest = getLatestHandpicked();
+  const standing = getStandingHandpicked();
   const articles = getArticles();
   const { items: feedItems, sources } = await getLiveFeeds();
 
@@ -49,17 +53,44 @@ export default async function SignalPage() {
           <SectionHeading
             eyebrow="hand_picked"
             title="Curated"
-            description="A short stack we actually stand behind. Swap these in lib/handpicked.ts whenever the signal moves."
+            description="Latest signal first. The standing stack stays below."
           />
-          <div className="mt-8 grid gap-4">
-            {curated.map((item, index) => (
-              <HandpickedCard
-                key={item.id}
-                item={item}
-                featured={index === 0 || item.featured}
-              />
-            ))}
-          </div>
+
+          {latest.length > 0 ? (
+            <div className="mt-8">
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
+                {"//"} latest
+              </p>
+              <h3 className="mt-1 font-display text-xl font-bold uppercase tracking-tight text-sats sm:text-2xl">
+                Latest
+              </h3>
+              <div className="mt-4 grid gap-4">
+                {latest.map((item) => (
+                  <HandpickedCard key={item.id} item={item} variant="latest" />
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {standing.length > 0 ? (
+            <div className="mt-10">
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
+                {"//"} standing
+              </p>
+              <h3 className="mt-1 font-display text-lg font-bold uppercase tracking-tight text-muted sm:text-xl">
+                Standing
+              </h3>
+              <div className="mt-3 grid gap-3">
+                {standing.map((item) => (
+                  <HandpickedCard
+                    key={item.id}
+                    item={item}
+                    variant="standing"
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
         </section>
 
         <section id="articles" className="mt-16 scroll-mt-28">

@@ -1,7 +1,9 @@
 import type { HandpickedItem } from "./types";
 
+const STANDING_LEAD_ID = "hp-21-lessons";
+
 // Curated signal. Edit this list anytime.
-// The first `featured: true` item leads the HAND_PICKED section.
+// featured: true = STANDING / canon. omitted or false = LATEST.
 const handpicked: HandpickedItem[] = [
   {
     id: "hp-21-lessons",
@@ -21,6 +23,7 @@ const handpicked: HandpickedItem[] = [
     source: "Stackchain Magazine",
     date: "2026-01-14",
     url: "https://www.stackchainmagazine.net/",
+    featured: true,
   },
   {
     id: "hp-whitepaper",
@@ -30,6 +33,7 @@ const handpicked: HandpickedItem[] = [
     source: "Satoshi Nakamoto",
     date: "2008-10-31",
     url: "https://bitcoin.org/bitcoin.pdf",
+    featured: true,
   },
   {
     id: "hp-hrf-nostr-grants-2026-08",
@@ -53,10 +57,22 @@ const handpicked: HandpickedItem[] = [
   },
 ];
 
+export function getLatestHandpicked() {
+  return handpicked
+    .filter((item) => !item.featured)
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function getStandingHandpicked() {
+  return handpicked
+    .filter((item) => item.featured)
+    .sort((a, b) => {
+      if (a.id === STANDING_LEAD_ID) return -1;
+      if (b.id === STANDING_LEAD_ID) return 1;
+      return b.date.localeCompare(a.date);
+    });
+}
+
 export function getHandpicked() {
-  return [...handpicked].sort((a, b) => {
-    if (a.featured && !b.featured) return -1;
-    if (!a.featured && b.featured) return 1;
-    return b.date.localeCompare(a.date);
-  });
+  return [...getStandingHandpicked(), ...getLatestHandpicked()];
 }
