@@ -1,20 +1,20 @@
-import { JUKEBOX_PRICE_SATS } from "@/lib/jukebox";
+import { JUKEBOX_PRICE_SATS, WAVLAKE_REQUEST_SATS } from "@/lib/jukebox";
 
 const steps = [
   {
     n: "01",
-    title: "Board the deck",
-    body: "Listen on the ship. Then open Lightning Jukebox web or Telegram to request a track. Do not ask a captain.",
+    title: "Search the Jukebox tab",
+    body: "Open noderunnersradio.com. Find the track on their Jukebox. Do not ask a captain.",
   },
   {
     n: "02",
-    title: `Tip ${JUKEBOX_PRICE_SATS} sats`,
-    body: "Anti-spam, not a record deal. The tip keeps the queue honest and the transmitter warm.",
+    title: `Zap ${JUKEBOX_PRICE_SATS} or ${WAVLAKE_REQUEST_SATS}`,
+    body: `${JUKEBOX_PRICE_SATS} sats is the ship library anti-spam tip. ${WAVLAKE_REQUEST_SATS} sats is Wavlake V4V to the artist. Not a record sale. We don't invoice this.`,
   },
   {
     n: "03",
     title: "The public is the DJ",
-    body: `Drop ${JUKEBOX_PRICE_SATS} sats and the whole ship hears it. No flag required.`,
+    body: "The licence covers the song. The whole ship hears it. No flag required.",
   },
 ];
 

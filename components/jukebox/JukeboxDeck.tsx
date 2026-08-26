@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { HowItWorks } from "@/components/jukebox/HowItWorks";
+import { JukeboxSearch } from "@/components/jukebox/JukeboxSearch";
 import { NowPlaying } from "@/components/jukebox/NowPlaying";
 import { Queue } from "@/components/jukebox/Queue";
 import {
@@ -79,6 +80,7 @@ export function JukeboxDeck({
         <NowPlaying track={track} status={status} />
         <HowItWorks />
       </div>
+      <JukeboxSearch />
       <div className="mt-10">
         <Queue tracks={payload?.queue ?? []} ready={ready} />
       </div>

@@ -116,6 +116,30 @@ body {
   object-position: center 38%;
 }
 
+.jukebox-audio {
+  display: block;
+  accent-color: var(--sats);
+  filter: saturate(0.85);
+}
+
+.jukebox-tune {
+  display: flex;
+  width: 100%;
+  min-height: 4.6rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--sats);
+  background: var(--sats);
+  color: #08080b;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.05rem, 3.4vw, 1.55rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 var(--color-magenta);
+}
+
 .jukebox-hero-veil {
   position: absolute;
   inset: 0;

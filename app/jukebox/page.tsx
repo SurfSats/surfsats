@@ -12,6 +12,7 @@ import {
   JUKEBOX_LIVE_URL,
   JUKEBOX_PRICE_SATS,
   JUKEBOX_TELEGRAM_URL,
+  WAVLAKE_REQUEST_SATS,
   fetchNowPlayingSnapshot,
 } from "@/lib/jukebox";
 
@@ -73,7 +74,7 @@ export default async function JukeboxPage() {
             external
             className="btn-pulse w-full px-6 py-4 text-sm sm:w-auto"
           >
-            add a song — {JUKEBOX_PRICE_SATS} sats
+            REQUEST ON THE SHIP
           </ButtonLink>
           <ButtonLink
             href={JUKEBOX_TELEGRAM_URL}
@@ -81,13 +82,13 @@ export default async function JukeboxPage() {
             variant="ghost"
             className="w-full px-6 py-4 text-sm sm:w-auto"
           >
-            add via telegram
+            TELEGRAM
           </ButtonLink>
         </div>
         <p className="mt-3 max-w-xl text-sm text-muted">
-          Web can stall. Telegram is usually faster for requests. Wavlake
-          requests on their station are a separate 210-sat value-for-value lane
-          to artists.
+          Search the Jukebox tab. Zap {JUKEBOX_PRICE_SATS} sats (ship library) or{" "}
+          {WAVLAKE_REQUEST_SATS} sats (Wavlake). Anti-spam / V4V — not a record
+          sale. The licence covers the song.
         </p>
 
         <JukeboxDeck initial={initial} />
@@ -98,6 +99,9 @@ export default async function JukeboxPage() {
 
         <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
           powered by {JUKEBOX_BACKEND_NAME}
+        </p>
+        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted/70">
+          legacy bot — do not top up.
         </p>
       </Container>
     </div>

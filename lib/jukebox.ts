@@ -1,16 +1,11 @@
 import type { JukeboxTrack } from "./types";
 
 export const JUKEBOX_PRICE_SATS = 21;
+export const WAVLAKE_REQUEST_SATS = 210;
 
-// Live Lightning Jukebox (Noderunners / jukebox.lighting).
-// Song requests and invoices currently happen here — the SurfSats page is
-// the custom frontend. Swap this URL if the room or backend changes.
-export const JUKEBOX_LIVE_URL =
-  "https://jukebox.lighting/jukebox/web/-1001672416970";
-
-// Direct Telegram add-song entry (official Lightning Jukebox bot).
-// Radio hangout: https://t.me/noderunnersradio
-export const JUKEBOX_TELEGRAM_URL = "https://t.me/Jukebox_Lightning_bot";
+// Requests happen on Noderunners Radio (Jukebox tab). SurfSats does not invoice.
+export const JUKEBOX_LIVE_URL = "https://noderunnersradio.com/";
+export const JUKEBOX_TELEGRAM_URL = "https://t.me/noderunnersradio";
 
 export const STREAM_LIVE_URL = "https://noderunnersradio.com/";
 export const STREAM_AUDIO_URL = "https://noderunnersradio.com/api/listen.m3u";
@@ -18,8 +13,11 @@ export const FUNDING_URL = "https://noderunnersradio.com/funding";
 export const NOWPLAYING_URL = "https://noderunnersradio.com/api/nowplaying";
 export const NOWPLAYING_CACHE_MS = 12_000;
 export const NOWPLAYING_POLL_MS = 12_000;
+export const JUKEBOX_SEARCH_URL = "https://noderunnersradio.com/api/search";
+export const JUKEBOX_SEARCH_CACHE_MS = 10_000;
+export const JUKEBOX_SEARCH_QUERY_MAX = 80;
 
-export const JUKEBOX_BACKEND_NAME = "Lightning Jukebox / Noderunners";
+export const JUKEBOX_BACKEND_NAME = "Noderunners Radio";
 
 // Cosmetic status until a real node/queue API exists.
 export const JUKEBOX_SIGNAL = {
@@ -137,4 +135,88 @@ export function getNowPlaying(): JukeboxTrack | null {
 
 export function getQueue(): JukeboxTrack[] {
   return [];
+}
+
+export type JukeboxSearchSource = "library" | "wavlake";
+
+export type JukeboxSearchHit = {
+  artist: string;
+  title: string;
+  album: string | null;
+  source: JukeboxSearchSource;
+  sats: number;
+  guid: string | null;
+  duration_s: number | null;
+};
+
+function asNumber(value: unknown) {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseSearchSource(value: unknown): JukeboxSearchSource {
+  return value === "wavlake" ? "wavlake" : "library";
+}
+
+export function parseSearchPayload(value: unknown): JukeboxSearchHit[] {
+  if (!value || typeof value !== "object") return [];
+  const record = value as Record<string, unknown>;
+  const raw = Array.isArray(record.results)
+    ? record.results
+    : Array.isArray(value)
+      ? value
+      : [];
+  const hits: JukeboxSearchHit[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as Record<string, unknown>;
+    const title = asText(row.title);
+    const artist = asText(row.artist);
+    if (!title && !artist) continue;
+    const source = parseSearchSource(row.source);
+    const sats =
+      asNumber(row.sats) ??
+      (source === "wavlake" ? WAVLAKE_REQUEST_SATS : JUKEBOX_PRICE_SATS);
+    hits.push({
+      artist,
+      title: title || "Untitled",
+      album: asText(row.album) || null,
+      source,
+      sats,
+      guid: asText(row.guid) || null,
+      duration_s: asNumber(row.duration_s),
+    });
+  }
+  return hits;
+}
+
+export function sanitizeSearchQuery(raw: string) {
+  return raw.trim().slice(0, JUKEBOX_SEARCH_QUERY_MAX);
+}
+
+const searchCache = new Map<string, { at: number; results: JukeboxSearchHit[] }>();
+
+export async function fetchJukeboxSearch(rawQuery: string): Promise<{
+  ok: boolean;
+  results: JukeboxSearchHit[];
+}> {
+  const q = sanitizeSearchQuery(rawQuery);
+  if (q.length < 2) return { ok: true, results: [] };
+  const cached = searchCache.get(q.toLowerCase());
+  if (cached && Date.now() - cached.at < JUKEBOX_SEARCH_CACHE_MS) {
+    return { ok: true, results: cached.results };
+  }
+  try {
+    const url = `${JUKEBOX_SEARCH_URL}?q=${encodeURIComponent(q)}`;
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!response.ok) return { ok: false, results: [] };
+    const results = parseSearchPayload(await response.json());
+    searchCache.set(q.toLowerCase(), { at: Date.now(), results });
+    return { ok: true, results };
+  } catch {
+    return { ok: false, results: [] };
+  }
 }
