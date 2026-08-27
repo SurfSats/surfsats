@@ -143,8 +143,9 @@ export function FiatApp({
           The printer does not sleep. Bitcoin does not print.
         </p>
         <p className="mt-4 max-w-lg text-sm leading-relaxed text-foreground/85 sm:text-base">
-          Infinite paper. Finite beach. This is a money with the lid ripped
-          off, flushed into the ocean, still gurgling.
+          Watch legal counterfeiting in action.
+          <br />
+          Do you feel stimulated?
         </p>
 
         <section
