@@ -208,7 +208,7 @@ export function FiatApp({
               </p>
               <p className="fiat-tile-vs">SATS / $</p>
               <p className="fiat-tile-note">
-                The only clock they did not get to print.
+                Print to dollar-sat parity please & thanks.
               </p>
             </article>
           ) : null}
