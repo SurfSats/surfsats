@@ -5156,6 +5156,85 @@ body:has(.story-page) .site-watermark {
   }
 }
 
+.footer-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin: 0;
+  min-width: 0;
+  line-height: 1;
+}
+
+.footer-company {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  min-height: 0;
+  letter-spacing: 0.14em;
+  color: rgba(139, 141, 153, 0.8);
+  white-space: nowrap;
+}
+
+.footer-strip-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footer-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 0;
+  line-height: 0;
+  mix-blend-mode: screen;
+}
+
+.footer-mark img {
+  display: block;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+}
+
+.footer-mark-surfsats {
+  height: 34px;
+  width: 4.05rem;
+}
+
+.footer-mark-surfsats img {
+  height: 4.9rem;
+}
+
+.footer-mark-surfporn {
+  height: 26px;
+  width: 6.4rem;
+}
+
+.footer-mark-surfporn img {
+  height: 8.5rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flicker,
   .panel-hover,

@@ -29,17 +29,27 @@ export function Footer() {
       </Container>
 
       <div className="border-t border-dashed border-cyan/20">
-        <Container className="flex flex-col gap-2 py-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p>
-              © {new Date().getFullYear()} surfsats · ride the swell · stack the
-              sats
-            </p>
-            <p className="mt-1 tracking-[0.14em] text-muted/80">
-              A SurfPorn Company
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
+        <Container className="footer-strip">
+          <p className="footer-legal">
+            <span>© {new Date().getFullYear()}</span>
+            <span className="footer-mark footer-mark-surfsats">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-surfsats.png" alt="SurfSats" />
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>ride the swell</span>
+            <span aria-hidden="true">·</span>
+            <span>stack the sats</span>
+            <span className="footer-company">
+              A
+              <span className="footer-mark footer-mark-surfporn">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-surfporn.png" alt="SurfPorn" />
+              </span>
+              COMPANY
+            </span>
+          </p>
+          <div className="footer-strip-links">
             <Link
               href="/about"
               className="tracking-[0.14em] text-muted/80 glitch-hover hover:text-cyan"
