@@ -15,6 +15,7 @@ import {
 } from "@/lib/fiat";
 import { formatDate } from "@/lib/format";
 import { formatInteger, type TimechainSnapshot } from "@/lib/timechain";
+import { MoneyRain } from "@/components/fiat/MoneyRain";
 
 export function FiatApp({
   initialDebt,
@@ -29,6 +30,9 @@ export function FiatApp({
   const [watched, setWatched] = useState(0);
   const startedAt = useRef<number | null>(null);
   const debtRef = useRef(initialDebt);
+  const chunkRef = useRef(0);
+  const brrrTimer = useRef<number>(0);
+  const [brrr, setBrrr] = useState(false);
 
   useEffect(() => {
     debtRef.current = debt;
@@ -69,8 +73,22 @@ export function FiatApp({
       if (startedAt.current === null) startedAt.current = now;
       const elapsed = Math.max(0, (now - startedAt.current) / 1000);
       const rate = Math.max(0, current.dollarsPerSecond);
-      setDisplay(current.totPubDebtOutAmt + rate * elapsed);
-      setWatched(rate * elapsed);
+      const nextDisplay = current.totPubDebtOutAmt + rate * elapsed;
+      const nextWatched = rate * elapsed;
+      setDisplay(nextDisplay);
+      setWatched(nextWatched);
+      const chunk = Math.floor(nextWatched / 1_000_000);
+      const reduceMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reduceMotion && chunk > chunkRef.current) {
+        chunkRef.current = chunk;
+        setBrrr(true);
+        window.clearTimeout(brrrTimer.current);
+        brrrTimer.current = window.setTimeout(() => setBrrr(false), 200);
+      } else if (chunk > chunkRef.current) {
+        chunkRef.current = chunk;
+      }
     };
 
     const tick = (now: number) => {
@@ -88,7 +106,10 @@ export function FiatApp({
     }
 
     frame = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(brrrTimer.current);
+    };
   }, [debt]);
 
   const moscow = snapshot.satsPerDollar;
@@ -107,9 +128,10 @@ export function FiatApp({
           className="fiat-bleed-img"
         />
         <div className="fiat-veil" />
+        <MoneyRain dollarsPerSecond={speed} />
       </div>
 
-      <Container className="fiat-copy relative z-[1] py-12 sm:py-16 lg:py-20">
+      <Container className="fiat-copy py-12 sm:py-16 lg:py-20">
         <TerminalLabel>printer_overflow · no hard cap</TerminalLabel>
         <h1
           data-text="DIRTY FIAT"
@@ -125,7 +147,10 @@ export function FiatApp({
           off, flushed into the ocean, still gurgling.
         </p>
 
-        <section className="fiat-hero mt-10 sm:mt-14">
+        <section
+          className={brrr ? "fiat-hero is-brrr mt-10 sm:mt-14" : "fiat-hero mt-10 sm:mt-14"}
+        >
+          <div className="fiat-hero-scrim" aria-hidden="true" />
           <div className="fiat-hero-kicker">
             <p>CUCKBUCKS OUTSTANDING</p>
             <span className="fiat-projected">PROJECTED</span>
