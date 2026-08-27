@@ -4856,6 +4856,245 @@ body:has(.story-page) .site-watermark {
   }
 }
 
+.fiat-page {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 100%;
+  min-height: calc(100dvh - 8.5rem);
+  overflow-x: hidden;
+}
+
+.fiat-bleed {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  min-height: 100%;
+}
+
+.fiat-bleed-img {
+  object-fit: cover;
+  object-position: 18% 52%;
+}
+
+.fiat-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(6, 5, 9, 0.62) 0%,
+      rgba(6, 5, 9, 0.72) 38%,
+      rgba(6, 5, 9, 0.88) 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(6, 5, 9, 0.55) 0%,
+      rgba(6, 5, 9, 0.28) 48%,
+      rgba(6, 5, 9, 0.62) 100%
+    );
+}
+
+.fiat-copy {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.fiat-tag {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.fiat-hero-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.85rem;
+}
+
+.fiat-hero-kicker p {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(0.95rem, 2.4vw, 1.35rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--magenta);
+  text-shadow: 0 0 16px rgba(255, 46, 196, 0.45);
+}
+
+.fiat-projected {
+  display: inline-block;
+  border: 1px solid rgba(255, 122, 24, 0.7);
+  padding: 0.18rem 0.45rem 0.12rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sats);
+  background: rgba(8, 8, 11, 0.55);
+}
+
+.fiat-cuck {
+  margin: 0.55rem 0 0;
+  max-width: 100%;
+  color: #d6ff4a;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: clamp(1.55rem, 7.1vw, 5.35rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-shadow:
+    0 0 28px rgba(214, 255, 74, 0.28),
+    2px 0 0 rgba(255, 46, 196, 0.35),
+    -2px 0 0 rgba(61, 255, 243, 0.28);
+}
+
+.fiat-cuck-empty {
+  color: var(--muted);
+  text-shadow: none;
+}
+
+.fiat-speed {
+  margin: 0.85rem 0 0;
+  max-width: 42rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: clamp(0.68rem, 1.8vw, 0.92rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+  text-transform: uppercase;
+  color: var(--foreground);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
+}
+
+.fiat-speed-dot {
+  margin: 0 0.55rem;
+  color: var(--sats);
+}
+
+.fiat-tiles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  margin-top: 2.1rem;
+}
+
+@media (min-width: 760px) {
+  .fiat-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .fiat-tile:nth-child(2) {
+    transform: rotate(0.5deg);
+  }
+
+  .fiat-tile:nth-child(3) {
+    transform: rotate(-0.55deg);
+  }
+}
+
+.fiat-tile {
+  min-width: 0;
+  max-width: 100%;
+  padding: 1rem 1rem 1.05rem;
+  border: 1px solid rgba(61, 255, 243, 0.28);
+  background:
+    linear-gradient(180deg, rgba(10, 12, 16, 0.78), rgba(6, 6, 10, 0.88));
+  box-shadow: 4px 4px 0 rgba(255, 46, 196, 0.22);
+}
+
+.fiat-tile-label {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.fiat-tile-value {
+  margin: 0.45rem 0 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.35rem, 3.2vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.fiat-tile-vs {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--sats);
+}
+
+.fiat-tile-note {
+  margin: 0.55rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(236, 234, 228, 0.78);
+}
+
+.fiat-cite {
+  margin: 1.75rem 0 0;
+  max-width: 38rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.fiat-cite-flag {
+  color: var(--sats);
+  white-space: nowrap;
+}
+
+.fiat-insult {
+  margin: 0.45rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 122, 24, 0.85);
+}
+
+@media (max-width: 640px) {
+  .fiat-bleed-img {
+    object-position: 8% 48%;
+  }
+
+  .fiat-cuck {
+    font-size: clamp(1.28rem, 8.6vw, 2.05rem);
+  }
+
+  .fiat-speed-dot {
+    display: block;
+    margin: 0.2rem 0;
+    height: 0;
+    overflow: hidden;
+  }
+
+  .fiat-speed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flicker,
   .panel-hover,

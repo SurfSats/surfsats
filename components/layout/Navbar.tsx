@@ -30,10 +30,13 @@ export function Navbar({
         </Container>
       </div>
 
-      <Container className="flex h-14 items-center justify-between sm:h-16">
+      <Container className="flex h-14 items-center justify-between gap-3 sm:h-16">
         <Logo />
 
-        <nav className="hidden items-center gap-3 xl:gap-5 lg:flex" aria-label="Primary">
+        <nav
+          className="hidden min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto lg:flex xl:gap-2.5"
+          aria-label="Primary"
+        >
           {navLinks.map((link) => {
             const active =
               link.href === "/"
@@ -45,7 +48,7 @@ export function Navbar({
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "font-mono text-xs uppercase tracking-[0.16em] transition-colors glitch-hover",
+                  "shrink-0 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.1em] transition-colors glitch-hover xl:text-[11px] xl:tracking-[0.12em]",
                   active
                     ? "text-sats"
                     : "text-muted hover:text-cyan",
@@ -60,7 +63,7 @@ export function Navbar({
 
         <Link
           href="/jukebox"
-          className="btn hidden px-3 py-2 text-[10px] lg:inline-flex"
+          className="btn shrink-0 px-3 py-2 text-[10px] max-xl:!hidden xl:!inline-flex"
         >
           [ drop_21_sats ]
         </Link>
