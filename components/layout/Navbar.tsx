@@ -1,12 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
-import { cn } from "@/lib/cn";
-import { navLinks } from "@/lib/nav";
+import { GooeyDropSats, GooeyNavPills } from "@/components/layout/GooeyChrome";
 import { swellFromPct } from "@/lib/swell";
 import type { TimechainSnapshot } from "@/lib/timechain";
 import { useTimechainSnapshot } from "@/components/timechain/useTimechainSnapshot";
@@ -30,43 +28,17 @@ export function Navbar({
         </Container>
       </div>
 
-      <Container className="flex h-14 items-center justify-between gap-3 sm:h-16">
+      <Container className="flex min-h-14 items-center justify-between gap-3 py-2 sm:min-h-16">
         <Logo />
 
         <nav
-          className="hidden min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto lg:flex xl:gap-2.5"
+          className="hidden min-w-0 flex-1 items-center justify-end overflow-visible lg:flex"
           aria-label="Primary"
         >
-          {navLinks.map((link) => {
-            const active =
-              link.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(link.href);
-
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "shrink-0 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.1em] transition-colors glitch-hover xl:text-[11px] xl:tracking-[0.12em]",
-                  active
-                    ? "text-sats"
-                    : "text-muted hover:text-cyan",
-                )}
-              >
-                {active ? ">" : "/"}
-                {link.label.toLowerCase()}
-              </Link>
-            );
-          })}
+          <GooeyNavPills pathname={pathname} className="w-full justify-end" />
         </nav>
 
-        <Link
-          href="/jukebox"
-          className="btn shrink-0 px-3 py-2 text-[10px] max-xl:!hidden xl:!inline-flex"
-        >
-          [ drop_21_sats ]
-        </Link>
+        <GooeyDropSats className="max-lg:hidden" />
 
         <button
           type="button"
@@ -101,29 +73,13 @@ export function Navbar({
           id="mobile-nav"
           className="border-t border-cyan/20 bg-background lg:hidden"
         >
-          <Container className="flex flex-col gap-1 py-3">
-            {navLinks.map((link) => {
-              const active =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(link.href);
-
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "px-2 py-3 font-mono text-sm uppercase tracking-[0.14em]",
-                    active
-                      ? "bg-cyan/8 text-sats"
-                      : "text-foreground hover:bg-cyan/6 hover:text-cyan",
-                  )}
-                >
-                  {active ? ">" : "$"} {link.label.toLowerCase()}
-                </Link>
-              );
-            })}
+          <Container className="flex flex-col items-start gap-3 py-3">
+            <GooeyNavPills
+              pathname={pathname}
+              onNavigate={() => setOpen(false)}
+              className="w-full justify-start"
+            />
+            <GooeyDropSats onNavigate={() => setOpen(false)} />
           </Container>
         </div>
       ) : null}
