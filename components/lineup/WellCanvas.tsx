@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import {
-  BLOCK_CAPACITY_VSIZE,
-  bandMidRate,
-  type LineupSnapshot,
-} from "@/lib/lineup";
+import type { LineupSnapshot } from "@/lib/lineup";
 import { cn } from "@/lib/cn";
+import { wellUniforms, wellVisualFromSnapshot } from "@/components/lineup/wellVisual";
 import wellShader from "./well.wgsl";
-
-type Vec4 = [number, number, number, number];
 
 export function WellCanvas({
   snapshot,
@@ -53,30 +48,17 @@ export function WellCanvas({
           clearColor: [0.02, 0.022, 0.028, 1],
         });
 
-        const zeros: Vec4 = [0, 0, 0, 0];
+        const visual = wellVisualFromSnapshot(snapshotRef.current);
         const well = effect(gpu, wellShader, {
           label: "the-well",
           set: {
-            params: {
-              time: 0,
-              pulse: 0,
-              fill: 0,
-              _pad: 0,
-              pointer: [0.5, 0.5],
-              res: [canvasSurface.size[0], canvasSurface.size[1]],
-              band0: zeros,
-              band1: zeros,
-              band2: zeros,
-              band3: zeros,
-              band4: zeros,
-              band5: zeros,
-              band6: zeros,
-              band7: zeros,
-              ring0: zeros,
-              ring1: zeros,
-              ring2: zeros,
-              ring3: zeros,
-            },
+            params: wellUniforms(
+              visual,
+              0,
+              0,
+              { x: 0.5, y: 0.5 },
+              canvasSurface.size,
+            ),
           },
         });
 
@@ -99,10 +81,6 @@ export function WellCanvas({
         };
         canvas.addEventListener("pointermove", onPointer);
 
-        const unresize = canvasSurface.onResize(({ width, height }) => {
-          well.set({ params: { res: [width, height] } });
-        });
-
         const time = clock(gpu);
         let lastHeight = snapshotRef.current.blockHeight;
         let pulseUntil = 0;
@@ -110,23 +88,25 @@ export function WellCanvas({
         const loop = frameLoop(gpu, (frame) => {
           const now = time.time;
           const snap = snapshotRef.current;
+          const vis = wellVisualFromSnapshot(snap);
           if (
             lastHeight !== null &&
-            snap.blockHeight !== null &&
-            snap.blockHeight > lastHeight
+            vis.height !== null &&
+            vis.height > lastHeight
           ) {
             pulseUntil = now + 0.9;
           }
-          lastHeight = snap.blockHeight;
+          lastHeight = vis.height;
           const pulse = pulseUntil > now ? (pulseUntil - now) / 0.9 : 0;
-          well.set({ params: uniformsFromSnapshot(snap, now, pulse, pointer, canvasSurface.size) });
+          well.set({
+            params: wellUniforms(vis, now, pulse, pointer, canvasSurface.size),
+          });
           frame.pass(canvasSurface, well);
         });
 
         stopLoop = () => loop.stop();
         disposeGpu = () => {
           canvas.removeEventListener("pointermove", onPointer);
-          unresize();
           gpu.dispose();
         };
         onGpu(true);
@@ -151,59 +131,4 @@ export function WellCanvas({
       aria-hidden="true"
     />
   );
-}
-
-function uniformsFromSnapshot(
-  snapshot: LineupSnapshot,
-  time: number,
-  pulse: number,
-  pointer: { x: number; y: number },
-  res: readonly [number, number],
-) {
-  const cap = snapshot.capacityVsize || BLOCK_CAPACITY_VSIZE;
-  const fill = Math.min(1.2, (snapshot.nextBlockVsize ?? 0) / cap);
-  const maxV = Math.max(1, ...snapshot.bands.map((band) => band.vsize));
-  const bands = Array.from({ length: 8 }, (_, i) => {
-    const band = snapshot.bands[i];
-    if (!band) return [0, 0, 0, 0] as Vec4;
-    return [
-      Math.min(1, band.count / 25000),
-      band.vsize / maxV,
-      bandMidRate(band),
-      0,
-    ] as Vec4;
-  });
-
-  const upcoming = snapshot.projected.slice(1, 5);
-  const rings = Array.from({ length: 4 }, (_, i) => {
-    const block = upcoming[i];
-    if (!block) return [0, 0, 0, 0] as Vec4;
-    return [
-      0.26 + i * 0.125,
-      Math.min(1, block.blockVSize / cap),
-      block.medianFee,
-      Math.min(1, block.nTx / 4000),
-    ] as Vec4;
-  });
-
-  return {
-    time,
-    pulse,
-    fill,
-    _pad: 0,
-    pointer: [pointer.x, pointer.y],
-    res: [res[0], res[1]],
-    band0: bands[0],
-    band1: bands[1],
-    band2: bands[2],
-    band3: bands[3],
-    band4: bands[4],
-    band5: bands[5],
-    band6: bands[6],
-    band7: bands[7],
-    ring0: rings[0],
-    ring1: rings[1],
-    ring2: rings[2],
-    ring3: rings[3],
-  };
 }

@@ -2066,57 +2066,27 @@ body:has(.graffiti-page) .site-watermark {
   display: block;
 }
 
-.well-canvas.is-hidden {
-  display: none;
+.well-canvas.is-pending {
+  opacity: 0;
+  pointer-events: none;
 }
 
-.well-fallback {
+.well-fallback-canvas {
+  z-index: 0;
+}
+
+.well-debug {
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% 48%, rgba(247, 147, 26, 0.16), transparent 28%),
-    radial-gradient(circle at 50% 48%, #0a0b10 0 9%, transparent 10%),
-    #05060a;
-}
-
-.well-fallback-hole {
-  position: absolute;
-  top: 48%;
-  left: 50%;
-  width: min(22vw, 9.5rem);
-  height: min(22vw, 9.5rem);
-  transform: translate(-50%, -50%);
-  border-radius: 999px;
-  background: radial-gradient(circle, #1a1008 0%, #05060a 70%);
-  box-shadow:
-    0 0 0 2px rgba(247, 147, 26, 0.85),
-    0 0 28px rgba(247, 147, 26, 0.45);
-}
-
-.well-fallback-ring {
-  position: absolute;
-  top: 48%;
-  left: 50%;
-  border: 1px solid rgba(93, 122, 120, 0.45);
-  border-radius: 999px;
-  transform: translate(-50%, -50%);
-}
-
-.well-fallback-ring[data-i="1"] {
-  width: min(38vw, 16rem);
-  height: min(38vw, 16rem);
-  border-color: rgba(247, 147, 26, 0.28);
-}
-
-.well-fallback-ring[data-i="2"] {
-  width: min(52vw, 22rem);
-  height: min(52vw, 22rem);
-}
-
-.well-fallback-ring[data-i="3"] {
-  width: min(66vw, 28rem);
-  height: min(66vw, 28rem);
-  border-color: rgba(74, 85, 88, 0.4);
+  z-index: 2;
+  right: 1rem;
+  bottom: 0.75rem;
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b8d99;
+  pointer-events: none;
 }
 
 .well-copy {

@@ -1,14 +1,15 @@
-// THE WELL — next-block template at the center.
-// Histogram bands spawn a handful of particles (not unique txs).
-// Outer rings are upcoming projected mempool-blocks.
+// THE WELL — live mempool. Histogram weights spawn the halo/particles.
+// Center well fill = next-block template fullness. Outer rings = upcoming blocks.
 
 struct Params {
   time: f32,
   pulse: f32,
   fill: f32,
-  _pad: f32,
+  particle_n: f32,
+  fastest: f32,
+  vmb: f32,
   pointer: vec2f,
-  res: vec2f,
+  res: vec4f,
   band0: vec4f,
   band1: vec4f,
   band2: vec4f,
@@ -60,10 +61,21 @@ fn ring_at(i: i32) -> vec4f {
   }
 }
 
+fn band_for(u: f32) -> vec4f {
+  for (var i = 0; i < 8; i++) {
+    let b = band_at(i);
+    if (b.y - b.x > 0.0005 && u >= b.x && u < b.y) {
+      return b;
+    }
+  }
+  return band_at(0);
+}
+
 fn fee_color(rate: f32) -> vec3f {
-  let t = saturate(rate / 80.0);
-  let cool = mix(ASH, TEAL, saturate(rate / 12.0));
-  return mix(cool, ORANGE, smoothstep(0.12, 0.85, t));
+  let orange_start = max(params.fastest * 2.0, 12.0);
+  let t = saturate((rate - orange_start) / 40.0);
+  let cool = mix(ASH, TEAL, saturate(rate / 8.0));
+  return mix(cool, ORANGE, t);
 }
 
 @fragment
@@ -71,67 +83,69 @@ fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
   let aspect = params.res.x / max(params.res.y, 1.0);
   var p = vec2f((uv.x - 0.5) * aspect, 0.5 - uv.y);
   let pointer = vec2f((params.pointer.x - 0.5) * aspect, 0.5 - params.pointer.y);
-  p -= pointer * 0.045;
+  p -= pointer * 0.04;
 
   let t = params.time;
   let pulse = saturate(params.pulse);
   let fill = saturate(params.fill);
+  let pool = saturate(params.vmb / 50.0);
   let r = length(p);
   let ang = atan2(p.y, p.x);
 
   var col = INK;
-  col += vec3f(0.012, 0.016, 0.018) * (1.0 - smoothstep(0.0, 1.15, r));
+  col += vec3f(0.01, 0.012, 0.014) * (1.0 - smoothstep(0.0, 1.2, r));
 
-  // Outer projected-block rings (upcoming mempool-blocks).
-  for (var k = 0; k < 4; k++) {
-    let ring = ring_at(k);
-    if (ring.x <= 0.001) { continue; }
-    let rr = ring.x;
-    let d = abs(r - rr);
-    let fee_t = saturate(ring.z / 70.0);
-    let glow = exp(-d * 92.0) * (0.12 + ring.y * 0.55);
-    let tick = exp(-abs(fract(ang * (6.0 + f32(k) * 2.0) / 6.28318) - 0.5) * 28.0) * 0.18;
-    col += fee_color(ring.z) * (glow + tick * glow) * mix(0.55, 1.0, fee_t);
+  // Histogram mass as radial halo. A 0–5 sat/vB-heavy pool reads as a thick cold shell.
+  for (var i = 0; i < 8; i++) {
+    let b = band_at(i);
+    let w = max(0.0, b.y - b.x);
+    if (w < 0.0008) { continue; }
+    let width = mix(0.14, 0.028, saturate(b.z / 40.0));
+    let d = abs(r - b.w);
+    let halo = exp(-pow(d / max(width, 0.01), 2.0)) * pow(w, 0.45) * mix(0.35, 1.15, pool);
+    col += fee_color(b.z) * halo;
   }
 
-  // Particles from histogram bands. Speed scales with sat/vB.
-  for (var i = 0; i < 64; i++) {
-    let b = band_at(i % 8);
-    if (b.y < 0.004) { continue; }
+  // Upcoming projected blocks — thickness from that block's vsize.
+  for (var k = 0; k < 4; k++) {
+    let ring = ring_at(k);
+    if (ring.x <= 0.001 || ring.y <= 0.0001) { continue; }
+    let d = abs(r - ring.x);
+    let glow = exp(-d / max(ring.y, 0.003)) * (0.16 + ring.y * 8.0);
+    col += fee_color(ring.z) * glow * 0.55;
+  }
+
+  // Particles allocated by histogram weight (not 8-per-band).
+  let n = params.particle_n;
+  for (var i = 0; i < 192; i++) {
+    if (f32(i) >= n) { continue; }
+    let u = (f32(i) + 0.5) / max(n, 1.0);
+    let b = band_for(u);
     let id = f32(i) + 1.7;
     let h = hash21(id);
     let fee = max(b.z, 0.4);
-    let speed = mix(0.055, 0.58, saturate(fee / 90.0));
+    let speed = mix(0.045, 0.62, saturate(fee / 90.0));
     let life = fract(h.x + t * speed + pulse * 0.42);
     let sucked = saturate(life + pulse * 0.55);
-    let spawn_r = mix(0.82, 0.36, saturate(fee / 140.0));
-    let pr = mix(spawn_r, 0.075, pow(sucked, mix(0.65, 1.35, speed)));
-    let spin = t * mix(0.018, 0.11, speed);
-    let a = h.y * 6.2831853 + spin;
+    let pr = mix(b.w, 0.075, pow(sucked, mix(0.65, 1.35, speed)));
+    let a = h.y * 6.2831853 + t * mix(0.016, 0.11, speed);
     var pos = vec2f(cos(a), sin(a)) * pr;
-    pos += pointer * 0.05 * (1.0 - sucked);
+    pos += pointer * 0.045 * (1.0 - sucked);
     let d = length(p - pos);
-    let sharp = mix(110.0, 58.0, saturate(fee / 80.0));
-    let glow = exp(-d * sharp) * mix(0.22, 1.05, saturate(b.y * 3.4));
-    let streak = exp(-abs(dot(normalize(p + 1e-4), normalize(pos + 1e-4)) - 1.0) * 18.0) * 0.15 * (1.0 - sucked);
-    col += fee_color(fee) * (glow + streak * glow);
+    let sharp = mix(95.0, 52.0, saturate(fee / 80.0));
+    let glow = exp(-d * sharp);
+    col += fee_color(fee) * glow * mix(0.45, 1.1, pool);
   }
 
-  // Center well = next block template. Fill/brightness from vsize vs 1.5 vMB.
-  let well_r = 0.105 + fill * 0.055 - pulse * 0.02;
-  let hole = smoothstep(well_r + 0.018, well_r - 0.01, r);
-  let rim = exp(-abs(r - well_r) * 70.0);
-  let corona = exp(-max(r - well_r, 0.0) * 14.0) * (0.18 + fill * 0.55);
-  let core = mix(vec3f(0.04, 0.035, 0.03), ORANGE * (0.35 + fill * 0.9), hole);
-  let pulse_flash = pulse * exp(-r * 6.0) * ORANGE;
-  let idle = 0.85 + 0.15 * sin(t * 1.4 + ang * 3.0);
-  col = mix(col, core, hole * 0.92);
-  col += ORANGE * rim * (0.55 + fill * 0.9) * idle;
-  col += ORANGE * corona * idle;
-  col += pulse_flash * 0.85;
+  // Inner well: empty = thin ring, full = bright disk.
+  let well_r = 0.11;
+  let rim = exp(-abs(r - well_r) * mix(120.0, 68.0, fill)) * mix(1.15, 0.4, fill);
+  let disk = smoothstep(well_r + 0.004, well_r - 0.024, r) * pow(fill, 0.8);
+  col += ORANGE * rim;
+  col += mix(ORANGE * 0.12, ORANGE * 1.2, fill) * disk;
+  col += pulse * ORANGE * exp(-r * 5.2) * 0.9;
 
-  // Soft grain so a still mempool still reads as live.
-  let grain = (hash11(uv.x * 917.0 + uv.y * 433.0 + floor(t * 24.0)) - 0.5) * 0.03;
+  let grain = (hash11(uv.x * 917.0 + uv.y * 433.0 + floor(t * 24.0)) - 0.5) * 0.025;
   col += grain;
   col = max(col, vec3f(0.0));
   return vec4f(col, 1.0);
