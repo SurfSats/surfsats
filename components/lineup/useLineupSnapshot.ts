@@ -39,7 +39,7 @@ export function useLineupSnapshot(initial: LineupSnapshot | null) {
 
     const id = window.setInterval(() => {
       void pull();
-    }, 8000);
+    }, 12000);
 
     return () => {
       cancelled = true;

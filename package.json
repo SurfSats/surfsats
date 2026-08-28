@@ -14,7 +14,8 @@
     "next": "15.5.23",
     "qrcode": "^1.5.4",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "vgpu": "^0.3.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -23,6 +24,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@webgpu/types": "^0.1.72",
     "eslint": "^9",
     "eslint-config-next": "15.5.23",
     "tailwindcss": "^4",

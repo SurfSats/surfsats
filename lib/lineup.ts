@@ -1,18 +1,7 @@
 const MEMPOOL = "https://mempool.space/api";
 
 export const BLOCK_CAPACITY_VSIZE = 1_500_000;
-const MAX_PACKETS = 150;
 const TYPICAL_VSIZE = 220;
-
-export type AssemblyPacket = {
-  id: string;
-  txid: string | null;
-  fee: number;
-  feeRate: number;
-  vsize: number;
-  firstSeen: number | null;
-  inTemplate: boolean;
-};
 
 export type FeeBand = {
   id: string;
@@ -23,6 +12,13 @@ export type FeeBand = {
   vsize: number;
 };
 
+export type ProjectedBlock = {
+  blockVSize: number;
+  nTx: number;
+  medianFee: number;
+  totalFees: number;
+};
+
 export type LineupSnapshot = {
   fetchedAt: number;
   blockHeight: number | null;
@@ -30,13 +26,14 @@ export type LineupSnapshot = {
   mempoolCount: number | null;
   mempoolVsize: number | null;
   fastestFee: number | null;
+  halfHourFee: number | null;
   hourFee: number | null;
-  feeLabel: string | null;
+  economyFee: number | null;
   nextBlockVsize: number | null;
   nextBlockNtx: number | null;
   nextBlockMedianFee: number | null;
   capacityVsize: number;
-  packets: AssemblyPacket[];
+  projected: ProjectedBlock[];
   bands: FeeBand[];
 };
 
@@ -47,17 +44,23 @@ export const emptyLineup: LineupSnapshot = {
   mempoolCount: null,
   mempoolVsize: null,
   fastestFee: null,
+  halfHourFee: null,
   hourFee: null,
-  feeLabel: null,
+  economyFee: null,
   nextBlockVsize: null,
   nextBlockNtx: null,
   nextBlockMedianFee: null,
   capacityVsize: BLOCK_CAPACITY_VSIZE,
-  packets: [],
+  projected: [],
   bands: [],
 };
 
-const FEE_BANDS: Array<{ id: string; label: string; min: number; max: number | null }> = [
+export const FEE_BANDS: Array<{
+  id: string;
+  label: string;
+  min: number;
+  max: number | null;
+}> = [
   { id: "0-5", label: "0–5", min: 0, max: 5 },
   { id: "5-10", label: "5–10", min: 5, max: 10 },
   { id: "10-20", label: "10–20", min: 10, max: 20 },
@@ -69,25 +72,31 @@ const FEE_BANDS: Array<{ id: string; label: string; min: number; max: number | n
 ];
 
 export async function getLineupSnapshot(): Promise<LineupSnapshot> {
-  const [mempool, projected, fees, tip, blocks, recent] = await Promise.all([
+  const [mempool, projectedRaw, fees, tip, blocks] = await Promise.all([
     readJson<MempoolResponse>(`${MEMPOOL}/mempool`),
-    readJson<ProjectedBlock[]>(`${MEMPOOL}/v1/fees/mempool-blocks`),
+    readJson<ProjectedBlockRaw[]>(`${MEMPOOL}/v1/fees/mempool-blocks`),
     readJson<FeesResponse>(`${MEMPOOL}/v1/fees/recommended`),
     readText(`${MEMPOOL}/blocks/tip/height`),
     readJson<BlockSummary[]>(`${MEMPOOL}/v1/blocks`),
-    readJson<RecentTx[]>(`${MEMPOOL}/mempool/recent`),
   ]);
 
-  const next = projected?.[0];
-  const nextBlockVsize = num(next?.blockVSize);
-  const nextBlockNtx = num(next?.nTx);
-  const nextBlockMedianFee = num(next?.medianFee);
-  const fastestFee = num(fees?.fastestFee);
+  const projected = (projectedRaw ?? []).slice(0, 5).flatMap((block) => {
+    const blockVSize = num(block.blockVSize);
+    const nTx = num(block.nTx);
+    const medianFee = num(block.medianFee);
+    const totalFees = num(block.totalFees);
+    if (blockVSize === null || nTx === null || medianFee === null) return [];
+    return [
+      {
+        blockVSize,
+        nTx,
+        medianFee,
+        totalFees: totalFees ?? 0,
+      },
+    ];
+  });
 
-  const liveTxs = await hydrateRecent(recent ?? []);
-  const histogram = mempool?.fee_histogram ?? [];
-  const bands = buildBands(histogram, projected ?? []);
-  const packets = assemblePackets(liveTxs, bands, nextBlockVsize);
+  const next = projected[0];
 
   return {
     fetchedAt: Date.now(),
@@ -95,94 +104,36 @@ export async function getLineupSnapshot(): Promise<LineupSnapshot> {
     lastBlockTimestamp: num(blocks?.[0]?.timestamp),
     mempoolCount: num(mempool?.count),
     mempoolVsize: num(mempool?.vsize),
-    fastestFee,
+    fastestFee: num(fees?.fastestFee),
+    halfHourFee: num(fees?.halfHourFee),
     hourFee: num(fees?.hourFee),
-    feeLabel: feeEnvironment(fastestFee),
-    nextBlockVsize,
-    nextBlockNtx,
-    nextBlockMedianFee,
+    economyFee: num(fees?.economyFee),
+    nextBlockVsize: next?.blockVSize ?? null,
+    nextBlockNtx: next?.nTx ?? null,
+    nextBlockMedianFee: next?.medianFee ?? null,
     capacityVsize: BLOCK_CAPACITY_VSIZE,
-    packets,
-    bands,
+    projected,
+    bands: buildBands(mempool?.fee_histogram ?? [], projected),
   };
 }
 
 export function hasLineupData(snapshot: LineupSnapshot) {
-  return snapshot.packets.length > 0 || snapshot.mempoolCount !== null;
-}
-
-export function formatVsize(vsize: number) {
-  if (vsize >= 1_000_000) return `${(vsize / 1_000_000).toFixed(2)} vMB`;
-  if (vsize >= 1000) return `${(vsize / 1000).toFixed(1)} kvB`;
-  return `${Math.round(vsize)} vB`;
+  return snapshot.mempoolCount !== null || snapshot.bands.some((band) => band.vsize > 0);
 }
 
 export function formatVmb(vsize: number) {
   return (vsize / 1_000_000).toFixed(2);
 }
 
-export function feeColor(rate: number) {
-  if (rate >= 200) return "#3dfff3";
-  if (rate >= 50) return "#ff7a18";
-  if (rate >= 20) return "#ff9a3c";
-  if (rate >= 10) return "#d946ef";
-  return "#7c3aed";
-}
-
 export function feeBandColor(min: number) {
-  return feeColor(min === 0 ? 3 : min);
+  if (min >= 100) return "#F7931A";
+  if (min >= 20) return "#c47d24";
+  if (min >= 5) return "#5d7a78";
+  return "#4a5558";
 }
 
-export function shortTxid(txid: string) {
-  return `${txid.slice(0, 8)}…${txid.slice(-8)}`;
-}
-
-export function mempoolUrl(txid: string) {
-  return `https://mempool.space/tx/${txid}`;
-}
-
-function assemblePackets(
-  live: AssemblyPacket[],
-  bands: FeeBand[],
-  nextBlockVsize: number | null,
-) {
-  const sampled: AssemblyPacket[] = [];
-  const liveBudget = live.length;
-  const remaining = Math.max(24, MAX_PACKETS - liveBudget);
-  const totalV = bands.reduce((sum, band) => sum + band.vsize, 0) || 1;
-
-  for (const band of bands) {
-    if (sampled.length >= remaining) break;
-    const share = band.vsize / totalV;
-    const n = Math.max(
-      band.vsize > 0 ? 1 : 0,
-      Math.round(share * remaining),
-    );
-    const piece = Math.max(80, band.vsize / Math.max(1, n));
-    const mid =
-      band.max === null ? band.min * 1.4 : (band.min + band.max) / 2;
-    for (let i = 0; i < n && sampled.length < remaining; i += 1) {
-      const jitter = ((i * 17) % 11) / 11;
-      sampled.push({
-        id: `sample-${band.id}-${i}`,
-        txid: null,
-        fee: Math.round(piece * (mid + jitter)),
-        feeRate: Math.max(0.1, mid * (0.92 + jitter * 0.16)),
-        vsize: Math.round(piece),
-        firstSeen: null,
-        inTemplate: false,
-      });
-    }
-  }
-
-  const merged = [...live, ...sampled].sort((a, b) => b.feeRate - a.feeRate);
-  const fillTo = nextBlockVsize && nextBlockVsize > 0 ? nextBlockVsize : BLOCK_CAPACITY_VSIZE;
-  let acc = 0;
-  return merged.map((packet) => {
-    const inTemplate = acc < fillTo;
-    acc += packet.vsize;
-    return { ...packet, inTemplate };
-  });
+export function bandMidRate(band: FeeBand) {
+  return band.max === null ? band.min * 1.4 : (band.min + band.max) / 2;
 }
 
 function buildBands(
@@ -211,61 +162,16 @@ function buildBands(
   }
 
   for (const block of projected) {
-    const nTx = num(block.nTx) ?? 0;
-    const vsize = num(block.blockVSize) ?? 0;
-    const median = num(block.medianFee) ?? 1;
     const band = bands.find((item) =>
-      item.max === null ? median >= item.min : median >= item.min && median < item.max,
+      item.max === null
+        ? block.medianFee >= item.min
+        : block.medianFee >= item.min && block.medianFee < item.max,
     );
     if (!band) continue;
-    band.count += nTx;
-    band.vsize += vsize;
+    band.count += block.nTx;
+    band.vsize += block.blockVSize;
   }
   return bands;
-}
-
-async function hydrateRecent(recent: RecentTx[]): Promise<AssemblyPacket[]> {
-  const packets = recent.flatMap((tx) => {
-    const vsize = num(tx.vsize);
-    const fee = num(tx.fee);
-    if (!tx.txid || fee === null || !vsize) return [];
-    const packet: AssemblyPacket = {
-      id: tx.txid,
-      txid: tx.txid,
-      fee,
-      feeRate: fee / vsize,
-      vsize,
-      firstSeen: null,
-      inTemplate: false,
-    };
-    return [packet];
-  });
-
-  const times = await readTimes(
-    packets.map((packet) => packet.txid).filter(Boolean) as string[],
-  );
-  return packets.map((packet, index) => ({
-    ...packet,
-    firstSeen: times[index] ?? null,
-  }));
-}
-
-async function readTimes(txids: string[]) {
-  if (txids.length === 0) return [];
-  const query = txids.map((id) => `txId[]=${encodeURIComponent(id)}`).join("&");
-  const times = await readJson<number[]>(
-    `${MEMPOOL}/v1/transaction-times?${query}`,
-  );
-  return Array.isArray(times) ? times : [];
-}
-
-function feeEnvironment(fastest: number | null) {
-  if (fastest === null) return null;
-  if (fastest <= 2) return "flat · cheap";
-  if (fastest <= 8) return "calm";
-  if (fastest <= 25) return "building";
-  if (fastest <= 60) return "heavy";
-  return "storm";
 }
 
 function num(value: unknown) {
@@ -283,7 +189,7 @@ async function readJson<T>(url: string): Promise<T | null> {
     const response = await fetch(url, {
       headers: {
         Accept: "application/json",
-        "User-Agent": "SurfSatsLineup/1.0",
+        "User-Agent": "SurfSatsWell/1.0",
       },
       signal: AbortSignal.timeout(8000),
       next: { revalidate: 12 },
@@ -298,7 +204,7 @@ async function readJson<T>(url: string): Promise<T | null> {
 async function readText(url: string): Promise<string | null> {
   try {
     const response = await fetch(url, {
-      headers: { "User-Agent": "SurfSatsLineup/1.0" },
+      headers: { "User-Agent": "SurfSatsWell/1.0" },
       signal: AbortSignal.timeout(8000),
       next: { revalidate: 12 },
     });
@@ -314,18 +220,16 @@ type MempoolResponse = {
   vsize?: number;
   fee_histogram?: Array<[number, number] | number[]>;
 };
-type ProjectedBlock = {
+type ProjectedBlockRaw = {
   nTx?: number;
   medianFee?: number;
-  feeRange?: number[];
   blockVSize?: number;
   totalFees?: number;
 };
-type FeesResponse = { fastestFee?: number; hourFee?: number };
-type BlockSummary = { height?: number; timestamp?: number };
-type RecentTx = {
-  txid?: string;
-  fee?: number;
-  vsize?: number;
-  value?: number;
+type FeesResponse = {
+  fastestFee?: number;
+  halfHourFee?: number;
+  hourFee?: number;
+  economyFee?: number;
 };
+type BlockSummary = { height?: number; timestamp?: number };

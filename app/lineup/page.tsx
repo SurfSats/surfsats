@@ -1,21 +1,16 @@
 import type { Metadata } from "next";
-import { LineupApp } from "@/components/lineup/LineupApp";
+import { WellApp } from "@/components/lineup/WellApp";
 import { getLineupSnapshot } from "@/lib/lineup";
 
 export const revalidate = 12;
 
 export const metadata: Metadata = {
-  title: "The Lineup",
-  description:
-    "Watch the next Bitcoin block being assembled. Unconfirmed transactions flow into a next-block template rail, sorted by fee density.",
+  title: "The Well",
+  description: "High fees fall in first. Everything else waits.",
 };
 
 export default async function LineupPage() {
   const snapshot = await getLineupSnapshot();
 
-  return (
-    <div className="lineup-page">
-      <LineupApp initial={snapshot} />
-    </div>
-  );
+  return <WellApp initial={snapshot} />;
 }
