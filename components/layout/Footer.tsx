@@ -34,7 +34,7 @@ export function Footer() {
             <span>© {new Date().getFullYear()}</span>
             <span className="footer-mark footer-mark-surfsats">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-surfsats.png" alt="SurfSats" />
+              <img src="/logo-surfsats-white.png" alt="SurfSats" />
             </span>
             <span aria-hidden="true">·</span>
             <span>ride the swell</span>
@@ -44,7 +44,7 @@ export function Footer() {
               A
               <span className="footer-mark footer-mark-surfporn">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo-surfporn.png" alt="SurfPorn" />
+                <img src="/logo-surfporn-white.png" alt="SurfPorn" />
               </span>
               COMPANY
             </span>
