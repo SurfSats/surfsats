@@ -4,7 +4,6 @@ import { Press_Start_2P } from "next/font/google";
 import { useEffect, useState } from "react";
 import { ArcadeApp } from "@/components/arcade/ArcadeApp";
 import { RetroApp } from "@/components/arcade/RetroApp";
-import { TabApp } from "@/components/arcade/TabApp";
 import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
 
 const pixel = Press_Start_2P({
@@ -14,7 +13,7 @@ const pixel = Press_Start_2P({
 });
 
 export function ArcadeFloor() {
-  const [front, setFront] = useState<"wave" | "retro" | "tab">("wave");
+  const [front, setFront] = useState<"wave" | "retro">("wave");
 
   useEffect(() => {
     document.body.dataset.arcadeFront = front;
@@ -46,15 +45,6 @@ export function ArcadeFloor() {
         >
           RETRO
         </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={front === "tab"}
-          className={front === "tab" ? "is-on" : undefined}
-          onClick={() => setFront("tab")}
-        >
-          THE TAB
-        </button>
       </div>
       <div className={`arcade-pit is-${front}`}>
         <ArcadeApp
@@ -65,15 +55,11 @@ export function ArcadeFloor() {
           front={front === "retro"}
           onBringForward={() => setFront("retro")}
         />
-        <TabApp
-          front={front === "tab"}
-          onBringForward={() => setFront("tab")}
-        />
       </div>
       <div className="arcade-rail">
         <p>
           {ARCADE_PRICE_SATS} SATS = {ARCADE_CREDITS_PER_PAY} CREDITS · WAVE
-          RUNNER · RETRO · THE TAB
+          RUNNER · RETRO
         </p>
         <p>EACH MACHINE KEEPS ITS OWN CREDITS AND LEGENDS</p>
       </div>

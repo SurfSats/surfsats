@@ -1,0 +1,592 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { TabAudio } from "@/components/tab/TabAudio";
+import {
+  loadBarTree,
+  nodeEnding,
+  type BarEnding,
+  type BarNode,
+  type BarTree,
+} from "@/lib/bar-tree";
+import { formatTimeAgo } from "@/lib/arcade";
+import {
+  TAB_CREDITS_PER_PAY,
+  TAB_PRICE_SATS,
+  TAB_STORAGE_KEY,
+  formatTabCredits,
+  isPlayerId,
+  sanitizeAlias,
+  tabEndingGame,
+  type TabHighScore,
+  type TabRecent,
+} from "@/lib/tab";
+
+type SessionCache = { playerId: string; alias: string };
+type Mode = "idle" | "invoice" | "sitting" | "ended";
+
+export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
+  const [playerId, setPlayerId] = useState("");
+  const [alias, setAlias] = useState("");
+  const [credits, setCredits] = useState(0);
+  const [tree, setTree] = useState<BarTree | null>(initialTree);
+  const [treeError, setTreeError] = useState(!initialTree);
+  const [node, setNode] = useState<BarNode | null>(null);
+  const [ending, setEnding] = useState<BarEnding | null>(null);
+  const [mode, setMode] = useState<Mode>("idle");
+  const [highScores, setHighScores] = useState<TabHighScore[]>([]);
+  const [lastPlayers, setLastPlayers] = useState<TabRecent[]>([]);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [paymentRequest, setPaymentRequest] = useState("");
+  const [paymentHash, setPaymentHash] = useState("");
+  const [qrSrc, setQrSrc] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [waiting, setWaiting] = useState(false);
+  const [invoiceError, setInvoiceError] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  const [expired, setExpired] = useState(false);
+  const [ready, setReady] = useState(false);
+  const playIdRef = useRef<string | null>(null);
+  const startLock = useRef(false);
+
+  useEffect(() => {
+    let cached: SessionCache | null = null;
+    try {
+      const raw = window.localStorage.getItem(TAB_STORAGE_KEY);
+      if (raw) cached = JSON.parse(raw) as SessionCache;
+    } catch {
+      cached = null;
+    }
+    const id =
+      cached && isPlayerId(cached.playerId)
+        ? cached.playerId
+        : window.crypto.randomUUID();
+    setPlayerId(id);
+    if (cached?.alias) setAlias(cached.alias);
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadBarTree().then((next) => {
+      if (cancelled) return;
+      if (next) {
+        setTree(next);
+        setTreeError(false);
+        return;
+      }
+      if (!initialTree) setTreeError(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!ready || !playerId) return;
+    try {
+      window.localStorage.setItem(
+        TAB_STORAGE_KEY,
+        JSON.stringify({ playerId, alias } satisfies SessionCache),
+      );
+    } catch {
+      // ignore
+    }
+  }, [alias, playerId, ready]);
+
+  const loadBoards = useCallback(async () => {
+    const response = await fetch("/api/tab", { cache: "no-store" });
+    const data = (await response.json()) as {
+      highScores?: TabHighScore[];
+      lastPlayers?: TabRecent[];
+    };
+    if (Array.isArray(data.highScores)) setHighScores(data.highScores);
+    if (Array.isArray(data.lastPlayers)) setLastPlayers(data.lastPlayers);
+  }, []);
+
+  const loadSession = useCallback(async (id: string) => {
+    const response = await fetch(
+      `/api/tab/session?playerId=${encodeURIComponent(id)}`,
+      { cache: "no-store" },
+    );
+    const data = (await response.json()) as {
+      credits?: number;
+      alias?: string;
+    };
+    if (typeof data.credits === "number") setCredits(data.credits);
+    if (data.alias) setAlias((current) => current || data.alias || "");
+  }, []);
+
+  useEffect(() => {
+    if (!playerId) return;
+    void loadBoards();
+    void loadSession(playerId);
+    const id = window.setInterval(() => {
+      void loadBoards();
+      void loadSession(playerId);
+    }, 12_000);
+    return () => window.clearInterval(id);
+  }, [loadBoards, loadSession, playerId]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNowTick(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (!paymentRequest) {
+      setQrSrc("");
+      return;
+    }
+    let cancelled = false;
+    void import("qrcode").then(async (QRCode) => {
+      const src = await QRCode.toDataURL(paymentRequest, {
+        width: 280,
+        margin: 2,
+        color: { dark: "#111111", light: "#efe6d4" },
+        errorCorrectionLevel: "M",
+      });
+      if (!cancelled) setQrSrc(src);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [paymentRequest]);
+
+  useEffect(() => {
+    if (mode !== "invoice" || !expiresAt) return;
+    if (Date.now() >= new Date(expiresAt).getTime()) {
+      setExpired(true);
+      setWaiting(false);
+    }
+  }, [expiresAt, mode, nowTick]);
+
+  useEffect(() => {
+    if (mode !== "invoice" || !paymentHash || expired) return;
+    let cancelled = false;
+    setWaiting(true);
+
+    async function poll() {
+      try {
+        const response = await fetch(
+          `/api/tab/check?hash=${encodeURIComponent(paymentHash)}`,
+          { cache: "no-store" },
+        );
+        const data = (await response.json()) as {
+          paid?: boolean;
+          ok?: boolean;
+          credits?: number;
+          error?: string;
+        };
+        if (cancelled) return;
+        if (data.paid && data.ok) {
+          setCredits(data.credits ?? 0);
+          setInvoiceError(null);
+          setWaiting(false);
+          setMode("idle");
+          setPaymentHash("");
+          setPaymentRequest("");
+          void loadBoards();
+          return;
+        }
+        if (data.paid && !data.ok) {
+          setInvoiceError("payment landed, credits did not");
+          setWaiting(false);
+          return;
+        }
+        if (!response.ok) {
+          setInvoiceError(data.error || "could not check payment. retrying…");
+        }
+      } catch {
+        if (!cancelled) setInvoiceError("could not check payment. retrying…");
+      }
+    }
+
+    void poll();
+    const id = window.setInterval(() => void poll(), 2500);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [expired, loadBoards, mode, paymentHash]);
+
+  const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
+  const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
+  const aliasOk = sanitizeAlias(alias).ok;
+  const face = node?.face ?? "idle";
+  const whisper = node?.voices[0];
+
+  async function requestInvoice() {
+    if (treeError || !tree) {
+      setError("TREE MISSING · CANNOT SIT");
+      return;
+    }
+    const next = sanitizeAlias(alias);
+    if (!next.ok) {
+      setError("SET CALLSIGN FIRST · 2–16 CHARS");
+      return;
+    }
+    setAlias(next.alias);
+    setError(null);
+    setPending(true);
+    setPaymentHash("");
+    setPaymentRequest("");
+    setQrSrc("");
+    setExpired(false);
+    setInvoiceError(null);
+    setMode("invoice");
+    try {
+      const response = await fetch("/api/tab/invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerId, alias: next.alias }),
+      });
+      const data = (await response.json()) as {
+        error?: string;
+        payment_request?: string;
+        payment_hash?: string;
+        expires_at?: string | null;
+      };
+      if (
+        !response.ok ||
+        !data.payment_request ||
+        !data.payment_hash ||
+        !data.payment_request.toLowerCase().startsWith("ln")
+      ) {
+        setError(data.error || "could not create invoice. try again");
+        setMode("idle");
+        return;
+      }
+      setPaymentRequest(data.payment_request);
+      setPaymentHash(data.payment_hash);
+      setExpiresAt(
+        data.expires_at || new Date(Date.now() + 50 * 60 * 1000).toISOString(),
+      );
+      setCopied(false);
+      setInvoiceError(null);
+      setExpired(false);
+      setMode("invoice");
+    } catch {
+      setError("could not create invoice. try again");
+      setMode("idle");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const sit = useCallback(async () => {
+    if (mode === "invoice" || mode === "sitting" || startLock.current) return;
+    if (!tree) {
+      setError("TREE MISSING · CANNOT SIT");
+      return;
+    }
+    const start = tree.nodes[tree.start];
+    if (!start) {
+      setError("TREE MISSING · CANNOT SIT");
+      return;
+    }
+    const next = sanitizeAlias(alias);
+    if (!next.ok) {
+      setError("SET CALLSIGN FIRST · 2–16 CHARS");
+      return;
+    }
+    if (credits < 1) {
+      setError(
+        `INSERT ${TAB_PRICE_SATS} SATS FOR ${TAB_CREDITS_PER_PAY} CREDITS`,
+      );
+      return;
+    }
+    setError(null);
+    setAlias(next.alias);
+    startLock.current = true;
+    try {
+      const response = await fetch("/api/tab/play", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerId }),
+      });
+      const data = (await response.json()) as {
+        error?: string;
+        credits?: number;
+        playId?: string;
+      };
+      if (!response.ok) {
+        setError(data.error || "stool jammed");
+        return;
+      }
+      if (typeof data.credits === "number") setCredits(data.credits);
+      playIdRef.current = data.playId ?? null;
+      setEnding(null);
+      setNode(start);
+      setMode("sitting");
+    } catch {
+      setError("stool jammed. try again");
+    } finally {
+      startLock.current = false;
+    }
+  }, [alias, credits, mode, playerId, tree]);
+
+  const choose = useCallback(
+    async (nextId: string) => {
+      if (!tree || mode !== "sitting") return;
+      const next = tree.nodes[nextId];
+      if (!next) return;
+      setNode(next);
+      const hit = nodeEnding(tree, next);
+      if (!hit) return;
+      setEnding(hit);
+      setMode("ended");
+      const game = tabEndingGame(hit.id);
+      if (!game) return;
+      try {
+        await fetch("/api/tab/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            playerId,
+            playId: playIdRef.current,
+            score: hit.score,
+            game,
+          }),
+        });
+        await loadBoards();
+      } catch {
+        // credit already spent
+      }
+    },
+    [loadBoards, mode, playerId, tree],
+  );
+
+  async function copyInvoice() {
+    if (!paymentRequest) return;
+    try {
+      await navigator.clipboard.writeText(paymentRequest);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  function cancelPay() {
+    setMode("idle");
+    setPaymentHash("");
+    setPaymentRequest("");
+    setQrSrc("");
+    setWaiting(false);
+    setExpired(false);
+    setInvoiceError(null);
+    setPending(false);
+  }
+
+  const showInvoice = mode === "invoice" || pending;
+  const endingTitle = useMemo(() => {
+    if (!ending) return "";
+    return ending.title;
+  }, [ending]);
+
+  return (
+    <div className="tab-page">
+      <div className="tab-harbor" aria-hidden="true">
+        <Image
+          src="/tab/harbor.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="tab-harbor-img"
+        />
+        <div className="tab-vignette" />
+      </div>
+
+      <div className="tab-layout">
+        <figure className={`tab-keep is-${face}`}>
+          <Image
+            src="/tab/bartender.jpg"
+            alt="The bartender"
+            width={720}
+            height={1080}
+            className="tab-keep-img"
+            priority
+          />
+        </figure>
+
+        <section className="tab-glass" aria-label="THE TAB">
+          {treeError ? (
+            <p className="tab-tree-error">TREE MISSING · CANNOT SIT</p>
+          ) : !tree ? (
+            <p className="tab-tree-error">sounding the harbor…</p>
+          ) : (
+            <>
+              <header className="tab-glass-head">
+                <p className="tab-kicker">harbor · international waters</p>
+                <h1>{tree.title}</h1>
+                <p className="tab-sub">{tree.subtitle}</p>
+              </header>
+
+              {mode === "sitting" && node ? (
+                <div className="tab-talk">
+                  <p className="tab-him">{node.him}</p>
+                  {whisper ? (
+                    <p className="tab-voice">
+                      {whisper.skill} — {whisper.line}
+                    </p>
+                  ) : null}
+                  <TabAudio src={node.audio} nodeId={node.id} />
+                  {node.choices.length ? (
+                    <div className="tab-choices">
+                      {node.choices.map((choice) => (
+                        <button
+                          key={choice.id}
+                          type="button"
+                          className="tab-choice"
+                          onClick={() => void choose(choice.next)}
+                        >
+                          [{choice.skill}] {choice.label}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : mode === "ended" && ending ? (
+                <div className="tab-ending">
+                  <p className="tab-ending-kicker">sitting over</p>
+                  <p className="tab-ending-title">{endingTitle}</p>
+                  <p className="tab-ending-score">{ending.score}</p>
+                  <button
+                    type="button"
+                    className="tab-choice"
+                    onClick={credits > 0 ? () => void sit() : () => void requestInvoice()}
+                  >
+                    {credits > 0
+                      ? "SIT AGAIN · 1 CREDIT"
+                      : `INSERT ${TAB_PRICE_SATS} SATS`}
+                  </button>
+                </div>
+              ) : (
+                <p className="tab-invite">
+                  One credit. One stool. Talk until the ash falls.
+                </p>
+              )}
+
+              <div className="tab-coin">
+                <div className="tab-coin-row">
+                  {credits > 0 && mode !== "sitting" && aliasOk ? (
+                    <button
+                      type="button"
+                      className="tab-sit"
+                      onClick={() => void sit()}
+                    >
+                      SIT
+                      <span>1 CREDIT</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="tab-insert"
+                      disabled={!aliasOk || pending || mode === "sitting" || treeError}
+                      onClick={() => void requestInvoice()}
+                    >
+                      {pending
+                        ? "BUILDING INVOICE…"
+                        : `INSERT ${TAB_PRICE_SATS} SATS`}
+                      <span>
+                        {TAB_CREDITS_PER_PAY} CREDITS · ISOLATED POOL
+                      </span>
+                    </button>
+                  )}
+                  <div className="tab-led">
+                    <p>CREDITS</p>
+                    <p>{formatTabCredits(credits)}</p>
+                  </div>
+                </div>
+                <label className="tab-alias">
+                  <span>CALLSIGN · 2–16</span>
+                  <input
+                    value={alias}
+                    maxLength={16}
+                    onChange={(event) => setAlias(event.target.value)}
+                    placeholder="YOUR ALIAS"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    spellCheck={false}
+                    disabled={mode === "sitting" || mode === "invoice"}
+                  />
+                </label>
+                {error ? <p className="tab-error">{error}</p> : null}
+              </div>
+
+              <div className="tab-boards">
+                <section>
+                  <h2>TAB LEGENDS</h2>
+                  <ol>
+                    {highScores.length ? (
+                      highScores.map((row) => (
+                        <li key={`${row.alias}-${row.createdAt}-${row.rank}`}>
+                          <span>{row.alias}</span>
+                          <span>
+                            {tree.endings[row.game?.replace(/^tab-/, "") ?? ""]
+                              ?.title ?? row.game}
+                          </span>
+                          <b>{row.score}</b>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="is-empty">NO LEGENDS YET</li>
+                    )}
+                  </ol>
+                </section>
+                <section>
+                  <h2>LAST 10</h2>
+                  <ol>
+                    {lastPlayers.length ? (
+                      lastPlayers.map((row, index) => (
+                        <li key={`${row.alias}-${row.createdAt}-${index}`}>
+                          <span>{row.alias}</span>
+                          <span>{row.sats} SATS</span>
+                          <b>{formatTimeAgo(row.createdAt, nowTick)}</b>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="is-empty">NO COINS YET</li>
+                    )}
+                  </ol>
+                </section>
+              </div>
+            </>
+          )}
+        </section>
+      </div>
+
+      {showInvoice ? (
+        <ArcadeInvoice
+          qrSrc={qrSrc}
+          paymentRequest={paymentRequest}
+          waiting={waiting}
+          pending={pending}
+          expired={expired}
+          remainLabel={remainLabel}
+          copied={copied}
+          invoiceError={invoiceError}
+          memo={`${TAB_CREDITS_PER_PAY} credits · THE TAB · SurfSats`}
+          titleId="tab-pay-title"
+          onCopy={() => void copyInvoice()}
+          onRetry={() => void requestInvoice()}
+          onCancel={cancelPay}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function formatRemain(ms: number) {
+  if (ms <= 0) return "expired";
+  const total = Math.ceil(ms / 1000);
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+  return `${mins}:${String(secs).padStart(2, "0")} left`;
+}

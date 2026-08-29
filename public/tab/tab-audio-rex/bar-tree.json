@@ -1,0 +1,163 @@
+{
+  "meta": {
+    "title": "THE TAB",
+    "subtitle": "A sitting. One credit. Three mouths in your head.",
+    "start": "sit",
+    "version": 2,
+    "voice": "rex"
+  },
+  "endings": {
+    "settled": { "title": "TAB SETTLED", "score": 21 },
+    "thrown": { "title": "THROWN OUT", "score": 7 },
+    "converted": { "title": "CONVERTED", "score": 21 }
+  },
+  "nodes": {
+    "sit": {
+      "face": "idle",
+      "audio": "/tab/audio/sit.mp3",
+      "him": "He doesn’t look up. The ash on the joint is longer than the conversation deserves. Behind him the cabinet hums like a fridge that found religion.",
+      "voices": [
+        { "skill": "SHIVERS", "line": "Ozone. Cheap lager. Somebody paid 21 sats in another room and the air changed." }
+      ],
+      "choices": [
+        { "id": "what", "skill": "RHETORIC", "label": "What is this place.", "next": "what_is" },
+        { "id": "tab", "skill": "AUTHORITY", "label": "Put it on my tab.", "next": "tab" },
+        { "id": "lamp", "skill": "INLAND EMPIRE", "label": "That lamp is watching us.", "next": "lamp" }
+      ]
+    },
+    "what_is": {
+      "face": "squint",
+      "audio": "/tab/audio/what_is.mp3",
+      "him": "International waters. That’s the only address that ever stuck. Jukebox upstairs, wall out back, machines that take a number you can count on two hands. We don’t keep a treasury. You drop sats, they leave. Same night.",
+      "voices": [
+        { "skill": "EMPATHY", "line": "He’s proud of the leak. A man who would rather bleed than bank." }
+      ],
+      "choices": [
+        { "id": "who", "skill": "RHETORIC", "label": "Who gets the sats.", "next": "what_who" },
+        { "id": "why21", "skill": "AUTHORITY", "label": "Why twenty-one.", "next": "what_21" },
+        { "id": "drink", "skill": "INLAND EMPIRE", "label": "Pour whatever the lamp is drinking.", "next": "closer_converted" }
+      ]
+    },
+    "what_who": {
+      "face": "grin",
+      "audio": "/tab/audio/what_who.mp3",
+      "him": "Nostr. The wall. A song somebody else wanted. The arcade if you lose with dignity. Never a company account. Never a conversion desk. If it sits here overnight I consider it a crime scene.",
+      "voices": [
+        { "skill": "RHETORIC", "line": "He’s reciting a manifesto and calling it a pour policy." }
+      ],
+      "choices": [
+        { "id": "believe", "skill": "EMPATHY", "label": "I believe you.", "next": "closer_settled" },
+        { "id": "liar", "skill": "AUTHORITY", "label": "Everybody hodls a little.", "next": "closer_thrown" },
+        { "id": "toast", "skill": "INLAND EMPIRE", "label": "To the crime scene.", "next": "closer_converted" }
+      ]
+    },
+    "what_21": {
+      "face": "idle",
+      "audio": "/tab/audio/what_21.mp3",
+      "him": "It’s a joke that got teeth. Twenty-one million. Twenty-one sats. Twenty-one hours on the wall. You pick a number the printers can’t inflate and you repeat it until it feels like liturgy.",
+      "voices": [
+        { "skill": "SHIVERS", "line": "Somewhere a clock called Moscow Time ticks the other direction." }
+      ],
+      "choices": [
+        { "id": "amen", "skill": "EMPATHY", "label": "Amen.", "next": "closer_settled" },
+        { "id": "dumb", "skill": "RHETORIC", "label": "That’s just branding.", "next": "closer_thrown" },
+        { "id": "another", "skill": "AUTHORITY", "label": "Then I sit until the ash falls.", "next": "closer_converted" }
+      ]
+    },
+    "tab": {
+      "face": "squint",
+      "audio": "/tab/audio/tab.mp3",
+      "him": "There is no tab. There is an invoice. Twenty-one sats, three sittings, no signature. Fiat doesn’t live on this wood. If you came in with a card, the door should have bitten you.",
+      "voices": [
+        { "skill": "AUTHORITY", "line": "He wants you to flinch. Don’t." }
+      ],
+      "choices": [
+        { "id": "paid", "skill": "RHETORIC", "label": "I already paid.", "next": "tab_paid" },
+        { "id": "owe", "skill": "EMPATHY", "label": "Then I owe the room, not you.", "next": "closer_settled" },
+        { "id": "card", "skill": "INLAND EMPIRE", "label": "My card is a prayer card.", "next": "closer_thrown" }
+      ]
+    },
+    "tab_paid": {
+      "face": "grin",
+      "audio": "/tab/audio/tab_paid.mp3",
+      "him": "Then you’re crew for the length of a song. Don’t confuse that with ownership. The ship doesn’t keep passengers. It keeps weather.",
+      "voices": [
+        { "skill": "SHIVERS", "line": "A track changes on the deck above. Somebody else just bought the air." }
+      ],
+      "choices": [
+        { "id": "crew", "skill": "EMPATHY", "label": "Aye.", "next": "closer_settled" },
+        { "id": "own", "skill": "AUTHORITY", "label": "I want the deed.", "next": "closer_thrown" },
+        { "id": "weather", "skill": "INLAND EMPIRE", "label": "Then pour the weather.", "next": "closer_converted" }
+      ]
+    },
+    "lamp": {
+      "face": "idle",
+      "audio": "/tab/audio/lamp.mp3",
+      "him": "It’s a lamp. It hangs. It judges. Same as every bar that ever pretended it wasn’t a church. You want prophecy, go upstairs and feed the jukebox. You want a fight, insult the wood, not the light.",
+      "voices": [
+        { "skill": "INLAND EMPIRE", "line": "The lamp blinks once, like it heard its name in a language lamps aren’t supposed to know." }
+      ],
+      "choices": [
+        { "id": "sorry", "skill": "EMPATHY", "label": "Sorry. Long voyage.", "next": "lamp_sorry" },
+        { "id": "wood", "skill": "AUTHORITY", "label": "The wood looks soft.", "next": "closer_thrown" },
+        { "id": "prophecy", "skill": "RHETORIC", "label": "What’s the lamp’s thesis.", "next": "lamp_thesis" }
+      ]
+    },
+    "lamp_sorry": {
+      "face": "squint",
+      "audio": "/tab/audio/lamp_sorry.mp3",
+      "him": "Everybody who finds this stool has been at sea too long. That’s the cover charge they don’t print. Drink. Then go tag the wall or lose at the machine. Sitting is not a personality.",
+      "voices": [
+        { "skill": "EMPATHY", "line": "He’s trying to be kind and it looks like a sprain." }
+      ],
+      "choices": [
+        { "id": "go", "skill": "RHETORIC", "label": "I’ll go make a mark.", "next": "closer_settled" },
+        { "id": "stay", "skill": "INLAND EMPIRE", "label": "Sitting is all I brought.", "next": "closer_converted" },
+        { "id": "rude", "skill": "AUTHORITY", "label": "Kindness looks bad on you.", "next": "closer_thrown" }
+      ]
+    },
+    "lamp_thesis": {
+      "face": "grin",
+      "audio": "/tab/audio/lamp_thesis.mp3",
+      "him": "Hard money. Soft heads. The printers stimulate. We do not. If that needs a parable, you’re in the wrong church.",
+      "voices": [
+        { "skill": "RHETORIC", "line": "That’s the whole site, compressed into a sneer." }
+      ],
+      "choices": [
+        { "id": "church", "skill": "EMPATHY", "label": "This is the right church.", "next": "closer_settled" },
+        { "id": "parable", "skill": "INLAND EMPIRE", "label": "Give me the parable anyway.", "next": "closer_converted" },
+        { "id": "sneer", "skill": "AUTHORITY", "label": "Cute slogan.", "next": "closer_thrown" }
+      ]
+    },
+    "closer_settled": {
+      "face": "grin",
+      "ending": "settled",
+      "audio": "/tab/audio/closer_settled.mp3",
+      "him": "He knocks the bar twice. Ash finally falls. “Tab’s settled. Don’t make me remember your name.”",
+      "voices": [
+        { "skill": "SHIVERS", "line": "The room lets you leave with your spine intact." }
+      ],
+      "choices": []
+    },
+    "closer_thrown": {
+      "face": "squint",
+      "ending": "thrown",
+      "audio": "/tab/audio/closer_thrown.mp3",
+      "him": "He points at the dark without looking. “Door’s that way. The wall will take your money. I won’t.”",
+      "voices": [
+        { "skill": "AUTHORITY", "line": "You got exactly the ending you paid for." }
+      ],
+      "choices": []
+    },
+    "closer_converted": {
+      "face": "idle",
+      "ending": "converted",
+      "audio": "/tab/audio/closer_converted.mp3",
+      "him": "He pours something the color of a warning light. “Welcome to the leak. Sats in. Sats out. Don’t you dare call it a community.”",
+      "voices": [
+        { "skill": "INLAND EMPIRE", "line": "For a second the lamp and the invoice are the same object." }
+      ],
+      "choices": []
+    }
+  }
+}

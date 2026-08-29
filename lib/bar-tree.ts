@@ -19,6 +19,7 @@ export type BarNode = {
   voices: BarVoice[];
   choices: BarChoice[];
   ending?: string;
+  audio?: string;
 };
 
 export type BarEnding = {
@@ -88,6 +89,11 @@ export function parseBarTree(raw: unknown): BarTree | null {
       });
     const ending = str(rec.ending) || undefined;
     if (ending && !endings[ending]) return null;
+    const audioRaw = str(rec.audio);
+    const audio =
+      audioRaw.startsWith("/tab/audio/") && audioRaw.endsWith(".mp3")
+        ? audioRaw
+        : undefined;
     nodes[id] = {
       id,
       face,
@@ -95,6 +101,7 @@ export function parseBarTree(raw: unknown): BarTree | null {
       voices,
       choices: ending ? [] : choices,
       ending,
+      audio,
     };
   }
 
@@ -110,7 +117,7 @@ export function parseBarTree(raw: unknown): BarTree | null {
 
 export async function loadBarTree(): Promise<BarTree | null> {
   try {
-    const response = await fetch("/arcade/bar-tree.json", { cache: "no-store" });
+    const response = await fetch("/tab/bar-tree.json", { cache: "no-store" });
     if (!response.ok) return null;
     return parseBarTree(await response.json());
   } catch {

@@ -3,7 +3,8 @@
     "title": "THE TAB",
     "subtitle": "A sitting. One credit. Three mouths in your head.",
     "start": "sit",
-    "version": 1
+    "version": 2,
+    "voice": "rex"
   },
   "endings": {
     "settled": { "title": "TAB SETTLED", "score": 21 },
@@ -13,6 +14,7 @@
   "nodes": {
     "sit": {
       "face": "idle",
+      "audio": "/tab/audio/sit.mp3",
       "him": "He doesn’t look up. The ash on the joint is longer than the conversation deserves. Behind him the cabinet hums like a fridge that found religion.",
       "voices": [
         { "skill": "SHIVERS", "line": "Ozone. Cheap lager. Somebody paid 21 sats in another room and the air changed." }
@@ -25,6 +27,7 @@
     },
     "what_is": {
       "face": "squint",
+      "audio": "/tab/audio/what_is.mp3",
       "him": "International waters. That’s the only address that ever stuck. Jukebox upstairs, wall out back, machines that take a number you can count on two hands. We don’t keep a treasury. You drop sats, they leave. Same night.",
       "voices": [
         { "skill": "EMPATHY", "line": "He’s proud of the leak. A man who would rather bleed than bank." }
@@ -37,6 +40,7 @@
     },
     "what_who": {
       "face": "grin",
+      "audio": "/tab/audio/what_who.mp3",
       "him": "Nostr. The wall. A song somebody else wanted. The arcade if you lose with dignity. Never a company account. Never a conversion desk. If it sits here overnight I consider it a crime scene.",
       "voices": [
         { "skill": "RHETORIC", "line": "He’s reciting a manifesto and calling it a pour policy." }
@@ -49,6 +53,7 @@
     },
     "what_21": {
       "face": "idle",
+      "audio": "/tab/audio/what_21.mp3",
       "him": "It’s a joke that got teeth. Twenty-one million. Twenty-one sats. Twenty-one hours on the wall. You pick a number the printers can’t inflate and you repeat it until it feels like liturgy.",
       "voices": [
         { "skill": "SHIVERS", "line": "Somewhere a clock called Moscow Time ticks the other direction." }
@@ -61,6 +66,7 @@
     },
     "tab": {
       "face": "squint",
+      "audio": "/tab/audio/tab.mp3",
       "him": "There is no tab. There is an invoice. Twenty-one sats, three sittings, no signature. Fiat doesn’t live on this wood. If you came in with a card, the door should have bitten you.",
       "voices": [
         { "skill": "AUTHORITY", "line": "He wants you to flinch. Don’t." }
@@ -73,6 +79,7 @@
     },
     "tab_paid": {
       "face": "grin",
+      "audio": "/tab/audio/tab_paid.mp3",
       "him": "Then you’re crew for the length of a song. Don’t confuse that with ownership. The ship doesn’t keep passengers. It keeps weather.",
       "voices": [
         { "skill": "SHIVERS", "line": "A track changes on the deck above. Somebody else just bought the air." }
@@ -85,6 +92,7 @@
     },
     "lamp": {
       "face": "idle",
+      "audio": "/tab/audio/lamp.mp3",
       "him": "It’s a lamp. It hangs. It judges. Same as every bar that ever pretended it wasn’t a church. You want prophecy, go upstairs and feed the jukebox. You want a fight, insult the wood, not the light.",
       "voices": [
         { "skill": "INLAND EMPIRE", "line": "The lamp blinks once, like it heard its name in a language lamps aren’t supposed to know." }
@@ -97,6 +105,7 @@
     },
     "lamp_sorry": {
       "face": "squint",
+      "audio": "/tab/audio/lamp_sorry.mp3",
       "him": "Everybody who finds this stool has been at sea too long. That’s the cover charge they don’t print. Drink. Then go tag the wall or lose at the machine. Sitting is not a personality.",
       "voices": [
         { "skill": "EMPATHY", "line": "He’s trying to be kind and it looks like a sprain." }
@@ -109,6 +118,7 @@
     },
     "lamp_thesis": {
       "face": "grin",
+      "audio": "/tab/audio/lamp_thesis.mp3",
       "him": "Hard money. Soft heads. The printers stimulate. We do not. If that needs a parable, you’re in the wrong church.",
       "voices": [
         { "skill": "RHETORIC", "line": "That’s the whole site, compressed into a sneer." }
@@ -122,6 +132,7 @@
     "closer_settled": {
       "face": "grin",
       "ending": "settled",
+      "audio": "/tab/audio/closer_settled.mp3",
       "him": "He knocks the bar twice. Ash finally falls. “Tab’s settled. Don’t make me remember your name.”",
       "voices": [
         { "skill": "SHIVERS", "line": "The room lets you leave with your spine intact." }
@@ -131,6 +142,7 @@
     "closer_thrown": {
       "face": "squint",
       "ending": "thrown",
+      "audio": "/tab/audio/closer_thrown.mp3",
       "him": "He points at the dark without looking. “Door’s that way. The wall will take your money. I won’t.”",
       "voices": [
         { "skill": "AUTHORITY", "line": "You got exactly the ending you paid for." }
@@ -140,6 +152,7 @@
     "closer_converted": {
       "face": "idle",
       "ending": "converted",
+      "audio": "/tab/audio/closer_converted.mp3",
       "him": "He pours something the color of a warning light. “Welcome to the leak. Sats in. Sats out. Don’t you dare call it a community.”",
       "voices": [
         { "skill": "INLAND EMPIRE", "line": "For a second the lamp and the invoice are the same object." }

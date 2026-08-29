@@ -8,6 +8,7 @@ const routes = [
   "/jukebox",
   "/music",
   "/arcade",
+  "/tab",
   "/graffiti",
   "/tidechain",
   "/lineup",

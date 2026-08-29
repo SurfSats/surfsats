@@ -18,6 +18,9 @@ import { bottleStoreKind } from "@/lib/bottle-store";
 import { storyLog } from "@/lib/story-log";
 import { settleStoryPayment } from "@/lib/story-payments";
 import { storyStoreKind } from "@/lib/story-store";
+import { tabLog } from "@/lib/tab-log";
+import { settleTabPayment } from "@/lib/tab-payments";
+import { tabStoreKind } from "@/lib/tab-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -82,6 +85,23 @@ export async function POST(request: Request) {
       });
     }
 
+    const tab = await settleTabPayment(paymentHash);
+    if (tab.ok) {
+      tabLog("info", "webhook.settled", {
+        hash: hashRef(paymentHash),
+        paid: true,
+        live: true,
+        kind: "tab",
+        store: tabStoreKind(),
+      });
+      return NextResponse.json({
+        ok: true,
+        paid: true,
+        live: true,
+        kind: "tab",
+      });
+    }
+
     const arcade = await settleArcadePayment(paymentHash);
     if (arcade.ok) {
       arcadeLog("info", "webhook.settled", {
@@ -133,10 +153,11 @@ export async function POST(request: Request) {
       });
     }
 
-    if (graffiti.paid || arcade.paid || story.paid || bottle.paid) {
+    if (graffiti.paid || tab.paid || arcade.paid || story.paid || bottle.paid) {
       graffitiLog("error", "webhook.paid_without_claim", {
         hash: hashRef(paymentHash),
         graffiti: Boolean(graffiti.paid),
+        tab: Boolean(tab.paid),
         arcade: Boolean(arcade.paid),
         story: Boolean(story.paid),
         bottle: Boolean(bottle.paid),

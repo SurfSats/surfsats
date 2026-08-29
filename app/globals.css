@@ -5552,6 +5552,334 @@ body:has(.story-page) .site-watermark {
   height: 8.5rem;
 }
 
+/* THE TAB — harbor sitting */
+.tab-page {
+  position: relative;
+  min-height: calc(100dvh - 8.25rem);
+  overflow: hidden;
+}
+
+.tab-harbor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.tab-harbor-img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.tab-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 28% 70%, transparent 0 32%, rgba(0, 0, 0, 0.55) 78%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.42) 0%, transparent 38%, rgba(0, 0, 0, 0.58) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.28), transparent 22%, rgba(0, 0, 0, 0.62) 100%);
+}
+
+.tab-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(10rem, 32vw) minmax(0, 1fr);
+  gap: 1.2rem 1.6rem;
+  align-items: end;
+  min-height: calc(100dvh - 8.25rem);
+  padding: 1.1rem 1.2rem 1.4rem;
+}
+
+.tab-keep {
+  margin: 0;
+  max-height: 78vh;
+  justify-self: start;
+}
+
+.tab-keep-img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: min(78vh, 40rem);
+  object-fit: contain;
+  object-position: bottom left;
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.55));
+}
+
+.tab-keep.is-squint .tab-keep-img {
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.55)) contrast(1.12) brightness(0.86);
+}
+
+.tab-keep.is-grin .tab-keep-img {
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.55)) saturate(1.18) brightness(1.06);
+}
+
+.tab-glass {
+  max-width: 40rem;
+  justify-self: end;
+  align-self: end;
+  padding: 1.05rem 1.1rem 1.15rem;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  background: rgb(8 8 11 / 0.42);
+  backdrop-filter: blur(8px) saturate(160%);
+  -webkit-backdrop-filter: blur(8px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.4),
+    0 18px 40px rgb(0 0 0 / 0.35);
+  color: #efe6d4;
+}
+
+.tab-kicker,
+.tab-sub,
+.tab-voice,
+.tab-ending-kicker,
+.tab-alias span,
+.tab-led p:first-child,
+.tab-boards h2 {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.55);
+}
+
+.tab-glass-head h1 {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #fff;
+}
+
+.tab-sub {
+  margin: 0.4rem 0 0;
+  color: var(--sats);
+}
+
+.tab-talk {
+  max-height: min(42vh, 22rem);
+  overflow: auto;
+  margin-top: 0.7rem;
+}
+
+.tab-invite,
+.tab-him {
+  margin: 0.85rem 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(0.95rem, 1.6vw, 1.12rem);
+  line-height: 1.45;
+}
+
+.tab-talk .tab-him {
+  margin-top: 0;
+}
+
+.tab-voice {
+  margin: 0.55rem 0 0;
+  color: #9a8b78;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.tab-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+}
+
+.tab-page .tab-choice {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgb(255 122 24 / 0.45);
+  background: rgb(12 8 6 / 0.55);
+  color: #efe6d4;
+  padding: 0.55rem 0.65rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+.tab-page .tab-choice:hover,
+.tab-page .tab-choice:focus-visible {
+  border-color: var(--sats);
+  color: #fff;
+}
+
+.tab-audio {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+
+.tab-audio-btn {
+  border: 1px solid rgb(255 255 255 / 0.22);
+  background: transparent;
+  color: rgb(255 255 255 / 0.7);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  padding: 0.25rem 0.45rem;
+}
+
+.tab-ending-title {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--sats);
+}
+
+.tab-ending-score {
+  margin: 0.2rem 0 0.7rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 1.2rem;
+}
+
+.tab-coin {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.tab-coin-row {
+  display: flex;
+  gap: 0.55rem;
+  align-items: stretch;
+}
+
+.tab-sit,
+.tab-insert {
+  flex: 1;
+  border: 1px solid var(--sats);
+  background: var(--sats);
+  color: #140804;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.55rem 0.7rem;
+  text-transform: uppercase;
+}
+
+.tab-sit span,
+.tab-insert span {
+  display: block;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+
+.tab-insert:disabled {
+  opacity: 0.45;
+}
+
+.tab-led {
+  min-width: 4.6rem;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  padding: 0.35rem 0.45rem;
+  text-align: center;
+}
+
+.tab-led p:last-child {
+  margin: 0.1rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 1.35rem;
+  color: var(--sats);
+}
+
+.tab-alias {
+  display: block;
+  margin-top: 0.55rem;
+}
+
+.tab-alias input {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  background: rgb(0 0 0 / 0.35);
+  color: #fff;
+  padding: 0.45rem 0.55rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tab-error,
+.tab-tree-error {
+  margin: 0.55rem 0 0;
+  color: var(--sats);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+}
+
+.tab-tree-error {
+  font-size: 1rem;
+}
+
+.tab-boards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin-top: 0.95rem;
+}
+
+.tab-boards ol {
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tab-boards li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.18rem 0;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.tab-boards li.is-empty {
+  color: rgb(255 255 255 / 0.4);
+}
+
+@media (max-width: 800px) {
+  .tab-layout {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    padding: 0.7rem 0.75rem 1.2rem;
+  }
+
+  .tab-keep {
+    max-height: 38vh;
+    justify-self: center;
+  }
+
+  .tab-keep-img {
+    height: min(38vh, 18rem);
+    object-position: bottom center;
+  }
+
+  .tab-glass {
+    justify-self: stretch;
+    max-width: none;
+  }
+
+  .tab-boards {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tab-crt .cab-crt-scan,
   .cab-machine-tab .cab-crt-scan {
