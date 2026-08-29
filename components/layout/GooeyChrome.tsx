@@ -6,13 +6,8 @@ import { Liquid } from "liquid-gooey";
 import { cn } from "@/lib/cn";
 import { navLinks } from "@/lib/nav";
 
-const ORANGE = "#F7931A";
-const INK = "#08080b";
-const SHELL = "#111116";
-const LABEL = "#e2c4a4";
-const LABEL_HOT = "#eceae4";
-const STROKE_HOT = "#ffb347";
-const HOVER_FILL = `color-mix(in srgb, ${ORANGE} 52%, ${SHELL})`;
+const GLASS_SILHOUETTE = "rgba(255,255,255,0.14)";
+const DROP_SILHOUETTE = "rgba(255,122,24,0.42)";
 
 const NAV_MORPH = {
   shape: true as const,
@@ -43,7 +38,8 @@ export function GooeyNavPills({
     <Liquid
       blur={4}
       contrast={16}
-      fill={ORANGE}
+      fill={GLASS_SILHOUETTE}
+      shadow="inset 0 1px 0 rgba(255,255,255,0.4)"
       waviness={0}
       filterPadding={20}
       className={cn(
@@ -75,14 +71,12 @@ export function GooeyNavPills({
               onPointerLeave={() => setHovered(null)}
               onFocus={() => setHovered(link.href)}
               onBlur={() => setHovered(null)}
-              className={pillLayout}
-              style={{
-                background: active ? ORANGE : hovering ? HOVER_FILL : SHELL,
-                borderColor: hovering ? STROKE_HOT : ORANGE,
-                color: active ? INK : hovering ? LABEL_HOT : LABEL,
-              }}
+              className={cn(
+                pillLayout,
+                "nav-glass backdrop-blur-[10px] backdrop-saturate-[160%]",
+              )}
             >
-              {link.label}
+              <span className="relative z-[2]">{link.label}</span>
             </Link>
           </Liquid.Item>
         );
@@ -98,15 +92,12 @@ export function GooeyDropSats({
   className?: string;
   onNavigate?: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
-  const [pressed, setPressed] = useState(false);
-  const squash = pressed ? "press" : hovered ? "hover" : "rest";
-
   return (
     <Liquid
       blur={3}
       contrast={16}
-      fill={ORANGE}
+      fill={DROP_SILHOUETTE}
+      shadow="inset 0 1px 0 rgba(255,255,255,0.4)"
       waviness={0}
       filterPadding={20}
       className={cn("relative z-10 inline-flex shrink-0", className)}
@@ -123,27 +114,12 @@ export function GooeyDropSats({
         <Link
           href="/jukebox"
           onClick={onNavigate}
-          onPointerEnter={() => setHovered(true)}
-          onPointerLeave={() => {
-            setHovered(false);
-            setPressed(false);
-          }}
-          onPointerDown={() => setPressed(true)}
-          onPointerUp={() => setPressed(false)}
-          onFocus={() => setHovered(true)}
-          onBlur={() => {
-            setHovered(false);
-            setPressed(false);
-          }}
           className={cn(
             pillLayout,
-            "origin-center font-semibold",
-            squash === "press" && "scale-95",
-            squash === "hover" && "scale-105",
+            "nav-glass nav-glass-drop font-semibold backdrop-blur-[10px] backdrop-saturate-[160%]",
           )}
-          style={{ background: ORANGE, borderColor: ORANGE, color: INK }}
         >
-          [ drop_21_sats ]
+          <span className="relative z-[2]">[ drop_21_sats ]</span>
         </Link>
       </Liquid.Item>
     </Liquid>

@@ -18,8 +18,8 @@ export function Navbar({
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="border-b border-cyan/20 bg-background/90">
-      <div className="border-b border-magenta/25 bg-black/60">
+    <header className="site-nav border-b border-cyan/20">
+      <div className="border-b border-magenta/25 bg-black/35">
         <Container className="flex h-7 items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-cyan/80">
           <span>sys.surfsats // online // no kyc</span>
           <span className="hidden sm:inline">
@@ -71,7 +71,7 @@ export function Navbar({
       {open ? (
         <div
           id="mobile-nav"
-          className="border-t border-cyan/20 bg-background lg:hidden"
+          className="nav-glass-cluster border-t border-white/15 backdrop-blur-[12px] backdrop-saturate-[160%] lg:hidden"
         >
           <Container className="flex flex-col items-start gap-3 py-3">
             <GooeyNavPills
