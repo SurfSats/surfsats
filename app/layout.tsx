@@ -19,6 +19,9 @@ const oxanium = Oxanium({
   weight: ["500", "600", "700", "800"],
 });
 
+const ogImage = "https://www.surfsats.com/og-home.png";
+const ogDescription = "No banks. No bosses. No closed beach signs.";
+
 export const metadata: Metadata = {
   title: {
     default: "SurfSats",
@@ -26,6 +29,21 @@ export const metadata: Metadata = {
   },
   description:
     "Bitcoin + surf lifestyle. Stories from the lineup and a global jukebox you can feed with 21 sats.",
+  openGraph: {
+    title: "SurfSats",
+    description: ogDescription,
+    images: [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [ogImage],
+  },
 };
 
 export const revalidate = 20;
