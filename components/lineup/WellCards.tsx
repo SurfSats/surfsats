@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   type LineupSnapshot,
   formatBtcFromSats,
@@ -21,61 +20,42 @@ export function WellCards({
 
   return (
     <div className="well-cards">
-      <article className="well-glass well-card">
+      <article className="well-card">
         <p className="well-card-kicker">mempool</p>
-        <dl>
-          <div>
-            <dt>unconfirmed</dt>
-            <dd>
-              {snapshot.mempoolCount !== null
-                ? formatInteger(snapshot.mempoolCount)
-                : "—"}
-            </dd>
-          </div>
-          <div>
-            <dt>vsize</dt>
-            <dd>
-              {snapshot.mempoolVsize !== null
-                ? `${formatVmb(snapshot.mempoolVsize)} vMB`
-                : "—"}
-            </dd>
-          </div>
-          <div>
-            <dt>total fee</dt>
-            <dd>
-              {snapshot.mempoolTotalFee !== null
-                ? formatBtcFromSats(snapshot.mempoolTotalFee)
-                : "—"}
-            </dd>
-          </div>
-        </dl>
+        <p className="well-card-line">
+          <b>
+            {snapshot.mempoolCount !== null
+              ? formatInteger(snapshot.mempoolCount)
+              : "—"}
+          </b>{" "}
+          tx
+          <span>
+            {snapshot.mempoolVsize !== null
+              ? `${formatVmb(snapshot.mempoolVsize)} vMB`
+              : "—"}
+          </span>
+          <span>
+            {snapshot.mempoolTotalFee !== null
+              ? formatBtcFromSats(snapshot.mempoolTotalFee)
+              : "—"}
+          </span>
+        </p>
       </article>
 
-      <article className="well-glass well-card">
+      <article className="well-card">
         <p className="well-card-kicker">retarget</p>
-        <dl>
-          <div>
-            <dt>progress</dt>
-            <dd>
-              {progress !== null ? `${progress.toFixed(1)}%` : "—"}
-              {snapshot.remainingBlocks !== null
-                ? ` · ${formatInteger(snapshot.remainingBlocks)} left`
-                : ""}
-            </dd>
-          </div>
-          <div>
-            <dt>eta</dt>
-            <dd>{eta}</dd>
-          </div>
-          <div>
-            <dt>avg block</dt>
-            <dd>
-              {snapshot.timeAvg !== null
-                ? formatInterval(snapshot.timeAvg)
-                : "—"}
-            </dd>
-          </div>
-        </dl>
+        <p className="well-card-line">
+          <b>{progress !== null ? `${progress.toFixed(1)}%` : "—"}</b>
+          <span>
+            {snapshot.remainingBlocks !== null
+              ? `${formatInteger(snapshot.remainingBlocks)} left`
+              : "—"}
+          </span>
+          <span>{eta}</span>
+          <span>
+            {snapshot.timeAvg !== null ? formatInterval(snapshot.timeAvg) : "—"}
+          </span>
+        </p>
         {progress !== null ? (
           <div
             className="well-progress"
@@ -87,9 +67,6 @@ export function WellCards({
             <i style={{ width: `${Math.max(2, Math.min(100, progress))}%` }} />
           </div>
         ) : null}
-        <Link href="/tidechain" className="well-readout">
-          readout -&gt; height / hashrate / moscow
-        </Link>
       </article>
     </div>
   );

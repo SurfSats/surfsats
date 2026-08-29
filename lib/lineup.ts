@@ -183,8 +183,9 @@ export function formatVmb(vsize: number) {
 }
 
 export function formatSatVb(value: number) {
-  if (value >= 10 || Number.isInteger(value)) return String(Math.round(value));
-  if (value >= 1) return value.toFixed(1);
+  if (!Number.isFinite(value)) return "—";
+  if (Math.abs(value - Math.round(value)) < 1e-6) return String(Math.round(value));
+  if (value >= 10) return value.toFixed(1);
   return value.toFixed(2);
 }
 
