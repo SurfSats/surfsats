@@ -7,6 +7,8 @@ import {
   hasLineupData,
 } from "@/lib/lineup";
 
+const POLL_MS = 20_000;
+
 export function useLineupSnapshot(initial: LineupSnapshot | null) {
   const [snapshot, setSnapshot] = useState<LineupSnapshot>(
     initial ?? emptyLineup,
@@ -39,7 +41,7 @@ export function useLineupSnapshot(initial: LineupSnapshot | null) {
 
     const id = window.setInterval(() => {
       void pull();
-    }, 12000);
+    }, POLL_MS);
 
     return () => {
       cancelled = true;

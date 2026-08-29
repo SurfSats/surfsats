@@ -1,187 +1,226 @@
 const MEMPOOL = "https://mempool.space/api";
+const SATS_PER_BTC = 100_000_000;
+export const TYPICAL_TX_VBYTES = 140;
+export const BLOCK_VSIZE = 1_000_000;
+const POLL_REVALIDATE = 20;
 
-export const BLOCK_CAPACITY_VSIZE = 1_500_000;
-const TYPICAL_VSIZE = 220;
+export type FeeChipId = "now" | "next" | "half" | "hour" | "floor";
 
-export type FeeBand = {
-  id: string;
+export type FeeChip = {
+  id: FeeChipId;
   label: string;
-  min: number;
-  max: number | null;
-  count: number;
-  vsize: number;
+  satVb: number | null;
 };
 
 export type ProjectedBlock = {
+  index: number;
+  blockSize: number;
   blockVSize: number;
   nTx: number;
-  medianFee: number;
   totalFees: number;
+  medianFee: number;
+  feeMin: number;
+  feeMax: number;
+};
+
+export type MinedBlock = {
+  height: number;
+  hash: string;
+  timestamp: number;
+  txCount: number;
+  medianFee: number | null;
+  totalFees: number | null;
+  pool: string | null;
 };
 
 export type LineupSnapshot = {
   fetchedAt: number;
-  blockHeight: number | null;
-  lastBlockTimestamp: number | null;
-  mempoolCount: number | null;
-  mempoolVsize: number | null;
   fastestFee: number | null;
   halfHourFee: number | null;
   hourFee: number | null;
   economyFee: number | null;
-  nextBlockVsize: number | null;
-  nextBlockNtx: number | null;
-  nextBlockMedianFee: number | null;
-  capacityVsize: number;
+  minimumFee: number | null;
+  mempoolCount: number | null;
+  mempoolVsize: number | null;
+  mempoolTotalFee: number | null;
+  priceUsd: number | null;
   projected: ProjectedBlock[];
-  bands: FeeBand[];
+  recent: MinedBlock[];
+  progressPercent: number | null;
+  remainingBlocks: number | null;
+  estimatedRetargetDate: number | null;
+  timeAvg: number | null;
 };
 
 export const emptyLineup: LineupSnapshot = {
   fetchedAt: 0,
-  blockHeight: null,
-  lastBlockTimestamp: null,
-  mempoolCount: null,
-  mempoolVsize: null,
   fastestFee: null,
   halfHourFee: null,
   hourFee: null,
   economyFee: null,
-  nextBlockVsize: null,
-  nextBlockNtx: null,
-  nextBlockMedianFee: null,
-  capacityVsize: BLOCK_CAPACITY_VSIZE,
+  minimumFee: null,
+  mempoolCount: null,
+  mempoolVsize: null,
+  mempoolTotalFee: null,
+  priceUsd: null,
   projected: [],
-  bands: [],
+  recent: [],
+  progressPercent: null,
+  remainingBlocks: null,
+  estimatedRetargetDate: null,
+  timeAvg: null,
 };
 
-export const FEE_BANDS: Array<{
-  id: string;
-  label: string;
-  min: number;
-  max: number | null;
-}> = [
-  { id: "0-5", label: "0–5", min: 0, max: 5 },
-  { id: "5-10", label: "5–10", min: 5, max: 10 },
-  { id: "10-20", label: "10–20", min: 10, max: 20 },
-  { id: "20-50", label: "20–50", min: 20, max: 50 },
-  { id: "50-100", label: "50–100", min: 50, max: 100 },
-  { id: "100-200", label: "100–200", min: 100, max: 200 },
-  { id: "200-500", label: "200–500", min: 200, max: 500 },
-  { id: "500+", label: "500+", min: 500, max: null },
-];
-
 export async function getLineupSnapshot(): Promise<LineupSnapshot> {
-  const [mempool, projectedRaw, fees, tip, blocks] = await Promise.all([
-    readJson<MempoolResponse>(`${MEMPOOL}/mempool`),
-    readJson<ProjectedBlockRaw[]>(`${MEMPOOL}/v1/fees/mempool-blocks`),
-    readJson<FeesResponse>(`${MEMPOOL}/v1/fees/recommended`),
-    readText(`${MEMPOOL}/blocks/tip/height`),
-    readJson<BlockSummary[]>(`${MEMPOOL}/v1/blocks`),
-  ]);
+  const [fees, projectedRaw, mempool, blocks, difficulty, prices] =
+    await Promise.all([
+      readJson<FeesResponse>(`${MEMPOOL}/v1/fees/recommended`),
+      readJson<ProjectedRaw[]>(`${MEMPOOL}/v1/fees/mempool-blocks`),
+      readJson<MempoolResponse>(`${MEMPOOL}/mempool`),
+      readJson<BlockRaw[]>(`${MEMPOOL}/v1/blocks`),
+      readJson<DifficultyResponse>(`${MEMPOOL}/v1/difficulty-adjustment`),
+      readJson<PricesResponse>(`${MEMPOOL}/v1/prices`),
+    ]);
 
-  const projected = (projectedRaw ?? []).slice(0, 5).flatMap((block) => {
+  const projected = (projectedRaw ?? []).flatMap((block, index) => {
     const blockVSize = num(block.blockVSize);
     const nTx = num(block.nTx);
     const medianFee = num(block.medianFee);
     const totalFees = num(block.totalFees);
-    if (blockVSize === null || nTx === null || medianFee === null) return [];
+    const blockSize = num(block.blockSize);
+    if (
+      blockVSize === null ||
+      nTx === null ||
+      medianFee === null ||
+      totalFees === null
+    ) {
+      return [];
+    }
+    const range = Array.isArray(block.feeRange)
+      ? block.feeRange.map(num).filter((value): value is number => value !== null)
+      : [];
     return [
       {
+        index,
+        blockSize: blockSize ?? blockVSize,
         blockVSize,
         nTx,
+        totalFees,
         medianFee,
-        totalFees: totalFees ?? 0,
+        feeMin: range[0] ?? medianFee,
+        feeMax: range[range.length - 1] ?? medianFee,
       },
     ];
   });
 
-  const next = projected[0];
+  const recent = (blocks ?? []).slice(0, 8).flatMap((block) => {
+    const height = num(block.height);
+    const hash = typeof block.id === "string" ? block.id : null;
+    const timestamp = num(block.timestamp);
+    const txCount = num(block.tx_count);
+    if (height === null || !hash || timestamp === null || txCount === null) {
+      return [];
+    }
+    return [
+      {
+        height,
+        hash,
+        timestamp,
+        txCount,
+        medianFee: num(block.extras?.medianFee),
+        totalFees: num(block.extras?.totalFees),
+        pool:
+          typeof block.extras?.pool?.name === "string"
+            ? block.extras.pool.name
+            : null,
+      },
+    ];
+  });
 
   return {
     fetchedAt: Date.now(),
-    blockHeight: parseHeight(tip) ?? num(blocks?.[0]?.height),
-    lastBlockTimestamp: num(blocks?.[0]?.timestamp),
-    mempoolCount: num(mempool?.count),
-    mempoolVsize: num(mempool?.vsize),
     fastestFee: num(fees?.fastestFee),
     halfHourFee: num(fees?.halfHourFee),
     hourFee: num(fees?.hourFee),
     economyFee: num(fees?.economyFee),
-    nextBlockVsize: next?.blockVSize ?? null,
-    nextBlockNtx: next?.nTx ?? null,
-    nextBlockMedianFee: next?.medianFee ?? null,
-    capacityVsize: BLOCK_CAPACITY_VSIZE,
+    minimumFee: num(fees?.minimumFee),
+    mempoolCount: num(mempool?.count),
+    mempoolVsize: num(mempool?.vsize),
+    mempoolTotalFee: num(mempool?.total_fee),
+    priceUsd: num(prices?.USD),
     projected,
-    bands: buildBands(mempool?.fee_histogram ?? [], projected),
+    recent,
+    progressPercent: num(difficulty?.progressPercent),
+    remainingBlocks: num(difficulty?.remainingBlocks),
+    estimatedRetargetDate: toMs(num(difficulty?.estimatedRetargetDate)),
+    timeAvg: num(difficulty?.timeAvg),
   };
 }
 
+export function feeChips(snapshot: LineupSnapshot): FeeChip[] {
+  return [
+    { id: "now", label: "NOW", satVb: snapshot.fastestFee },
+    { id: "next", label: "NEXT BLOCK", satVb: snapshot.halfHourFee },
+    { id: "half", label: "~30m", satVb: snapshot.hourFee },
+    { id: "hour", label: "~1h", satVb: snapshot.economyFee },
+    { id: "floor", label: "FLOOR", satVb: snapshot.minimumFee },
+  ];
+}
+
 export function hasLineupData(snapshot: LineupSnapshot) {
-  return snapshot.mempoolCount !== null || snapshot.bands.some((band) => band.vsize > 0);
+  return (
+    snapshot.fastestFee !== null ||
+    snapshot.mempoolCount !== null ||
+    snapshot.projected.length > 0 ||
+    snapshot.recent.length > 0
+  );
 }
 
 export function formatVmb(vsize: number) {
-  return (vsize / 1_000_000).toFixed(2);
+  const vmb = vsize / 1_000_000;
+  if (vmb >= 10) return vmb.toFixed(1);
+  return vmb.toFixed(2);
 }
 
-export function feeBandColor(min: number) {
-  if (min >= 100) return "#F7931A";
-  if (min >= 20) return "#c47d24";
-  if (min >= 5) return "#5d7a78";
-  return "#4a5558";
+export function formatSatVb(value: number) {
+  if (value >= 10 || Number.isInteger(value)) return String(Math.round(value));
+  if (value >= 1) return value.toFixed(1);
+  return value.toFixed(2);
 }
 
-export function bandMidRate(band: FeeBand) {
-  return band.max === null ? band.min * 1.4 : (band.min + band.max) / 2;
+export function formatBtcFromSats(sats: number) {
+  const btc = sats / SATS_PER_BTC;
+  if (btc >= 1) return `${btc.toFixed(3)} BTC`;
+  if (btc >= 0.01) return `${btc.toFixed(4)} BTC`;
+  if (btc >= 0.0001) return `${btc.toFixed(6)} BTC`;
+  return `${Math.round(sats).toLocaleString("en-US")} sats`;
 }
 
-function buildBands(
-  histogram: Array<[number, number] | number[]>,
-  projected: ProjectedBlock[],
-): FeeBand[] {
-  const bands = FEE_BANDS.map((band) => ({
-    ...band,
-    count: 0,
-    vsize: 0,
-  }));
+export function feeUsd(satVb: number, priceUsd: number) {
+  return ((satVb * TYPICAL_TX_VBYTES) / SATS_PER_BTC) * priceUsd;
+}
 
-  if (histogram.length > 0) {
-    for (const row of histogram) {
-      const rate = num(row[0]);
-      const vsize = num(row[1]);
-      if (rate === null || vsize === null) continue;
-      const band = bands.find((item) =>
-        item.max === null ? rate >= item.min : rate >= item.min && rate < item.max,
-      );
-      if (!band) continue;
-      band.vsize += vsize;
-      band.count += Math.max(1, Math.round(vsize / TYPICAL_VSIZE));
-    }
-    return bands;
+export function formatFeeUsd(usd: number) {
+  if (usd >= 1) {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 2,
+    }).format(usd);
   }
-
-  for (const block of projected) {
-    const band = bands.find((item) =>
-      item.max === null
-        ? block.medianFee >= item.min
-        : block.medianFee >= item.min && block.medianFee < item.max,
-    );
-    if (!band) continue;
-    band.count += block.nTx;
-    band.vsize += block.blockVSize;
+  if (usd >= 0.01) {
+    return `$${usd.toFixed(2)}`;
   }
-  return bands;
+  return `$${usd.toFixed(3)}`;
+}
+
+function toMs(value: number | null) {
+  if (value === null) return null;
+  return value > 1e12 ? value : value * 1000;
 }
 
 function num(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
-
-function parseHeight(value: string | null) {
-  if (!value) return null;
-  const parsed = Number(value.trim());
-  return Number.isFinite(parsed) ? parsed : null;
 }
 
 async function readJson<T>(url: string): Promise<T | null> {
@@ -192,7 +231,7 @@ async function readJson<T>(url: string): Promise<T | null> {
         "User-Agent": "SurfSatsWell/1.0",
       },
       signal: AbortSignal.timeout(8000),
-      next: { revalidate: 12 },
+      next: { revalidate: POLL_REVALIDATE },
     });
     if (!response.ok) return null;
     return (await response.json()) as T;
@@ -201,35 +240,41 @@ async function readJson<T>(url: string): Promise<T | null> {
   }
 }
 
-async function readText(url: string): Promise<string | null> {
-  try {
-    const response = await fetch(url, {
-      headers: { "User-Agent": "SurfSatsWell/1.0" },
-      signal: AbortSignal.timeout(8000),
-      next: { revalidate: 12 },
-    });
-    if (!response.ok) return null;
-    return response.text();
-  } catch {
-    return null;
-  }
-}
-
-type MempoolResponse = {
-  count?: number;
-  vsize?: number;
-  fee_histogram?: Array<[number, number] | number[]>;
-};
-type ProjectedBlockRaw = {
-  nTx?: number;
-  medianFee?: number;
-  blockVSize?: number;
-  totalFees?: number;
-};
 type FeesResponse = {
   fastestFee?: number;
   halfHourFee?: number;
   hourFee?: number;
   economyFee?: number;
+  minimumFee?: number;
 };
-type BlockSummary = { height?: number; timestamp?: number };
+type MempoolResponse = {
+  count?: number;
+  vsize?: number;
+  total_fee?: number;
+};
+type ProjectedRaw = {
+  nTx?: number;
+  medianFee?: number;
+  blockVSize?: number;
+  blockSize?: number;
+  totalFees?: number;
+  feeRange?: number[];
+};
+type BlockRaw = {
+  id?: string;
+  height?: number;
+  timestamp?: number;
+  tx_count?: number;
+  extras?: {
+    medianFee?: number;
+    totalFees?: number;
+    pool?: { name?: string };
+  };
+};
+type DifficultyResponse = {
+  progressPercent?: number;
+  remainingBlocks?: number;
+  estimatedRetargetDate?: number;
+  timeAvg?: number;
+};
+type PricesResponse = { USD?: number };
