@@ -4,12 +4,20 @@ export const ARCADE_GAME_ID = "wave-runner";
 export const ARCADE_GAME_LABEL = "WAVE RUNNER";
 export const ARCADE_STORAGE_KEY = "surfsats.arcade.v1";
 export const RETRO_STORAGE_KEY = "surfsats.arcade.retro.v1";
+export const TAB_STORAGE_KEY = "surfsats.arcade.tab.v1";
 export const ARCADE_META_KIND = "surfsats-arcade";
 export const ARCADE_ALIAS_MIN = 2;
 export const ARCADE_ALIAS_MAX = 16;
 
 export const ARCADE_MACHINE_WAVE = "wave";
 export const ARCADE_MACHINE_RETRO = "retro";
+export const ARCADE_MACHINE_TAB = "tab";
+export const TAB_GAME_ID = "tab";
+export const TAB_ENDING_GAMES = [
+  "tab-settled",
+  "tab-thrown",
+  "tab-converted",
+] as const;
 
 export const RETRO_GAMES = [
   { id: "pong", label: "Pong" },
@@ -19,7 +27,8 @@ export const RETRO_GAMES = [
   { id: "invaders", label: "Space Invaders" },
 ] as const;
 
-export type ArcadeMachine = "wave" | "retro";
+export type ArcadeMachine = "wave" | "retro" | "tab";
+export type TabEndingGame = (typeof TAB_ENDING_GAMES)[number];
 export type RetroGameId = (typeof RETRO_GAMES)[number]["id"];
 
 export type ArcadePlayer = {
@@ -108,13 +117,17 @@ export function arcadeScoreSnippet(
 }
 
 export function isArcadeMachine(value: unknown): value is ArcadeMachine {
-  return value === ARCADE_MACHINE_WAVE || value === ARCADE_MACHINE_RETRO;
+  return (
+    value === ARCADE_MACHINE_WAVE ||
+    value === ARCADE_MACHINE_RETRO ||
+    value === ARCADE_MACHINE_TAB
+  );
 }
 
 export function parseArcadeMachine(value: unknown): ArcadeMachine {
-  return value === ARCADE_MACHINE_RETRO
-    ? ARCADE_MACHINE_RETRO
-    : ARCADE_MACHINE_WAVE;
+  if (value === ARCADE_MACHINE_RETRO) return ARCADE_MACHINE_RETRO;
+  if (value === ARCADE_MACHINE_TAB) return ARCADE_MACHINE_TAB;
+  return ARCADE_MACHINE_WAVE;
 }
 
 export function isRetroGameId(value: unknown): value is RetroGameId {
@@ -132,7 +145,29 @@ export function normalizePlayGame(raw: string): string | null {
   const id = raw.trim().toLowerCase();
   if (!id || id === "wave" || id === ARCADE_GAME_ID) return ARCADE_GAME_ID;
   if (isRetroGameId(id)) return id;
+  if (id === TAB_GAME_ID) return TAB_GAME_ID;
+  if (isTabEndingGame(id)) return id;
   return null;
+}
+
+export function isTabEndingGame(value: unknown): value is TabEndingGame {
+  return (
+    typeof value === "string" &&
+    (TAB_ENDING_GAMES as readonly string[]).includes(value)
+  );
+}
+
+export function tabEndingGame(ending: string): TabEndingGame | null {
+  const id = `tab-${ending.trim().toLowerCase()}`;
+  return isTabEndingGame(id) ? id : null;
+}
+
+export function tabEndingLabel(game?: string) {
+  if (game === "tab-settled") return "TAB SETTLED";
+  if (game === "tab-thrown") return "THROWN OUT";
+  if (game === "tab-converted") return "CONVERTED";
+  if (game === TAB_GAME_ID) return "THE TAB";
+  return "THE TAB";
 }
 
 export const RETRO_GAME_IDS: RetroGameId[] = RETRO_GAMES.map((game) => game.id);

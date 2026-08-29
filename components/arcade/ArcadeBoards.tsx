@@ -16,6 +16,7 @@ export function ArcadeBoards({
   title = "HIGH SCORES",
   recentTitle = "LAST 10 PLAYERS",
   showGame = false,
+  gameName: gameNameFn,
 }: {
   highScores: ArcadeHighScore[];
   lastPlayers: ArcadeRecentPlay[];
@@ -23,10 +24,15 @@ export function ArcadeBoards({
   title?: string;
   recentTitle?: string;
   showGame?: boolean;
+  gameName?: (id?: string) => string;
 }) {
   const rows = Array.from({ length: 10 }, (_, index) => highScores[index] ?? null);
   const gameName = (id?: string) =>
-    id ? retroGameLabel(id).toUpperCase() : "RETRO";
+    gameNameFn
+      ? gameNameFn(id)
+      : id
+        ? retroGameLabel(id).toUpperCase()
+        : "RETRO";
 
   return (
     <div className="arcade-boards">

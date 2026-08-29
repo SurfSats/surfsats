@@ -78,7 +78,9 @@ async function createInvoice(input: ArcadeInvoicePayload) {
   const description =
     machine === "retro"
       ? `SurfSats Arcade · RETRO${input.game ? ` · ${input.game}` : ""}`
-      : "SurfSats Arcade";
+      : machine === "tab"
+        ? "SurfSats Arcade · THE TAB"
+        : "SurfSats Arcade";
   try {
     return await createAlbyInvoice({
       amountSats: ARCADE_PRICE_SATS,

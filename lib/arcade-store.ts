@@ -3,9 +3,12 @@ import path from "node:path";
 import {
   ARCADE_CREDITS_PER_PAY,
   ARCADE_GAME_ID,
+  ARCADE_MACHINE_TAB,
   ARCADE_MACHINE_WAVE,
   ARCADE_PRICE_SATS,
   RETRO_GAME_IDS,
+  TAB_ENDING_GAMES,
+  TAB_GAME_ID,
   newPlayId,
   parseArcadeMachine,
   type ArcadeGrant,
@@ -516,7 +519,7 @@ export async function submitArcadeScore(input: {
       if (input.playId) {
         await db`
           UPDATE arcade_plays
-          SET score = ${score}
+          SET score = ${score}, game = ${game}
           WHERE id = ${input.playId} AND player_id = ${input.playerId}
         `;
       } else {
@@ -558,6 +561,7 @@ export async function submitArcadeScore(input: {
         );
         if (play) {
           play.score = score;
+          play.game = game;
         }
       } else {
         memory.plays.unshift({
@@ -633,6 +637,35 @@ export async function getArcadeHighScores(game = ARCADE_GAME_ID) {
     }));
 }
 
+export async function getTabHighScores() {
+  const games = new Set<string>(TAB_ENDING_GAMES);
+  if (isDatabaseConfigured()) {
+    await ensureNeonSchema();
+    const db = sql();
+    const rows = await db`
+      SELECT alias, score, created_at, game
+      FROM arcade_plays
+      WHERE game IN ('tab-settled', 'tab-thrown', 'tab-converted')
+        AND score IS NOT NULL
+      ORDER BY score DESC, created_at ASC
+      LIMIT 10
+    `;
+    return mapHighScoreRows(rows);
+  }
+  await loadStore();
+  return memory.plays
+    .filter((play) => games.has(play.game) && play.score != null)
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0) || a.createdAt.localeCompare(b.createdAt))
+    .slice(0, 10)
+    .map((play, index) => ({
+      rank: index + 1,
+      alias: play.alias,
+      score: play.score ?? 0,
+      createdAt: play.createdAt,
+      game: play.game,
+    }));
+}
+
 export async function getRetroHighScores() {
   const games = new Set<string>(RETRO_GAME_IDS);
   if (isDatabaseConfigured()) {
@@ -675,7 +708,14 @@ export async function getArcadeRecentPlays(machine: ArcadeMachine = ARCADE_MACHI
     `;
     return rows.map((row) => ({
       alias: String(row.alias ?? ""),
-      game: String(row.game || (machine === ARCADE_MACHINE_WAVE ? ARCADE_GAME_ID : "retro")),
+      game: String(
+        row.game ||
+          (machine === ARCADE_MACHINE_WAVE
+            ? ARCADE_GAME_ID
+            : machine === ARCADE_MACHINE_TAB
+              ? TAB_GAME_ID
+              : "retro"),
+      ),
       sats: ARCADE_PRICE_SATS,
       createdAt: iso(row.created_at),
     })) satisfies ArcadeRecentPlay[];
@@ -689,7 +729,11 @@ export async function getArcadeRecentPlays(machine: ArcadeMachine = ARCADE_MACHI
       alias: grant.alias,
       game:
         grant.game ||
-        (machine === ARCADE_MACHINE_WAVE ? ARCADE_GAME_ID : "retro"),
+        (machine === ARCADE_MACHINE_WAVE
+          ? ARCADE_GAME_ID
+          : machine === ARCADE_MACHINE_TAB
+            ? TAB_GAME_ID
+            : "retro"),
       sats: ARCADE_PRICE_SATS,
       createdAt: grant.createdAt,
     }));
