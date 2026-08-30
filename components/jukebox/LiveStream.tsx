@@ -71,6 +71,29 @@ export function LiveStream() {
   const [volume, setVolume] = useState(1);
   const [payload, setPayload] = useState<JukeboxLivePayload | null>(null);
 
+  const tapToTune = useCallback(async () => {
+    const el = audioRef.current;
+    if (!el) return;
+    tabWantsPlay = true;
+    el.muted = false;
+    setMuted(false);
+    try {
+      const url = await resolveStreamUrl();
+      if (el.getAttribute("src") !== url) {
+        el.src = url;
+        el.preload = "auto";
+      }
+      el.volume = volume;
+      el.muted = false;
+      await el.play();
+      setBlocked(false);
+      setPlaying(!el.paused);
+    } catch {
+      setBlocked(true);
+      setPlaying(false);
+    }
+  }, [volume]);
+
   useEffect(() => {
     const player = audioRef.current;
     if (!player) return;
@@ -180,29 +203,6 @@ export function LiveStream() {
       document.removeEventListener("keydown", onGesture, true);
     };
   }, [blocked, tapToTune]);
-
-  const tapToTune = useCallback(async () => {
-    const el = audioRef.current;
-    if (!el) return;
-    tabWantsPlay = true;
-    el.muted = false;
-    setMuted(false);
-    try {
-      const url = await resolveStreamUrl();
-      if (el.getAttribute("src") !== url) {
-        el.src = url;
-        el.preload = "auto";
-      }
-      el.volume = volume;
-      el.muted = false;
-      await el.play();
-      setBlocked(false);
-      setPlaying(!el.paused);
-    } catch {
-      setBlocked(true);
-      setPlaying(false);
-    }
-  }, [volume]);
 
   async function togglePlay() {
     const el = audioRef.current;
