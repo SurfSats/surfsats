@@ -2184,6 +2184,34 @@ body:has(.graffiti-page) .site-watermark {
     border-left: 0;
     border-top: 1px solid var(--line);
   }
+
+  .arcade-page .console-stage {
+    min-height: min(62dvh, 36rem);
+  }
+
+  .arcade-page .console-deck {
+    border-left: 0;
+    border-top: 1px solid rgb(255 122 24 / 0.28);
+  }
+
+  .tab-page .console-stage {
+    min-height: min(42dvh, 22rem);
+    justify-content: center;
+  }
+
+  .tab-page .console-deck {
+    border-left: 0;
+    border-top: 1px solid rgb(255 255 255 / 0.22);
+  }
+
+  .story-page .console-stage {
+    min-height: min(58dvh, 32rem);
+  }
+
+  .story-page .console-deck {
+    border-left: 0;
+    border-top: 1px solid #c4a056;
+  }
 }
 
 @media (min-width: 640px) {
@@ -2933,9 +2961,8 @@ body:has(.graffiti-page) .site-watermark {
 .arcade-shell {
   position: relative;
   isolation: isolate;
-  min-height: calc(100vh - 7.5rem);
+  min-height: calc(100dvh - var(--site-chrome-h));
   background: #070504;
-  overflow: hidden;
 }
 
 .arcade-bg {
@@ -2961,6 +2988,81 @@ body:has(.graffiti-page) .site-watermark {
   position: relative;
   z-index: 1;
   padding: 0.7rem 0.9rem 1.15rem;
+}
+
+.arcade-page.console-page {
+  padding: 0;
+  background: transparent;
+}
+
+.arcade-page .console-strip {
+  border-bottom: 1px solid rgb(255 122 24 / 0.35);
+  background: rgb(8 8 11 / 0.72);
+  padding: 0.45rem 1rem;
+}
+
+.arcade-page .console-strip p {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c9b8a4;
+}
+
+.arcade-page .console-stage {
+  position: relative;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.7rem 0.75rem 1rem;
+}
+
+.arcade-page .console-deck {
+  border-left: 1px solid rgb(255 122 24 / 0.28);
+  background: rgb(8 8 11 / 0.9);
+}
+
+.arcade-page .console-deck-tabs {
+  border-bottom: 1px solid rgb(255 122 24 / 0.28);
+}
+
+.arcade-page .console-deck-tabs button {
+  border-right: 1px solid rgb(255 122 24 / 0.18);
+  color: #c9b8a4;
+}
+
+.arcade-page .console-deck-tabs button.is-on {
+  background: #ff7a18;
+  color: #140a04;
+}
+
+.arcade-page .console-deck-body {
+  padding: 0.75rem;
+}
+
+.arcade-page .console-deck-footer {
+  border-top: 1px solid rgb(255 122 24 / 0.28);
+  padding: 0.55rem 0.75rem;
+}
+
+.arcade-deck-foot {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sats);
+}
+
+.arcade-deck-copy {
+  display: grid;
+  gap: 0.75rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c9b8a4;
 }
 
 .arcade-haze {
@@ -5046,6 +5148,15 @@ body:has(.graffiti-page) .site-watermark {
     justify-content: center;
     text-align: center;
   }
+
+  .arcade-page .console-stage {
+    min-height: min(62dvh, 36rem);
+  }
+
+  .arcade-page .console-deck {
+    border-left: 0;
+    border-top: 1px solid rgb(255 122 24 / 0.28);
+  }
 }
 
 @media (max-width: 639px) {
@@ -5065,7 +5176,7 @@ body:has(.graffiti-page) .site-watermark {
 .story-shell {
   position: relative;
   isolation: isolate;
-  min-height: calc(100dvh - 8.25rem);
+  min-height: calc(100dvh - var(--site-chrome-h));
 }
 
 .story-bg {
@@ -5095,10 +5206,104 @@ body:has(.graffiti-page) .site-watermark {
 .story-page {
   position: relative;
   z-index: 1;
-  min-height: calc(100dvh - 8.25rem);
+  min-height: calc(100dvh - var(--site-chrome-h));
   padding: 1.25rem 1rem 3rem;
   color: #2c1c10;
   background: transparent;
+}
+
+.story-page.console-page {
+  padding: 0;
+  color: #efe6d4;
+}
+
+.story-page .console-strip {
+  border-bottom: 1px solid #c4a056;
+  background: rgb(18 12 8 / 0.82);
+  padding: 0.45rem 1rem;
+}
+
+.story-page .console-strip p {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #e4cf9a;
+}
+
+.story-page .console-stage {
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+  padding: 1rem 0.9rem 1.2rem;
+}
+
+.story-page .console-stage .story-book {
+  width: min(42rem, 100%);
+}
+
+.story-page .console-deck {
+  border-left: 1px solid #c4a056;
+  background: rgb(18 12 8 / 0.9);
+}
+
+.story-page .console-deck-tabs {
+  border-bottom: 1px solid #c4a056;
+}
+
+.story-page .console-deck-tabs button {
+  border-right: 1px solid rgb(196 160 86 / 0.35);
+  color: #c4a056;
+}
+
+.story-page .console-deck-tabs button.is-on {
+  background: #c4a056;
+  color: #1a120c;
+}
+
+.story-page .console-deck-body {
+  padding: 0.85rem;
+}
+
+.story-index {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story-index li p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #efe6d4;
+}
+
+.story-index li p + p {
+  margin-top: 0.25rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c4a056;
+}
+
+.story-index .is-empty,
+.story-how {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c4a056;
+}
+
+.story-how {
+  display: grid;
+  gap: 0.75rem;
 }
 
 body:has(.story-page) .site-watermark {
@@ -5905,8 +6110,7 @@ body:has(.story-page) .site-watermark {
 /* THE TAB — harbor sitting */
 .tab-page {
   position: relative;
-  min-height: calc(100dvh - 8.25rem);
-  overflow: hidden;
+  min-height: calc(100dvh - var(--site-chrome-h));
 }
 
 .tab-harbor {
@@ -5936,8 +6140,87 @@ body:has(.story-page) .site-watermark {
   grid-template-columns: minmax(10rem, 32vw) minmax(0, 1fr);
   gap: 1.2rem 1.6rem;
   align-items: end;
-  min-height: calc(100dvh - 8.25rem);
+  min-height: calc(100dvh - var(--site-chrome-h));
   padding: 1.1rem 1.2rem 1.4rem;
+}
+
+.tab-page .console-page {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.tab-page .console-strip {
+  border-bottom: 1px solid rgb(255 122 24 / 0.35);
+  background: rgb(8 8 11 / 0.55);
+  padding: 0.45rem 1rem;
+}
+
+.tab-page .console-strip p {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sats);
+}
+
+.tab-page .console-stage {
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  padding: 0.75rem 0.9rem 1rem;
+}
+
+.tab-page .console-deck {
+  border-left: 1px solid rgb(255 255 255 / 0.22);
+  background: rgb(8 8 11 / 0.55);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+}
+
+.tab-page .console-deck-tabs {
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
+}
+
+.tab-page .console-deck-tabs button {
+  border-right: 1px solid rgb(255 255 255 / 0.14);
+  color: rgb(255 255 255 / 0.62);
+}
+
+.tab-page .console-deck-tabs button.is-on {
+  background: rgb(255 122 24 / 0.22);
+  color: var(--sats);
+}
+
+.tab-page .console-deck-body {
+  padding: 0;
+}
+
+.tab-page .tab-glass {
+  max-width: none;
+  justify-self: stretch;
+  align-self: stretch;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.tab-page .tab-boards {
+  padding: 0.85rem;
+}
+
+.tab-how {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.7);
 }
 
 .tab-keep {
@@ -6213,6 +6496,10 @@ body:has(.story-page) .site-watermark {
   .tab-keep {
     max-height: 38vh;
     justify-self: center;
+  }
+
+  .tab-page .console-stage .tab-keep {
+    max-height: none;
   }
 
   .tab-keep-img {

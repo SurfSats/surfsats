@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArcadeBoards } from "@/components/arcade/ArcadeBoards";
 import { ArcadeCabinet } from "@/components/arcade/ArcadeCabinet";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
@@ -15,7 +14,6 @@ import {
   isPlayerId,
   sanitizeAlias,
   type ArcadeHighScore,
-  type ArcadeRecentPlay,
 } from "@/lib/arcade";
 
 type SessionCache = {
@@ -34,7 +32,6 @@ export function ArcadeApp({
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
   const [highScores, setHighScores] = useState<ArcadeHighScore[]>([]);
-  const [lastPlayers, setLastPlayers] = useState<ArcadeRecentPlay[]>([]);
   const [mode, setMode] = useState<ArcadeScreenMode>("attract");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,10 +85,8 @@ export function ArcadeApp({
     const response = await fetch("/api/arcade", { cache: "no-store" });
     const data = (await response.json()) as {
       highScores?: ArcadeHighScore[];
-      lastPlayers?: ArcadeRecentPlay[];
     };
     if (Array.isArray(data.highScores)) setHighScores(data.highScores);
-    if (Array.isArray(data.lastPlayers)) setLastPlayers(data.lastPlayers);
   }, []);
 
   const loadSession = useCallback(async (id: string) => {
@@ -454,13 +449,6 @@ export function ArcadeApp({
         onWipeout={(score) => void handleWipeout(score)}
         onCopyScore={() => void copyScore()}
       />
-      {front ? (
-        <ArcadeBoards
-          highScores={highScores}
-          lastPlayers={lastPlayers}
-          now={nowTick}
-        />
-      ) : null}
       {showInvoice ? (
         <ArcadeInvoice
           qrSrc={qrSrc}

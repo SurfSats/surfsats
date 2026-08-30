@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { TabAudio } from "@/components/tab/TabAudio";
 import {
   loadBarTree,
@@ -26,6 +27,7 @@ import {
 
 type SessionCache = { playerId: string; alias: string };
 type Mode = "idle" | "invoice" | "sitting" | "ended";
+type DeckTab = "sit" | "ledger" | "how";
 
 export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
   const [playerId, setPlayerId] = useState("");
@@ -50,6 +52,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [expired, setExpired] = useState(false);
   const [ready, setReady] = useState(false);
+  const [tab, setTab] = useState<DeckTab>("sit");
   const playIdRef = useRef<string | null>(null);
   const startLock = useRef(false);
 
@@ -403,164 +406,205 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
         <div className="tab-vignette" />
       </div>
 
-      <div className="tab-layout">
-        <figure className={`tab-keep is-${face}`}>
-          <Image
-            src="/tab/bartender.jpg"
-            alt="The bartender"
-            width={720}
-            height={1080}
-            className="tab-keep-img"
-            priority
-          />
-        </figure>
+      <ConsoleShell
+        name="tab"
+        className="tab-console"
+        deckLabel="Tab"
+        strip={
+          <p>
+            the tab · {TAB_PRICE_SATS} sats · one sitting
+          </p>
+        }
+        stage={
+          <figure className={`tab-keep is-${face}`}>
+            <Image
+              src="/tab/bartender.jpg"
+              alt="The bartender"
+              width={720}
+              height={1080}
+              className="tab-keep-img"
+              priority
+            />
+          </figure>
+        }
+        tabs={[
+          { id: "sit", label: "SIT" },
+          { id: "ledger", label: "LEDGER" },
+          { id: "how", label: "HOW" },
+        ]}
+        tab={tab}
+        onTab={(id) => setTab(id as DeckTab)}
+      >
+        {tab === "sit" ? (
+          <section className="tab-glass" aria-label="THE TAB">
+            {treeError ? (
+              <p className="tab-tree-error">TREE MISSING · CANNOT SIT</p>
+            ) : !tree ? (
+              <p className="tab-tree-error">sounding the harbor…</p>
+            ) : (
+              <>
+                <header className="tab-glass-head">
+                  <p className="tab-kicker">harbor · international waters</p>
+                  <h1>{tree.title}</h1>
+                  <p className="tab-sub">{tree.subtitle}</p>
+                </header>
 
-        <section className="tab-glass" aria-label="THE TAB">
-          {treeError ? (
-            <p className="tab-tree-error">TREE MISSING · CANNOT SIT</p>
-          ) : !tree ? (
-            <p className="tab-tree-error">sounding the harbor…</p>
-          ) : (
-            <>
-              <header className="tab-glass-head">
-                <p className="tab-kicker">harbor · international waters</p>
-                <h1>{tree.title}</h1>
-                <p className="tab-sub">{tree.subtitle}</p>
-              </header>
-
-              {mode === "sitting" && node ? (
-                <div className="tab-talk">
-                  <p className="tab-him">{node.him}</p>
-                  {whisper ? (
-                    <p className="tab-voice">
-                      {whisper.skill} — {whisper.line}
-                    </p>
-                  ) : null}
-                  <TabAudio src={node.audio} nodeId={node.id} />
-                  {node.choices.length ? (
-                    <div className="tab-choices">
-                      {node.choices.map((choice) => (
-                        <button
-                          key={choice.id}
-                          type="button"
-                          className="tab-choice"
-                          onClick={() => void choose(choice.next)}
-                        >
-                          [{choice.skill}] {choice.label}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ) : mode === "ended" && ending ? (
-                <div className="tab-ending">
-                  <p className="tab-ending-kicker">sitting over</p>
-                  <p className="tab-ending-title">{endingTitle}</p>
-                  <p className="tab-ending-score">{ending.score}</p>
-                  <button
-                    type="button"
-                    className="tab-choice"
-                    onClick={credits > 0 ? () => void sit() : () => void requestInvoice()}
-                  >
-                    {credits > 0
-                      ? "SIT AGAIN · 1 CREDIT"
-                      : `INSERT ${TAB_PRICE_SATS} SATS`}
-                  </button>
-                </div>
-              ) : (
-                <p className="tab-invite">
-                  One credit. One stool. Talk until the ash falls.
-                </p>
-              )}
-
-              <div className="tab-coin">
-                <div className="tab-coin-row">
-                  {credits > 0 && mode !== "sitting" && aliasOk ? (
-                    <button
-                      type="button"
-                      className="tab-sit"
-                      onClick={() => void sit()}
-                    >
-                      SIT
-                      <span>1 CREDIT</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="tab-insert"
-                      disabled={!aliasOk || pending || mode === "sitting" || treeError}
-                      onClick={() => void requestInvoice()}
-                    >
-                      {pending
-                        ? "BUILDING INVOICE…"
-                        : `INSERT ${TAB_PRICE_SATS} SATS`}
-                      <span>
-                        {TAB_CREDITS_PER_PAY} CREDITS · ISOLATED POOL
-                      </span>
-                    </button>
-                  )}
-                  <div className="tab-led">
-                    <p>CREDITS</p>
-                    <p>{formatTabCredits(credits)}</p>
+                {mode === "sitting" && node ? (
+                  <div className="tab-talk">
+                    <p className="tab-him">{node.him}</p>
+                    {whisper ? (
+                      <p className="tab-voice">
+                        {whisper.skill} — {whisper.line}
+                      </p>
+                    ) : null}
+                    <TabAudio src={node.audio} nodeId={node.id} />
+                    {node.choices.length ? (
+                      <div className="tab-choices">
+                        {node.choices.map((choice) => (
+                          <button
+                            key={choice.id}
+                            type="button"
+                            className="tab-choice"
+                            onClick={() => void choose(choice.next)}
+                          >
+                            [{choice.skill}] {choice.label}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
-                </div>
-                <label className="tab-alias">
-                  <span>CALLSIGN · 2–16</span>
-                  <input
-                    value={alias}
-                    maxLength={16}
-                    onChange={(event) => setAlias(event.target.value)}
-                    placeholder="YOUR ALIAS"
-                    autoCapitalize="characters"
-                    autoComplete="off"
-                    spellCheck={false}
-                    disabled={mode === "sitting" || mode === "invoice"}
-                  />
-                </label>
-                {error ? <p className="tab-error">{error}</p> : null}
-              </div>
+                ) : mode === "ended" && ending ? (
+                  <div className="tab-ending">
+                    <p className="tab-ending-kicker">sitting over</p>
+                    <p className="tab-ending-title">{endingTitle}</p>
+                    <p className="tab-ending-score">{ending.score}</p>
+                    <button
+                      type="button"
+                      className="tab-choice"
+                      onClick={
+                        credits > 0
+                          ? () => void sit()
+                          : () => void requestInvoice()
+                      }
+                    >
+                      {credits > 0
+                        ? "SIT AGAIN · 1 CREDIT"
+                        : `INSERT ${TAB_PRICE_SATS} SATS`}
+                    </button>
+                  </div>
+                ) : (
+                  <p className="tab-invite">
+                    One credit. One stool. Talk until the ash falls.
+                  </p>
+                )}
 
-              <div className="tab-boards">
-                <section>
-                  <h2>TAB LEGENDS</h2>
-                  <ol>
-                    {highScores.length ? (
-                      highScores.map((row) => (
-                        <li key={`${row.alias}-${row.createdAt}-${row.rank}`}>
-                          <span>{row.alias}</span>
-                          <span>
-                            {tree.endings[row.game?.replace(/^tab-/, "") ?? ""]
-                              ?.title ?? row.game}
-                          </span>
-                          <b>{row.score}</b>
-                        </li>
-                      ))
+                <div className="tab-coin">
+                  <div className="tab-coin-row">
+                    {credits > 0 && mode !== "sitting" && aliasOk ? (
+                      <button
+                        type="button"
+                        className="tab-sit"
+                        onClick={() => void sit()}
+                      >
+                        SIT
+                        <span>1 CREDIT</span>
+                      </button>
                     ) : (
-                      <li className="is-empty">NO LEGENDS YET</li>
+                      <button
+                        type="button"
+                        className="tab-insert"
+                        disabled={
+                          !aliasOk ||
+                          pending ||
+                          mode === "sitting" ||
+                          treeError
+                        }
+                        onClick={() => void requestInvoice()}
+                      >
+                        {pending
+                          ? "BUILDING INVOICE…"
+                          : `INSERT ${TAB_PRICE_SATS} SATS`}
+                        <span>
+                          {TAB_CREDITS_PER_PAY} CREDITS · ISOLATED POOL
+                        </span>
+                      </button>
                     )}
-                  </ol>
-                </section>
-                <section>
-                  <h2>LAST 10</h2>
-                  <ol>
-                    {lastPlayers.length ? (
-                      lastPlayers.map((row, index) => (
-                        <li key={`${row.alias}-${row.createdAt}-${index}`}>
-                          <span>{row.alias}</span>
-                          <span>{row.sats} SATS</span>
-                          <b>{formatTimeAgo(row.createdAt, nowTick)}</b>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="is-empty">NO COINS YET</li>
-                    )}
-                  </ol>
-                </section>
-              </div>
-            </>
-          )}
-        </section>
-      </div>
+                    <div className="tab-led">
+                      <p>CREDITS</p>
+                      <p>{formatTabCredits(credits)}</p>
+                    </div>
+                  </div>
+                  <label className="tab-alias">
+                    <span>CALLSIGN · 2–16</span>
+                    <input
+                      value={alias}
+                      maxLength={16}
+                      onChange={(event) => setAlias(event.target.value)}
+                      placeholder="YOUR ALIAS"
+                      autoCapitalize="characters"
+                      autoComplete="off"
+                      spellCheck={false}
+                      disabled={mode === "sitting" || mode === "invoice"}
+                    />
+                  </label>
+                  {error ? <p className="tab-error">{error}</p> : null}
+                </div>
+              </>
+            )}
+          </section>
+        ) : null}
+
+        {tab === "ledger" ? (
+          <div className="tab-boards">
+            <section>
+              <h2>TAB LEGENDS</h2>
+              <ol>
+                {highScores.length ? (
+                  highScores.map((row) => (
+                    <li key={`${row.alias}-${row.createdAt}-${row.rank}`}>
+                      <span>{row.alias}</span>
+                      <span>
+                        {tree?.endings[row.game?.replace(/^tab-/, "") ?? ""]
+                          ?.title ?? row.game}
+                      </span>
+                      <b>{row.score}</b>
+                    </li>
+                  ))
+                ) : (
+                  <li className="is-empty">NO LEGENDS YET</li>
+                )}
+              </ol>
+            </section>
+            <section>
+              <h2>LAST 10</h2>
+              <ol>
+                {lastPlayers.length ? (
+                  lastPlayers.map((row, index) => (
+                    <li key={`${row.alias}-${row.createdAt}-${index}`}>
+                      <span>{row.alias}</span>
+                      <span>{row.sats} SATS</span>
+                      <b>{formatTimeAgo(row.createdAt, nowTick)}</b>
+                    </li>
+                  ))
+                ) : (
+                  <li className="is-empty">NO COINS YET</li>
+                )}
+              </ol>
+            </section>
+          </div>
+        ) : null}
+
+        {tab === "how" ? (
+          <div className="tab-how">
+            <p>One credit. One stool. Isolated pool. No KYC.</p>
+            <p>
+              INSERT {TAB_PRICE_SATS} sats for {TAB_CREDITS_PER_PAY} credits.
+              SIT spends one.
+            </p>
+            <p>We don&apos;t HODL. Talk until the ash falls.</p>
+          </div>
+        ) : null}
+      </ConsoleShell>
 
       {showInvoice ? (
         <ArcadeInvoice

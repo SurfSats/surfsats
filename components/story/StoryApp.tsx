@@ -9,7 +9,13 @@ import {
 } from "next/font/google";
 import { StoryBook } from "@/components/story/StoryBook";
 import { StoryComposer } from "@/components/story/StoryComposer";
-import { STORY_STORAGE_KEY, type StoryLine } from "@/lib/story";
+import { ConsoleShell } from "@/components/layout/ConsoleShell";
+import {
+  STORY_PRICE_SATS,
+  STORY_STORAGE_KEY,
+  isSeedStoryLine,
+  type StoryLine,
+} from "@/lib/story";
 
 const titleFace = Cinzel_Decorative({
   weight: ["400", "700"],
@@ -36,9 +42,12 @@ const faceGaramond = Cormorant_Garamond({
   variable: "--font-story-2",
 });
 
+type DeckTab = "write" | "index" | "how";
+
 export function StoryApp() {
   const [lines, setLines] = useState<StoryLine[]>([]);
   const [freshId, setFreshId] = useState<string | null>(null);
+  const [tab, setTab] = useState<DeckTab>("write");
 
   const load = useCallback(async () => {
     try {
@@ -85,14 +94,52 @@ export function StoryApp() {
     }, 5200);
   }, []);
 
+  const recent = [...lines].reverse().slice(0, 21);
+
   return (
-    <div
+    <ConsoleShell
+      name="story"
       className={`${titleFace.variable} ${faceBlackletter.variable} ${faceFell.variable} ${faceGaramond.variable} story-page`}
+      deckLabel="Story"
+      strip={
+        <p>
+          story chain · {STORY_PRICE_SATS} sats · one line
+        </p>
+      }
+      stage={<StoryBook lines={lines} freshId={freshId} />}
+      tabs={[
+        { id: "write", label: "WRITE" },
+        { id: "index", label: "INDEX" },
+        { id: "how", label: "HOW" },
+      ]}
+      tab={tab}
+      onTab={(id) => setTab(id as DeckTab)}
     >
-      <div className="story-column">
-        <StoryBook lines={lines} freshId={freshId} />
-        <StoryComposer onPaid={addLine} />
-      </div>
-    </div>
+      {tab === "write" ? <StoryComposer onPaid={addLine} /> : null}
+      {tab === "index" ? (
+        <ol className="story-index">
+          {recent.length ? (
+            recent.map((line) => (
+              <li key={line.id}>
+                <p>{line.text}</p>
+                <p>
+                  — {line.alias}
+                  {isSeedStoryLine(line) ? " · seed" : ""}
+                </p>
+              </li>
+            ))
+          ) : (
+            <li className="is-empty">The book grows.</li>
+          )}
+        </ol>
+      ) : null}
+      {tab === "how" ? (
+        <div className="story-how">
+          <p>{STORY_PRICE_SATS} sats. One line. The book stays.</p>
+          <p>Write the next sentence. Lightning seals it into the chain.</p>
+          <p>No accounts. The page is public.</p>
+        </div>
+      ) : null}
+    </ConsoleShell>
   );
 }

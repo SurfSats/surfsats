@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArcadeBoards } from "@/components/arcade/ArcadeBoards";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
 import { RetroCabinet } from "@/components/arcade/RetroCabinet";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
@@ -17,7 +16,6 @@ import {
   retroGameLabel,
   sanitizeAlias,
   type ArcadeHighScore,
-  type ArcadeRecentPlay,
   type RetroGameId,
 } from "@/lib/arcade";
 
@@ -39,7 +37,6 @@ export function RetroApp({
   const [credits, setCredits] = useState(0);
   const [game, setGame] = useState<RetroGameId | null>(null);
   const [highScores, setHighScores] = useState<ArcadeHighScore[]>([]);
-  const [lastPlayers, setLastPlayers] = useState<ArcadeRecentPlay[]>([]);
   const [mode, setMode] = useState<ArcadeScreenMode>("attract");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,10 +97,8 @@ export function RetroApp({
     });
     const data = (await response.json()) as {
       highScores?: ArcadeHighScore[];
-      lastPlayers?: ArcadeRecentPlay[];
     };
     if (Array.isArray(data.highScores)) setHighScores(data.highScores);
-    if (Array.isArray(data.lastPlayers)) setLastPlayers(data.lastPlayers);
   }, []);
 
   const loadSession = useCallback(async (id: string) => {
@@ -500,16 +495,6 @@ export function RetroApp({
         onCopyScore={() => void copyScore()}
         onPad={onPad}
       />
-      {front ? (
-        <ArcadeBoards
-          highScores={highScores}
-          lastPlayers={lastPlayers}
-          now={nowTick}
-          title="RETRO LEGENDS"
-          recentTitle="LAST 10 RETRO"
-          showGame
-        />
-      ) : null}
       {showInvoice ? (
         <ArcadeInvoice
           qrSrc={qrSrc}
