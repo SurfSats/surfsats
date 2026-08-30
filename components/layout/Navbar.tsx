@@ -1,48 +1,51 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
-import { GooeyDropSats, GooeyNavPills } from "@/components/layout/GooeyChrome";
-import { swellFromPct } from "@/lib/swell";
-import type { TimechainSnapshot } from "@/lib/timechain";
-import { useTimechainSnapshot } from "@/components/timechain/useTimechainSnapshot";
+import {
+  GooeyDropSats,
+  GooeyHeaderNav,
+  GooeyNavPills,
+} from "@/components/layout/GooeyChrome";
+import { isCompactHeaderPath, navGroups } from "@/lib/nav";
+import { cn } from "@/lib/cn";
 
-export function Navbar({
-  initial,
-}: {
-  initial: TimechainSnapshot | null;
-}) {
+export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const compact = isCompactHeaderPath(pathname);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   return (
-    <header className="site-nav border-b border-cyan/20">
-      <div className="border-b border-magenta/25 bg-black/35">
-        <Container className="flex h-7 items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-cyan/80">
-          <span>sys.surfsats // online // no kyc</span>
-          <span className="hidden sm:inline">
-            mempool=hot <SwellTicker initial={initial} />
-          </span>
-        </Container>
-      </div>
-
-      <Container className="flex min-h-14 items-center justify-between gap-3 py-2 sm:min-h-16">
-        <Logo />
+    <header
+      className="site-nav relative z-[2] overflow-visible border-b border-cyan/20"
+      data-compact={compact ? "true" : undefined}
+    >
+      <Container
+        className={cn(
+          "flex flex-nowrap items-center justify-between gap-3 overflow-visible lg:gap-5",
+          compact ? "min-h-12 py-1 sm:min-h-14" : "min-h-14 py-2 sm:min-h-16",
+        )}
+      >
+        <Logo className="shrink-0" />
 
         <nav
-          className="hidden min-w-0 flex-1 items-center justify-end overflow-visible lg:flex"
+          className="hidden flex-1 flex-nowrap items-center justify-end overflow-visible lg:flex"
           aria-label="Primary"
         >
-          <GooeyNavPills pathname={pathname} className="w-full justify-end" />
+          <GooeyHeaderNav pathname={pathname} />
         </nav>
 
         <GooeyDropSats className="max-lg:hidden" />
 
         <button
           type="button"
-          className="inline-flex size-10 items-center justify-center border border-cyan/40 text-cyan lg:hidden"
+          className="inline-flex size-10 shrink-0 items-center justify-center border border-cyan/40 text-cyan lg:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen((value) => !value)}
@@ -73,28 +76,24 @@ export function Navbar({
           id="mobile-nav"
           className="nav-glass-cluster border-t border-white/15 backdrop-blur-[12px] backdrop-saturate-[160%] lg:hidden"
         >
-          <Container className="flex flex-col items-start gap-3 py-3">
-            <GooeyNavPills
-              pathname={pathname}
-              onNavigate={() => setOpen(false)}
-              className="w-full justify-start"
-            />
+          <Container className="flex flex-col items-stretch gap-4 py-3">
+            {navGroups.map((group) => (
+              <div key={group.id} className="flex flex-col items-start gap-2">
+                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-cyan/70">
+                  {group.label}
+                </p>
+                <GooeyNavPills
+                  links={group.links}
+                  pathname={pathname}
+                  onNavigate={() => setOpen(false)}
+                  className="w-full justify-start"
+                />
+              </div>
+            ))}
             <GooeyDropSats onNavigate={() => setOpen(false)} />
           </Container>
         </div>
       ) : null}
     </header>
-  );
-}
-
-function SwellTicker({ initial }: { initial: TimechainSnapshot | null }) {
-  const { snapshot } = useTimechainSnapshot(initial);
-  const pct = snapshot.priceChangePct;
-  if (pct === null) return <>swell=unknown</>;
-  const swell = swellFromPct(pct);
-  return (
-    <span className={swell.direction === "up" ? "text-cyan" : "text-magenta"}>
-      swell={swell.direction}
-    </span>
   );
 }

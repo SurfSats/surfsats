@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
-import { navLinks } from "@/lib/nav";
+import { footerLinks } from "@/lib/nav";
 
 export function Footer() {
   return (
@@ -16,7 +16,7 @@ export function Footer() {
         </div>
 
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2">
-          {navLinks.map((link) => (
+          {footerLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}

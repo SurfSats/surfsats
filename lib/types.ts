@@ -52,3 +52,11 @@ export type NavLink = {
   href: string;
   label: string;
 };
+
+export type NavGroupId = "machines" | "readouts" | "kit";
+
+export type NavGroup = {
+  id: NavGroupId;
+  label: string;
+  links: NavLink[];
+};

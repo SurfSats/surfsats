@@ -64,7 +64,7 @@ export default async function RootLayout({
         <div className="crt-overlay" aria-hidden="true" />
         <div className="noise-overlay" aria-hidden="true" />
         <div className="sticky top-0 z-50">
-          <Navbar initial={snapshot} />
+          <Navbar />
           <LiveSignalBar initial={snapshot} />
         </div>
         <main className="relative z-0 min-w-0 flex-1">{children}</main>
