@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LiveStream } from "@/components/jukebox/LiveStream";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
@@ -55,10 +56,31 @@ export function MusicConsole() {
       deckLabel="Dial"
       strip={
         <p>
-          surf radio · {JUKEBOX_PRICE_SATS} sats · public is the DJ
+          surf radio · {JUKEBOX_PRICE_SATS} sats · pirate ship · international
+          waters
         </p>
       }
-      stage={<LiveStream />}
+      stage={
+        <>
+          <div className="music-stage-art" aria-hidden="true">
+            <Image
+              src="/jukebox-ship.png"
+              alt=""
+              fill
+              priority
+              sizes="(max-width: 1023px) 100vw, 65vw"
+              className="object-cover object-[center_38%]"
+            />
+            <div className="music-stage-veil" />
+          </div>
+          <div className="music-stage-fore">
+            <p className="music-stage-kicker">
+              located on a pirate ship sailing in international waters
+            </p>
+            <LiveStream />
+          </div>
+        </>
+      }
       tabs={RADIO_NAV.map((item) => ({
         id: item.id,
         label: RADIO_TAB_CHROME[item.id].label,
