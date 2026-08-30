@@ -394,18 +394,6 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
 
   return (
     <div className="tab-page">
-      <div className="tab-harbor" aria-hidden="true">
-        <Image
-          src="/tab/harbor.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="tab-harbor-img"
-        />
-        <div className="tab-vignette" />
-      </div>
-
       <ConsoleShell
         name="tab"
         className="tab-console"
@@ -416,16 +404,29 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
           </p>
         }
         stage={
-          <figure className={`tab-keep is-${face}`}>
-            <Image
-              src="/tab/bartender.jpg"
-              alt="The bartender"
-              width={720}
-              height={1080}
-              className="tab-keep-img"
-              priority
-            />
-          </figure>
+          <>
+            <div className="tab-stage-harbor" aria-hidden="true">
+              <Image
+                src="/tab/harbor.jpg"
+                alt=""
+                fill
+                priority
+                sizes="(max-width: 1023px) 100vw, 65vw"
+                className="tab-harbor-img"
+              />
+              <div className="tab-vignette" />
+            </div>
+            <figure className={`tab-keep is-${face}`}>
+              <Image
+                src="/tab/bartender.jpg"
+                alt="The bartender"
+                width={720}
+                height={1080}
+                className="tab-keep-img"
+                priority
+              />
+            </figure>
+          </>
         }
         tabs={[
           { id: "sit", label: "SIT" },

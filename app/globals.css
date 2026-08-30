@@ -6129,17 +6129,21 @@ body:has(.story-page) .site-watermark {
   position: relative;
   isolation: auto;
   min-height: calc(100dvh - var(--site-chrome-h));
-  background: transparent;
+  background-color: #08080b;
+  background-image: url("/tab/harbor.jpg");
+  background-position: center;
+  background-size: cover;
 }
 
 body:has(.tab-page) .site-watermark {
   display: none;
 }
 
-.tab-harbor {
-  position: fixed;
+.tab-stage-harbor {
+  position: absolute;
   inset: 0;
   z-index: 0;
+  overflow: hidden;
   pointer-events: none;
 }
 
@@ -6152,9 +6156,9 @@ body:has(.tab-page) .site-watermark {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 24% 72%, transparent 0 42%, rgba(0, 0, 0, 0.38) 82%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0%, transparent 40%, rgba(0, 0, 0, 0.48) 100%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.16), transparent 30%, rgba(0, 0, 0, 0.36) 100%);
+    radial-gradient(ellipse at 24% 72%, transparent 0 42%, rgba(0, 0, 0, 0.32) 82%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, transparent 40%, rgba(0, 0, 0, 0.28) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.12), transparent 30%, rgba(0, 0, 0, 0.28) 100%);
 }
 
 .tab-layout {
@@ -6175,8 +6179,7 @@ body:has(.tab-page) .site-watermark {
   background: transparent;
 }
 
-.tab-page .console-shell,
-.tab-page .console-stage {
+.tab-page .console-shell {
   background: transparent;
 }
 
@@ -6196,11 +6199,18 @@ body:has(.tab-page) .site-watermark {
 }
 
 .tab-page .console-stage {
+  position: relative;
   min-height: 0;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
+  background: transparent;
   padding: 0.75rem 0.9rem 1rem;
+}
+
+.tab-page .console-stage .tab-keep {
+  position: relative;
+  z-index: 1;
 }
 
 .tab-page .console-deck {
