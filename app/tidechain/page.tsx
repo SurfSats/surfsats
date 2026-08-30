@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ReadoutShell } from "@/components/layout/ReadoutShell";
 import { TidechainApp } from "@/components/timechain/TidechainApp";
 import { getTimechainSnapshot } from "@/lib/timechain";
 
@@ -14,8 +15,12 @@ export default async function TidechainPage() {
   const snapshot = await getTimechainSnapshot();
 
   return (
-    <div className="tidechain-page">
+    <ReadoutShell
+      name="tidechain"
+      className="tidechain-page"
+      strip={<p>tidechain · the clock · live height</p>}
+    >
       <TidechainApp initial={snapshot} />
-    </div>
+    </ReadoutShell>
   );
 }

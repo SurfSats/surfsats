@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { ArticleCard } from "@/components/articles/ArticleCard";
+import { ReadoutShell } from "@/components/layout/ReadoutShell";
 import { FeedWire } from "@/components/news/FeedWire";
 import { HandpickedCard } from "@/components/news/HandpickedCard";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { TerminalLabel } from "@/components/ui/TerminalLabel";
 import { getArticles } from "@/lib/articles";
 import { getLiveFeeds } from "@/lib/feeds";
 import {
@@ -27,93 +27,82 @@ export default async function SignalPage() {
   const { items: feedItems, sources } = await getLiveFeeds();
 
   return (
-    <div className="relative overflow-hidden">
-      <div className="hero-glow pointer-events-none absolute inset-x-0 top-0 h-[22rem]" />
-
-      <Container className="relative py-14 sm:py-20">
-        <section>
-          <TerminalLabel>news · culture · no noise</TerminalLabel>
-          <h1
-            data-text="The Signal"
-            className="glitch-title flicker mt-4 max-w-4xl font-display text-4xl font-extrabold uppercase leading-[0.9] tracking-tight sm:text-6xl lg:text-7xl"
-          >
-            The Signal
-          </h1>
-          <p className="mt-5 font-display text-xl font-semibold uppercase tracking-wide text-sats sm:text-2xl">
-            Bitcoin + surf. Cut the rest.
+    <ReadoutShell
+      name="signal"
+      strip={<p>signal · hand picked · no algorithm</p>}
+    >
+      <div className="signal-page">
+        <Container className="relative py-8 sm:py-10">
+          <p className="signal-kicker">
+            Hand-picked first. Our writing second. The wire last.
           </p>
-          <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
-            Hand-picked first. Our writing second. The wire last, and only as
-            loud as it deserves. If it is not culture or hard money, it does not
-            belong here.
-          </p>
-        </section>
 
-        <section id="curated" className="mt-14 scroll-mt-28">
-          <SectionHeading
-            eyebrow="hand_picked"
-            title="Curated"
-            description="Latest signal first. The standing stack stays below."
-          />
+          <section id="curated" className="mt-10 scroll-mt-28">
+            <SectionHeading
+              eyebrow="hand_picked"
+              title="Curated"
+              description="Latest signal first. The standing stack stays below."
+            />
 
-          {latest.length > 0 ? (
-            <div className="mt-8">
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
-                {"//"} latest
-              </p>
-              <h3 className="mt-1 font-display text-xl font-bold uppercase tracking-tight text-sats sm:text-2xl">
-                Latest
-              </h3>
-              <div className="mt-4 grid gap-4">
-                {latest.map((item) => (
-                  <HandpickedCard key={item.id} item={item} variant="latest" />
-                ))}
+            {latest.length > 0 ? (
+              <div className="mt-8">
+                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
+                  {"//"} latest
+                </p>
+                <h3 className="mt-1 font-display text-xl font-bold uppercase tracking-tight text-sats sm:text-2xl">
+                  Latest
+                </h3>
+                <div className="mt-4 grid gap-4">
+                  {latest.map((item) => (
+                    <HandpickedCard key={item.id} item={item} variant="latest" />
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          {standing.length > 0 ? (
-            <div className="mt-10">
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
-                {"//"} standing
-              </p>
-              <h3 className="mt-1 font-display text-lg font-bold uppercase tracking-tight text-muted sm:text-xl">
-                Standing
-              </h3>
-              <div className="mt-3 grid gap-3">
-                {standing.map((item) => (
-                  <HandpickedCard
-                    key={item.id}
-                    item={item}
-                    variant="standing"
-                  />
-                ))}
+            {standing.length > 0 ? (
+              <div className="mt-10">
+                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
+                  {"//"} standing
+                </p>
+                <h3 className="mt-1 font-display text-lg font-bold uppercase tracking-tight text-muted sm:text-xl">
+                  Standing
+                </h3>
+                <div className="mt-3 grid gap-3">
+                  {standing.map((item) => (
+                    <HandpickedCard
+                      key={item.id}
+                      item={item}
+                      variant="standing"
+                    />
+                  ))}
+                </div>
               </div>
+            ) : null}
+          </section>
+
+          <section id="articles" className="mt-16 scroll-mt-28">
+            <SectionHeading
+              eyebrow="from_the_coast"
+              title="Articles"
+              description="Writing published on SurfSats. Ours. Unfiltered."
+            />
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              {articles.map((article, index) => (
+                <ArticleCard
+                  key={article.slug}
+                  article={article}
+                  featured={index === 0}
+                />
+              ))}
             </div>
-          ) : null}
-        </section>
+          </section>
 
-        <section id="articles" className="mt-16 scroll-mt-28">
-          <SectionHeading
-            eyebrow="from_the_coast"
-            title="Articles"
-            description="Writing published on SurfSats. Ours. Unfiltered."
-          />
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            {articles.map((article, index) => (
-              <ArticleCard
-                key={article.slug}
-                article={article}
-                featured={index === 0}
-              />
-            ))}
-          </div>
-        </section>
-
-        <section id="wire" className="mt-16 scroll-mt-28">
-          <FeedWire items={feedItems} sources={sources} />
-        </section>
-      </Container>
-    </div>
+          <section id="wire" className="mt-16 scroll-mt-28">
+            <FeedWire items={feedItems} sources={sources} />
+          </section>
+        </Container>
+      </div>
+    </ReadoutShell>
   );
 }

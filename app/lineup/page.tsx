@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ReadoutShell } from "@/components/layout/ReadoutShell";
 import { WellApp } from "@/components/lineup/WellApp";
 import { getLineupSnapshot } from "@/lib/lineup";
 
@@ -12,5 +13,12 @@ export const metadata: Metadata = {
 export default async function LineupPage() {
   const snapshot = await getLineupSnapshot();
 
-  return <WellApp initial={snapshot} />;
+  return (
+    <ReadoutShell
+      name="lineup"
+      strip={<p>lineup · the well · next block</p>}
+    >
+      <WellApp initial={snapshot} />
+    </ReadoutShell>
+  );
 }

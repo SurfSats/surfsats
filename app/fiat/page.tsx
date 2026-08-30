@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { FiatApp } from "@/components/fiat/FiatApp";
+import { ReadoutShell } from "@/components/layout/ReadoutShell";
 import { getFiatDebt } from "@/lib/fiat";
 import { getTimechainSnapshot } from "@/lib/timechain";
 
@@ -16,5 +17,12 @@ export default async function FiatPage() {
     getTimechainSnapshot(),
   ]);
 
-  return <FiatApp initialDebt={debt} initialChain={chain} />;
+  return (
+    <ReadoutShell
+      name="fiat"
+      strip={<p>dirty fiat · the printer · btc does not print</p>}
+    >
+      <FiatApp initialDebt={debt} initialChain={chain} />
+    </ReadoutShell>
+  );
 }

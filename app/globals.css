@@ -1401,6 +1401,100 @@ body {
   flex-direction: column;
 }
 
+.readout-page {
+  display: flex;
+  min-height: calc(100dvh - var(--site-chrome-h));
+  flex-direction: column;
+}
+
+.readout-strip {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--line);
+  background: rgb(8 8 11 / 0.72);
+  padding: 0.45rem 1rem;
+}
+
+.readout-strip p {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.readout-sibs {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.15rem 0;
+  border-bottom: 1px solid var(--line);
+  background: rgb(8 8 11 / 0.45);
+  padding: 0.4rem 1rem;
+}
+
+.readout-sib {
+  display: inline-flex;
+  align-items: center;
+}
+
+.readout-sib-dot {
+  margin: 0 0.65rem;
+  color: rgb(139 141 153 / 0.45);
+}
+
+.readout-sibs a {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.readout-sibs a:hover,
+.readout-sibs a:focus-visible {
+  color: var(--foreground);
+}
+
+.readout-sibs a.is-on {
+  color: var(--cyan);
+}
+
+.readout-page--fiat .readout-strip {
+  border-bottom-color: rgb(255 46 196 / 0.28);
+}
+
+.readout-page--fiat .readout-sibs a.is-on {
+  color: var(--sats);
+}
+
+.readout-page--lineup .readout-sibs a.is-on {
+  color: var(--sats);
+}
+
+.readout-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.readout-body > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.signal-kicker {
+  margin: 0;
+  max-width: 36rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .graffiti-page {
   position: relative;
   z-index: 0;
@@ -2231,7 +2325,7 @@ body:has(.graffiti-page) .site-watermark {
 
 .tidechain-page {
   position: relative;
-  min-height: calc(100dvh - 8.25rem);
+  min-height: calc(100dvh - var(--site-chrome-h));
   overflow: hidden;
   background-color: #05060a;
   background-image:
@@ -2246,8 +2340,13 @@ body:has(.graffiti-page) .site-watermark {
 
 .tidechain-monitor {
   display: flex;
-  min-height: calc(100dvh - 8.25rem);
+  min-height: calc(100dvh - var(--site-chrome-h));
   flex-direction: column;
+}
+
+.readout-page .tidechain-monitor {
+  min-height: 0;
+  flex: 1;
 }
 
 .tide-head {
@@ -2569,7 +2668,11 @@ body:has(.graffiti-page) .site-watermark {
 
 .well-page {
   position: relative;
-  min-height: calc(100dvh - 8.25rem);
+  min-height: calc(100dvh - var(--site-chrome-h));
+}
+
+.readout-page .well-page {
+  min-height: 0;
 }
 
 .well-shell {
@@ -5750,8 +5853,12 @@ body:has(.story-page) .site-watermark {
   isolation: isolate;
   width: 100%;
   max-width: 100%;
-  min-height: calc(100dvh - 8.5rem);
+  min-height: calc(100dvh - var(--site-chrome-h));
   overflow-x: hidden;
+}
+
+.readout-page .fiat-page {
+  min-height: 0;
 }
 
 .fiat-bleed {
