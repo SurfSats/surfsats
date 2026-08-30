@@ -10,6 +10,8 @@
   --sats-hot: #ff9a3c;
   --muted: #8b8d99;
   --line: rgba(61, 255, 243, 0.22);
+  /* Two-band header (Navbar + LiveSignalBar). SiteChrome overwrites with a live px. */
+  --site-chrome-h: 5.75rem;
 }
 
 @theme inline {
@@ -1215,12 +1217,21 @@ body {
   box-shadow: 3px 3px 0 var(--magenta);
 }
 
+.console-page {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  isolation: isolate;
+  min-height: calc(100dvh - var(--site-chrome-h));
+  flex-direction: column;
+}
+
 .graffiti-page {
   position: relative;
   z-index: 0;
   display: flex;
   isolation: isolate;
-  min-height: calc(100dvh - 7.5rem);
+  min-height: calc(100dvh - var(--site-chrome-h));
   flex-direction: column;
   color: #efe6d4;
   background-color: #3a3832;
@@ -1254,10 +1265,14 @@ body {
     );
 }
 
+.console-strip,
 .graffiti-strip {
   position: relative;
   z-index: 20;
   flex-shrink: 0;
+}
+
+.graffiti-strip {
   border-bottom: 1px solid rgba(0, 0, 0, 0.45);
   background: rgba(10, 8, 7, 0.72);
   padding: 0.45rem 1rem;
@@ -1276,6 +1291,7 @@ body:has(.graffiti-page) .site-watermark {
   display: none;
 }
 
+.console-shell,
 .graffiti-shell {
   position: relative;
   z-index: 2;
@@ -1285,10 +1301,11 @@ body:has(.graffiti-page) .site-watermark {
   grid-template-columns: minmax(0, 1.85fr) minmax(20rem, 0.95fr);
 }
 
+.console-stage,
 .graffiti-stage {
   position: relative;
   z-index: 2;
-  min-height: calc(100dvh - 11rem);
+  min-height: calc(100dvh - var(--site-chrome-h) - 3.5rem);
   container-type: size;
 }
 
@@ -1299,50 +1316,69 @@ body:has(.graffiti-page) .site-watermark {
   min-height: 100%;
 }
 
+.console-deck,
 .graffiti-deck {
   position: sticky;
-  top: 7.5rem;
+  top: var(--site-chrome-h);
   z-index: 12;
   display: flex;
-  max-height: calc(100dvh - 7.7rem);
+  max-height: calc(100dvh - var(--site-chrome-h));
   flex-direction: column;
   align-self: start;
-  overflow: auto;
+  overflow: hidden;
+}
+
+.graffiti-deck {
   border-left: 2px solid #2a2620;
   background: rgba(10, 8, 7, 0.92);
 }
 
+.console-deck-tabs,
 .graffiti-deck-tabs {
   display: grid;
   flex-shrink: 0;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.graffiti-deck-tabs {
   border-bottom: 1px solid #3a342c;
 }
 
+.console-deck-tabs button,
 .graffiti-deck-tabs button {
   min-height: 2.7rem;
-  border-right: 1px solid #3a342c;
   background: transparent;
-  color: #a8a29a;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
+.graffiti-deck-tabs button {
+  border-right: 1px solid #3a342c;
+  color: #a8a29a;
+}
+
+.console-deck-tabs button:last-child,
 .graffiti-deck-tabs button:last-child {
   border-right: 0;
 }
 
-.graffiti-deck-tabs button.is-on {
+.graffiti-deck-tabs button.is-on,
+.console-deck-tabs button.is-on {
   background: #2a2110;
   color: #f59e0b;
 }
 
+.console-deck-body,
 .graffiti-deck-body {
   min-height: 0;
   flex: 1;
   overflow: auto;
+}
+
+.console-deck-footer {
+  flex-shrink: 0;
 }
 
 .graffiti-feed {
@@ -1671,10 +1707,10 @@ body:has(.graffiti-page) .site-watermark {
 
 .graffiti-dock {
   position: sticky;
-  top: 7.75rem;
+  top: var(--site-chrome-h);
   z-index: 12;
   width: min(24rem, calc(100% - 2rem));
-  max-height: calc(100dvh - 8.75rem);
+  max-height: calc(100dvh - var(--site-chrome-h) - 1rem);
   margin: 0.75rem 1.25rem 2rem auto;
   overflow: auto;
 }
@@ -1811,18 +1847,25 @@ body:has(.graffiti-page) .site-watermark {
 }
 
 @media (max-width: 1023px) {
+  .console-shell,
   .graffiti-shell {
     grid-template-columns: 1fr;
   }
 
+  .console-stage,
   .graffiti-stage {
     min-height: min(68dvh, 34rem);
   }
 
+  .console-deck,
   .graffiti-deck {
     position: relative;
     top: auto;
     max-height: none;
+    overflow: visible;
+  }
+
+  .graffiti-deck {
     border-left: 0;
     border-top: 2px solid #2a2620;
   }

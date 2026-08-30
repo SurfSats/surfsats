@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, Oxanium } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { LiveSignalBar } from "@/components/layout/LiveSignalBar";
 import { Navbar } from "@/components/layout/Navbar";
+import { SiteChrome } from "@/components/layout/SiteChrome";
 import { Watermark } from "@/components/layout/Watermark";
 import { getTimechainSnapshot } from "@/lib/timechain";
 import "./globals.css";
@@ -63,10 +64,10 @@ export default async function RootLayout({
         <Watermark />
         <div className="crt-overlay" aria-hidden="true" />
         <div className="noise-overlay" aria-hidden="true" />
-        <div className="sticky top-0 z-50">
+        <SiteChrome>
           <Navbar />
           <LiveSignalBar initial={snapshot} />
-        </div>
+        </SiteChrome>
         <main className="relative z-0 min-w-0 flex-1">{children}</main>
         <Footer />
       </body>

@@ -14,6 +14,7 @@ import { GraffitiFeed } from "@/components/graffiti/GraffitiFeed";
 import { GraffitiForm } from "@/components/graffiti/GraffitiForm";
 import { GraffitiHow } from "@/components/graffiti/GraffitiHow";
 import { GraffitiWall } from "@/components/graffiti/GraffitiWall";
+import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import {
   GRAFFITI_HERO_BAND,
   GRAFFITI_PRICE_SATS,
@@ -28,7 +29,6 @@ import {
   type GraffitiStyle,
   isActiveMark,
 } from "@/lib/graffiti";
-import { cn } from "@/lib/cn";
 
 const marker = Permanent_Marker({
   weight: "400",
@@ -221,94 +221,74 @@ export function GraffitiApp() {
   }
 
   return (
-    <div
+    <ConsoleShell
+      name="graffiti"
       className={`${marker.variable} ${throwup.variable} ${wild.variable} ${drip.variable} ${block.variable} ${fat.variable} ${stencil.variable} graffiti-page`}
-    >
-      <header className="graffiti-strip">
+      strip={
         <p>
           city wall · {GRAFFITI_PRICE_SATS} sats · {GRAFFITI_TTL_HOURS} hours
         </p>
-      </header>
-
-      <div className="graffiti-shell">
-        <div className="graffiti-stage">
-          <GraffitiWall
-            marks={live}
-            freshId={freshId}
-            highlightId={highlightId}
-            placing
-            quiet={paidLive === 0}
-            ghost={
-              showGhost
-                ? {
-                    text: text.trim(),
-                    style,
-                    color,
-                    placement: ghostPlacement,
-                    locked: Boolean(placement),
-                  }
-                : null
-            }
-            onPlace={(top, left) => {
-              setPlacement(organicPlacement(top, left));
-              setTab("spray");
-            }}
-            onHover={(point) => {
-              if (placement) return;
-              setHover(point);
-            }}
-          />
-        </div>
-
-        <aside className="graffiti-deck">
-          <nav className="graffiti-deck-tabs" aria-label="Deck">
-            {(
-              [
-                ["spray", "SPRAY"],
-                ["wall", "WALL"],
-                ["how", "HOW"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                className={cn(tab === id && "is-on")}
-                aria-selected={tab === id}
-                onClick={() => setTab(id)}
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="graffiti-deck-body">
-            {tab === "spray" ? (
-              <GraffitiForm
-                text={text}
-                style={style}
-                color={color}
-                placed={Boolean(placement)}
-                placement={placement ?? defaultPlacement}
-                onText={setText}
-                onStyle={setStyle}
-                onColor={setColor}
-                onPaid={addMark}
-                onResetDraft={resetDraft}
-              />
-            ) : null}
-            {tab === "wall" ? (
-              <GraffitiFeed
-                marks={live}
-                highlightId={highlightId}
-                now={now}
-                onSelect={selectMark}
-              />
-            ) : null}
-            {tab === "how" ? <GraffitiHow /> : null}
-          </div>
-        </aside>
-      </div>
-    </div>
+      }
+      stage={
+        <GraffitiWall
+          marks={live}
+          freshId={freshId}
+          highlightId={highlightId}
+          placing
+          quiet={paidLive === 0}
+          ghost={
+            showGhost
+              ? {
+                  text: text.trim(),
+                  style,
+                  color,
+                  placement: ghostPlacement,
+                  locked: Boolean(placement),
+                }
+              : null
+          }
+          onPlace={(top, left) => {
+            setPlacement(organicPlacement(top, left));
+            setTab("spray");
+          }}
+          onHover={(point) => {
+            if (placement) return;
+            setHover(point);
+          }}
+        />
+      }
+      tabs={[
+        { id: "spray", label: "SPRAY" },
+        { id: "wall", label: "WALL" },
+        { id: "how", label: "HOW" },
+      ]}
+      tab={tab}
+      onTab={(id) => setTab(id as DeckTab)}
+    >
+      {tab === "spray" ? (
+        <GraffitiForm
+          text={text}
+          style={style}
+          color={color}
+          placed={Boolean(placement)}
+          placement={placement ?? defaultPlacement}
+          onText={setText}
+          onStyle={setStyle}
+          onColor={setColor}
+          onPaid={addMark}
+          onResetDraft={resetDraft}
+        />
+      ) : null}
+      {tab === "wall" ? (
+        <GraffitiFeed
+          marks={live}
+          highlightId={highlightId}
+          now={now}
+          onSelect={selectMark}
+        />
+      ) : null}
+      {tab === "how" ? <GraffitiHow /> : null}
+    </ConsoleShell>
   );
 }
 
