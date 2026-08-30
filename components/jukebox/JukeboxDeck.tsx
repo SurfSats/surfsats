@@ -14,8 +14,10 @@ import {
 
 export function JukeboxDeck({
   initial,
+  compact = false,
 }: {
   initial?: JukeboxLivePayload | null;
+  compact?: boolean;
 }) {
   const [payload, setPayload] = useState<JukeboxLivePayload | null>(
     initial ?? null,
@@ -76,12 +78,18 @@ export function JukeboxDeck({
 
   return (
     <>
-      <div className="mt-12 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+      <div
+        className={
+          compact
+            ? "grid gap-4"
+            : "mt-12 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start"
+        }
+      >
         <NowPlaying track={track} status={status} />
-        <HowItWorks />
+        {compact ? null : <HowItWorks />}
       </div>
       <JukeboxSearch />
-      <div className="mt-10">
+      <div className={compact ? "mt-4" : "mt-10"}>
         <Queue tracks={payload?.queue ?? []} ready={ready} />
       </div>
     </>

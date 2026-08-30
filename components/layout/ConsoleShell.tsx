@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 export type ConsoleTab = {
   id: string;
   label: string;
+  ariaLabel?: string;
 };
 
 export type ConsoleShellProps = {
@@ -68,6 +69,7 @@ export function ConsoleShell({
                 type="button"
                 role="tab"
                 className={cn(tab === item.id && "is-on")}
+                aria-label={item.ariaLabel ?? item.label}
                 aria-selected={tab === item.id}
                 onClick={() => onTab(item.id)}
               >

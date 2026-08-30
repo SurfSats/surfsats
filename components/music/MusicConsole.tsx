@@ -1,0 +1,84 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { LiveStream } from "@/components/jukebox/LiveStream";
+import { ConsoleShell } from "@/components/layout/ConsoleShell";
+import { RadioDeck } from "@/components/music/RadioDeck";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { JUKEBOX_LIVE_URL, JUKEBOX_PRICE_SATS } from "@/lib/jukebox";
+import {
+  RADIO_NAV,
+  RADIO_TAB_CHROME,
+  isRadioTab,
+  type RadioTabId,
+} from "@/lib/music";
+
+const DEFAULT_TAB: RadioTabId = "jukebox";
+
+function resolveTab(raw: string | null | undefined): RadioTabId {
+  if (raw && isRadioTab(raw)) return raw;
+  return DEFAULT_TAB;
+}
+
+export function MusicConsole() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState<RadioTabId>(() =>
+    resolveTab(searchParams.get("tab")),
+  );
+
+  useEffect(() => {
+    const fromQuery = searchParams.get("tab");
+    if (fromQuery && isRadioTab(fromQuery)) {
+      setTab(fromQuery);
+      return;
+    }
+    const hash = window.location.hash.replace(/^#/, "");
+    if (isRadioTab(hash)) {
+      setTab(hash);
+      router.replace(`${pathname}?tab=${hash}`, { scroll: false });
+    }
+  }, [searchParams, pathname, router]);
+
+  function onTab(id: string) {
+    if (!isRadioTab(id)) return;
+    setTab(id);
+    router.replace(`${pathname}?tab=${id}`, { scroll: false });
+  }
+
+  return (
+    <ConsoleShell
+      name="music"
+      className="music-page"
+      deckLabel="Dial"
+      strip={
+        <p>
+          surf radio · {JUKEBOX_PRICE_SATS} sats · public is the DJ
+        </p>
+      }
+      stage={<LiveStream />}
+      tabs={RADIO_NAV.map((item) => ({
+        id: item.id,
+        label: RADIO_TAB_CHROME[item.id].label,
+        ariaLabel: RADIO_TAB_CHROME[item.id].ariaLabel,
+      }))}
+      tab={tab}
+      onTab={onTab}
+      footer={
+        tab === "jukebox" ? (
+          <ButtonLink
+            href={JUKEBOX_LIVE_URL}
+            external
+            className="btn-pulse w-full px-5 py-3 text-sm"
+          >
+            REQUEST ON THE SHIP
+          </ButtonLink>
+        ) : null
+      }
+    >
+      <RadioDeck tab={tab} />
+    </ConsoleShell>
+  );
+}

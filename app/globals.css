@@ -1364,8 +1364,12 @@ body:has(.graffiti-page) .site-watermark {
   border-right: 0;
 }
 
-.graffiti-deck-tabs button.is-on,
 .console-deck-tabs button.is-on {
+  background: rgba(61, 255, 243, 0.1);
+  color: var(--cyan);
+}
+
+.graffiti-deck-tabs button.is-on {
   background: #2a2110;
   color: #f59e0b;
 }
@@ -1379,6 +1383,70 @@ body:has(.graffiti-page) .site-watermark {
 
 .console-deck-footer {
   flex-shrink: 0;
+}
+
+.music-page {
+  background: #08080b;
+  color: var(--foreground);
+}
+
+.music-page .console-strip {
+  border-bottom: 1px solid var(--line);
+  background: rgb(8 8 11 / 0.88);
+  padding: 0.45rem 1rem;
+}
+
+.music-page .console-strip p {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.music-page .console-stage {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  padding: 1rem 1.1rem 1.25rem;
+}
+
+.music-page .console-deck {
+  border-left: 1px solid var(--line);
+  background: rgb(8 8 11 / 0.94);
+}
+
+.music-page .console-deck-tabs {
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+
+.music-page .console-deck-tabs button {
+  min-height: 2.35rem;
+  overflow: hidden;
+  border-right: 1px solid rgb(61 255 243 / 0.14);
+  padding: 0 0.15rem;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.music-page .console-deck-tabs button.is-on {
+  background: rgb(61 255 243 / 0.1);
+  color: var(--cyan);
+}
+
+.music-page .console-deck-body {
+  padding: 0.85rem;
+}
+
+.music-page .console-deck-footer {
+  border-top: 1px solid var(--line);
+  padding: 0.65rem 0.85rem;
 }
 
 .graffiti-feed {
@@ -1876,6 +1944,15 @@ body:has(.graffiti-page) .site-watermark {
 
   .graf-invoice-qr {
     width: min(100%, 20rem);
+  }
+
+  .music-page .console-stage {
+    min-height: min(48dvh, 26rem);
+  }
+
+  .music-page .console-deck {
+    border-left: 0;
+    border-top: 1px solid var(--line);
   }
 }
 

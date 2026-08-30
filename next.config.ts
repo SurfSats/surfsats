@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["liquid-gooey", "vgpu"],
+  async redirects() {
+    return [
+      {
+        source: "/jukebox",
+        destination: "/music?tab=jukebox",
+        permanent: true,
+      },
+    ];
+  },
   turbopack: {
     rules: {
       "*.wgsl": {

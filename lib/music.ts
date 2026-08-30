@@ -22,3 +22,22 @@ export const RADIO_NAV = [
   { id: "own", label: "Own" },
   { id: "now-playing", label: "Now Playing" },
 ] as const;
+
+export type RadioTabId = (typeof RADIO_NAV)[number]["id"];
+
+export const RADIO_TAB_CHROME: Record<
+  RadioTabId,
+  { label: string; ariaLabel: string }
+> = {
+  jukebox: { label: "Juke", ariaLabel: "Jukebox" },
+  wavlake: { label: "Wave", ariaLabel: "Wavlake" },
+  live: { label: "Live", ariaLabel: "Live" },
+  zaptrax: { label: "Trax", ariaLabel: "ZapTrax" },
+  podcasts: { label: "Pods", ariaLabel: "Podcasts" },
+  own: { label: "Own", ariaLabel: "Own" },
+  "now-playing": { label: "Now", ariaLabel: "Now Playing" },
+};
+
+export function isRadioTab(id: string): id is RadioTabId {
+  return RADIO_NAV.some((item) => item.id === id);
+}
