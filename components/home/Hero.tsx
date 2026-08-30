@@ -24,13 +24,15 @@ export function Hero({ initial }: { initial: TimechainSnapshot | null }) {
           No banks. No bosses. No closed beach signs.
         </p>
         <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
-          Welcome to the Lightning sandbox: tag the wall, feed the jukebox,
-          smash the arcade.
+          Lightning sandbox. Five machines on the floor. 21 sats. No accounts.
         </p>
         <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <ButtonLink href="/graffiti">Tag the wall</ButtonLink>
           <ButtonLink href="/arcade" variant="ghost">
             Smash the arcade
+          </ButtonLink>
+          <ButtonLink href="/tab" variant="ghost">
+            Sit the tab
           </ButtonLink>
           <ButtonLink href="/music" variant="ghost">
             Enter Surf Radio
