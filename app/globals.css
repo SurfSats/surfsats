@@ -446,10 +446,201 @@ body {
   max-width: 42rem;
 }
 
-.jukebox-audio {
+.ship-rx-frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(61 255 243 / 0.28);
+  background: rgb(8 8 11 / 0.28);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.ship-rx-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 2px,
+    rgb(0 0 0 / 0.1) 2px 3px
+  );
+  opacity: 0.35;
+}
+
+.ship-rx-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgb(61 255 243 / 0.22);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ship-rx-body {
+  position: relative;
+  z-index: 1;
+  padding: 0.85rem 0.75rem 1rem;
+}
+
+.ship-rx {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.7rem;
+  margin-top: 0.75rem;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid rgb(61 255 243 / 0.28);
+  background: rgb(8 8 11 / 0.38);
+}
+
+.ship-rx-play {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid var(--cyan);
+  background: var(--sats);
+  color: #08080b;
+}
+
+.ship-rx-play.is-on {
+  background: var(--cyan);
+}
+
+.ship-rx-play.is-blocked {
+  width: auto;
+  padding: 0 0.7rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ship-rx-play:hover {
+  filter: brightness(1.08);
+}
+
+.ship-rx-air {
+  flex-shrink: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ship-rx-air.is-on {
+  color: var(--magenta);
+  text-shadow: 0 0 8px rgb(255 46 196 / 0.55);
+}
+
+.ship-rx-track {
+  min-width: 0;
+  flex: 1 1 9rem;
+  overflow: hidden;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ship-rx-eq {
+  display: flex;
+  height: 1.35rem;
+  flex-shrink: 0;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.ship-rx-eq span {
   display: block;
-  accent-color: var(--sats);
-  filter: saturate(0.85);
+  width: 2px;
+  height: 14%;
+  transform-origin: bottom;
+  background: linear-gradient(
+    180deg,
+    var(--cyan) 0%,
+    #5dff8a 32%,
+    var(--magenta) 68%,
+    var(--sats) 100%
+  );
+  background-size: 100% 220%;
+  animation: ship-rx-wash 9s linear infinite;
+}
+
+.ship-rx-eq.is-on.is-fake span {
+  animation:
+    ship-rx-wash 9s linear infinite,
+    ship-rx-bar 1.05s ease-in-out infinite;
+  animation-delay: 0s, calc(var(--i, 0) * -0.09s);
+}
+
+.ship-rx-eq:not(.is-on) span {
+  animation: none;
+  height: 14%;
+  opacity: 0.45;
+}
+
+.ship-rx-vol {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ship-rx-mute {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.ship-rx-vol input[type="range"] {
+  width: 3.4rem;
+  accent-color: var(--cyan);
+}
+
+.ship-rx-audio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@keyframes ship-rx-wash {
+  to {
+    background-position: 0 100%;
+  }
+}
+
+@keyframes ship-rx-bar {
+  0%,
+  100% {
+    height: 16%;
+  }
+  50% {
+    height: 92%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ship-rx-eq span,
+  .ship-rx-eq.is-on.is-fake span {
+    animation: none;
+  }
 }
 
 .bottle-qr {
@@ -549,23 +740,7 @@ body {
   }
 }
 
-.jukebox-tune {
-  display: flex;
-  width: 100%;
-  min-height: 4.6rem;
-  align-items: center;
-  justify-content: center;
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--sats);
-  background: var(--sats);
-  color: #08080b;
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(1.05rem, 3.4vw, 1.55rem);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  box-shadow: 4px 4px 0 var(--color-magenta);
-}
+
 
 .jukebox-hero-veil {
   position: absolute;
