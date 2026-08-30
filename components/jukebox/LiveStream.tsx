@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { TerminalLabel } from "@/components/ui/TerminalLabel";
 import { cn } from "@/lib/cn";
@@ -15,30 +15,29 @@ import {
 } from "@/lib/jukebox";
 
 const EQ_BARS = 18;
+const STREAM_ICECAST_URL = "https://stream.noderunnersradio.com/stream";
 
 function parsePlaylistSrc(text: string) {
   const line = text
     .split(/\r?\n/)
     .map((entry) => entry.trim())
-    .find((entry) => /^https?:\/\//i.test(entry) && !entry.toLowerCase().includes(".m3u"));
+    .find(
+      (entry) =>
+        /^https?:\/\//i.test(entry) && !entry.toLowerCase().includes(".m3u"),
+    );
   return line || "";
 }
 
 let tabWantsPlay = true;
 
-const audioGraphs = new WeakMap<
-  HTMLAudioElement,
-  { ctx: AudioContext; analyser: AnalyserNode }
->();
-
 async function resolveStreamUrl() {
   try {
     const response = await fetch(STREAM_AUDIO_URL);
-    if (!response.ok) return STREAM_AUDIO_URL;
+    if (!response.ok) return STREAM_ICECAST_URL;
     const next = parsePlaylistSrc(await response.text());
-    return next || STREAM_AUDIO_URL;
+    return next || STREAM_ICECAST_URL;
   } catch {
-    return STREAM_AUDIO_URL;
+    return STREAM_ICECAST_URL;
   }
 }
 
@@ -65,12 +64,7 @@ async function attemptAutoplay(el: HTMLAudioElement) {
 
 export function LiveStream() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const eqRef = useRef<HTMLDivElement | null>(null);
   const ignorePause = useRef(false);
-  const graphRef = useRef<{
-    ctx: AudioContext;
-    analyser: AnalyserNode;
-  } | null>(null);
   const [blocked, setBlocked] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -82,13 +76,11 @@ export function LiveStream() {
     if (!player) return;
     ignorePause.current = false;
     let cancelled = false;
-    let raf = 0;
 
     function onPlay() {
       tabWantsPlay = true;
       setBlocked(false);
       setPlaying(true);
-      void graphRef.current?.ctx.resume();
     }
 
     function onPlaying() {
@@ -106,80 +98,6 @@ export function LiveStream() {
     player.addEventListener("playing", onPlaying);
     player.addEventListener("pause", onPause);
 
-    function attachGraph(node: HTMLAudioElement) {
-      const existing = audioGraphs.get(node);
-      if (existing) {
-        graphRef.current = existing;
-        return;
-      }
-      const AudioCtx =
-        window.AudioContext ||
-        (window as typeof window & { webkitAudioContext?: typeof AudioContext })
-          .webkitAudioContext;
-      if (!AudioCtx) return;
-      try {
-        const ctx = new AudioCtx();
-        const source = ctx.createMediaElementSource(node);
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 64;
-        analyser.smoothingTimeConstant = 0.72;
-        source.connect(analyser);
-        analyser.connect(ctx.destination);
-        const graph = { ctx, analyser };
-        audioGraphs.set(node, graph);
-        graphRef.current = graph;
-      } catch {
-        graphRef.current = null;
-      }
-    }
-
-    attachGraph(player);
-
-    const bins = new Uint8Array(
-      graphRef.current?.analyser.frequencyBinCount ?? 0,
-    );
-
-    function paintFake(on: boolean) {
-      const root = eqRef.current;
-      if (!root) return;
-      root.classList.toggle("is-on", on);
-      root.classList.add("is-fake");
-      root.querySelectorAll<HTMLElement>("span").forEach((bar) => {
-        bar.style.height = "";
-      });
-    }
-
-    function tick() {
-      if (cancelled) return;
-      const root = eqRef.current;
-      const graph = graphRef.current;
-      const node = audioRef.current;
-      const on = Boolean(node && !node.paused);
-      if (!root || !on || !graph) {
-        paintFake(on);
-      } else {
-        try {
-          graph.analyser.getByteFrequencyData(bins);
-          const energy = bins.reduce((sum, value) => sum + value, 0);
-          if (energy < 8) {
-            paintFake(true);
-          } else {
-            root.classList.add("is-on");
-            root.classList.remove("is-fake");
-            root.querySelectorAll<HTMLElement>("span").forEach((bar, index) => {
-              const sample = bins[Math.min(bins.length - 1, 1 + index)] ?? 0;
-              bar.style.height = `${10 + (sample / 255) * 90}%`;
-            });
-          }
-        } catch {
-          paintFake(true);
-        }
-      }
-      if (!cancelled) raf = window.requestAnimationFrame(tick);
-    }
-
-    raf = window.requestAnimationFrame(tick);
-
     async function tune() {
       const url = await resolveStreamUrl();
       if (cancelled || !audioRef.current) return;
@@ -192,7 +110,6 @@ export function LiveStream() {
         setBlocked(false);
         return;
       }
-      void graphRef.current?.ctx.resume();
       const result = await attemptAutoplay(node);
       if (!cancelled) {
         setBlocked(result === "blocked");
@@ -205,7 +122,6 @@ export function LiveStream() {
 
     return () => {
       cancelled = true;
-      window.cancelAnimationFrame(raf);
       player.removeEventListener("play", onPlay);
       player.removeEventListener("playing", onPlaying);
       player.removeEventListener("pause", onPause);
@@ -263,17 +179,22 @@ export function LiveStream() {
       document.removeEventListener("pointerdown", onGesture, true);
       document.removeEventListener("keydown", onGesture, true);
     };
-  }, [blocked]);
+  }, [blocked, tapToTune]);
 
-  async function tapToTune() {
+  const tapToTune = useCallback(async () => {
     const el = audioRef.current;
     if (!el) return;
     tabWantsPlay = true;
     el.muted = false;
     setMuted(false);
     try {
-      if (!el.src) el.src = STREAM_AUDIO_URL;
-      void graphRef.current?.ctx.resume();
+      const url = await resolveStreamUrl();
+      if (el.getAttribute("src") !== url) {
+        el.src = url;
+        el.preload = "auto";
+      }
+      el.volume = volume;
+      el.muted = false;
       await el.play();
       setBlocked(false);
       setPlaying(!el.paused);
@@ -281,7 +202,7 @@ export function LiveStream() {
       setBlocked(true);
       setPlaying(false);
     }
-  }
+  }, [volume]);
 
   async function togglePlay() {
     const el = audioRef.current;
@@ -369,8 +290,7 @@ export function LiveStream() {
             </p>
 
             <div
-              ref={eqRef}
-              className="ship-rx-eq is-fake"
+              className={cn("ship-rx-eq is-fake", playing && "is-on")}
               aria-hidden="true"
             >
               {Array.from({ length: EQ_BARS }, (_, index) => (
