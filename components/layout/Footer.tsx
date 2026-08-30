@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
-import { footerLinks } from "@/lib/nav";
+import { footerGroups } from "@/lib/nav";
 
 export function Footer() {
   return (
@@ -15,15 +15,22 @@ export function Footer() {
           </p>
         </div>
 
-        <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2">
-          {footerLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="font-mono text-xs uppercase tracking-[0.14em] text-muted glitch-hover hover:text-cyan"
-            >
-              /{link.label.toLowerCase()}
-            </Link>
+        <nav aria-label="Footer" className="footer-groups">
+          {footerGroups.map((group) => (
+            <div key={group.id} className="footer-group">
+              <p className="footer-group-label">{group.label}</p>
+              <div className="footer-group-links">
+                {group.links.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="font-mono text-xs uppercase tracking-[0.14em] text-muted glitch-hover hover:text-cyan"
+                  >
+                    {link.label.toLowerCase()}
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
       </Container>
@@ -56,7 +63,12 @@ export function Footer() {
             >
               /about
             </Link>
-            <p className="text-magenta">jukebox: 21_sats</p>
+            <Link
+              href="/jukebox"
+              className="tracking-[0.14em] text-magenta glitch-hover hover:text-cyan"
+            >
+              drop 21
+            </Link>
           </div>
         </Container>
       </div>

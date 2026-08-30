@@ -28,7 +28,16 @@ export const navGroups: NavGroup[] = [
 /** Flat public destinations for footer (and any other full-list maps). */
 export const navLinks: NavLink[] = navGroups.flatMap((group) => group.links);
 
-export const footerLinks: NavLink[] = navLinks;
+export const footerGroups: NavGroup[] = navGroups.map((group) =>
+  group.id === "kit"
+    ? {
+        ...group,
+        links: [...group.links, { href: "/about", label: "About" }],
+      }
+    : group,
+);
+
+export const footerLinks: NavLink[] = footerGroups.flatMap((group) => group.links);
 
 export const COMPACT_HEADER_PREFIXES = [
   "/graffiti",
