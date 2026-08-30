@@ -3,8 +3,6 @@
 import Image from "next/image";
 import {
   ARCADE_ALIAS_MAX,
-  ARCADE_CREDITS_PER_PAY,
-  ARCADE_PRICE_SATS,
   formatCredits,
   sanitizeAlias,
 } from "@/lib/arcade";
@@ -53,7 +51,6 @@ export function ArcadeCabinet({
   const stickAction =
     mode === "playing" ? onHop : canPlay ? onPlay : onInsert;
   const paying = mode === "invoice";
-  const insertLocked = !aliasOk || pending || paying || mode === "playing";
 
   return (
     <div className="cab-wrap">
@@ -108,44 +105,19 @@ export function ArcadeCabinet({
           />
         </div>
 
-        <div className="cab-coin" id="arcade-coin">
+        <div className="cab-coin cab-coin-plate" id="arcade-coin">
           <div className="cab-coin-top">
             {canPlay ? (
               <button type="button" className="cab-play" onClick={onPlay}>
                 PLAY
                 <span>1 CREDIT</span>
               </button>
-            ) : (
-              <button
-                type="button"
-                className="cab-insert cab-insert-primary"
-                disabled={insertLocked}
-                onClick={onInsert}
-              >
-                {pending ? "BUILDING INVOICE…" : `INSERT ${ARCADE_PRICE_SATS} SATS`}
-                <span>
-                  {pending
-                    ? "LIGHTNING"
-                    : `GET INVOICE · ${ARCADE_CREDITS_PER_PAY} CREDITS`}
-                </span>
-              </button>
-            )}
+            ) : null}
             <div className="cab-led">
               <p>CREDITS</p>
               <p className="cab-led-num">{formatCredits(credits)}</p>
             </div>
           </div>
-
-          {canPlay ? (
-            <button
-              type="button"
-              className="cab-insert-more"
-              disabled={!aliasOk || pending || paying}
-              onClick={onInsert}
-            >
-              INSERT {ARCADE_PRICE_SATS} SATS · {ARCADE_CREDITS_PER_PAY} MORE CREDITS
-            </button>
-          ) : null}
 
           <label className="cab-alias">
             <span>CALLSIGN · REQUIRED</span>
@@ -157,18 +129,13 @@ export function ArcadeCabinet({
               autoCapitalize="characters"
               autoComplete="off"
               spellCheck={false}
-              disabled={paying}
+              disabled={paying || pending}
             />
           </label>
 
           {!aliasOk && !canPlay ? (
-            <p className="cab-hint">ENTER CALLSIGN (2–16) THEN INSERT COIN</p>
-          ) : (
-            <p className="cab-coin-note">
-              {ARCADE_PRICE_SATS} SATS = {ARCADE_CREDITS_PER_PAY} CREDITS ·
-              LIGHTNING · NO KYC
-            </p>
-          )}
+            <p className="cab-hint">ENTER CALLSIGN (2–16) THEN INSERT ON THE GLASS</p>
+          ) : null}
 
           {error ? <p className="cab-error">{error}</p> : null}
         </div>

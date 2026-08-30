@@ -3623,6 +3623,15 @@ body:has(.graffiti-page) .site-watermark {
     inset 0 0 0 1px rgba(255, 200, 140, 0.08);
 }
 
+.arcade-page .cab-coin-plate {
+  width: min(100%, 22rem);
+  gap: 0.4rem;
+  padding: 0.45rem 0.55rem 0.5rem;
+  background: rgb(8 8 11 / 0.62);
+  border: 1px solid rgb(255 122 24 / 0.28);
+  box-shadow: none;
+}
+
 .cab-coin-note {
   margin: 0;
   font-size: 0.52rem;
@@ -5175,8 +5184,9 @@ body:has(.graffiti-page) .site-watermark {
 
 .story-shell {
   position: relative;
-  isolation: isolate;
+  isolation: auto;
   min-height: calc(100dvh - var(--site-chrome-h));
+  background: transparent;
 }
 
 .story-bg {
@@ -5197,9 +5207,9 @@ body:has(.graffiti-page) .site-watermark {
   background:
     linear-gradient(
       180deg,
-      rgba(8, 4, 12, 0.38) 0%,
-      rgba(8, 4, 12, 0.32) 42%,
-      rgba(8, 4, 12, 0.42) 100%
+      rgba(8, 4, 12, 0.28) 0%,
+      rgba(8, 4, 12, 0.18) 42%,
+      rgba(8, 4, 12, 0.34) 100%
     );
 }
 
@@ -5213,8 +5223,15 @@ body:has(.graffiti-page) .site-watermark {
 }
 
 .story-page.console-page {
+  isolation: auto;
   padding: 0;
   color: #efe6d4;
+  background: transparent;
+}
+
+.story-page .console-shell,
+.story-page .console-stage {
+  background: transparent;
 }
 
 .story-page .console-strip {
@@ -6110,13 +6127,20 @@ body:has(.story-page) .site-watermark {
 /* THE TAB — harbor sitting */
 .tab-page {
   position: relative;
+  isolation: auto;
   min-height: calc(100dvh - var(--site-chrome-h));
+  background: transparent;
+}
+
+body:has(.tab-page) .site-watermark {
+  display: none;
 }
 
 .tab-harbor {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 0;
+  pointer-events: none;
 }
 
 .tab-harbor-img {
@@ -6128,9 +6152,9 @@ body:has(.story-page) .site-watermark {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 28% 70%, transparent 0 32%, rgba(0, 0, 0, 0.55) 78%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.42) 0%, transparent 38%, rgba(0, 0, 0, 0.58) 100%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.28), transparent 22%, rgba(0, 0, 0, 0.62) 100%);
+    radial-gradient(ellipse at 24% 72%, transparent 0 42%, rgba(0, 0, 0, 0.38) 82%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0%, transparent 40%, rgba(0, 0, 0, 0.48) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.16), transparent 30%, rgba(0, 0, 0, 0.36) 100%);
 }
 
 .tab-layout {
@@ -6147,6 +6171,12 @@ body:has(.story-page) .site-watermark {
 .tab-page .console-page {
   position: relative;
   z-index: 1;
+  isolation: auto;
+  background: transparent;
+}
+
+.tab-page .console-shell,
+.tab-page .console-stage {
   background: transparent;
 }
 

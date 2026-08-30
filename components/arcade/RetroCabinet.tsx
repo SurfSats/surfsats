@@ -7,8 +7,6 @@ import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import type { RetroPad } from "@/components/arcade/retroGames";
 import {
   ARCADE_ALIAS_MAX,
-  ARCADE_CREDITS_PER_PAY,
-  ARCADE_PRICE_SATS,
   RETRO_GAMES,
   formatCredits,
   sanitizeAlias,
@@ -58,8 +56,6 @@ export function RetroCabinet({
   const canPlay =
     Boolean(game) && credits > 0 && mode !== "invoice" && mode !== "playing";
   const paying = mode === "invoice";
-  const insertLocked =
-    !aliasOk || !game || pending || paying || mode === "playing";
   const playing = mode === "playing";
 
   return (
@@ -109,48 +105,19 @@ export function RetroCabinet({
           ))}
         </div>
 
-        <div className="cab-coin" id="arcade-coin-retro">
+        <div className="cab-coin cab-coin-plate" id="arcade-coin-retro">
           <div className="cab-coin-top">
             {canPlay ? (
               <button type="button" className="cab-play" onClick={onPlay}>
                 PLAY
                 <span>1 CREDIT</span>
               </button>
-            ) : (
-              <button
-                type="button"
-                className="cab-insert cab-insert-primary"
-                disabled={insertLocked}
-                onClick={onInsert}
-              >
-                {pending
-                  ? "BUILDING INVOICE…"
-                  : !game
-                    ? "PICK A GAME"
-                    : `INSERT ${ARCADE_PRICE_SATS} SATS`}
-                <span>
-                  {pending
-                    ? "LIGHTNING"
-                    : `GET INVOICE · ${ARCADE_CREDITS_PER_PAY} CREDITS`}
-                </span>
-              </button>
-            )}
+            ) : null}
             <div className="cab-led">
               <p>CREDITS</p>
               <p className="cab-led-num">{formatCredits(credits)}</p>
             </div>
           </div>
-
-          {canPlay ? (
-            <button
-              type="button"
-              className="cab-insert-more"
-              disabled={!aliasOk || !game || pending || paying}
-              onClick={onInsert}
-            >
-              INSERT {ARCADE_PRICE_SATS} SATS · {ARCADE_CREDITS_PER_PAY} MORE CREDITS
-            </button>
-          ) : null}
 
           <label className="cab-alias">
             <span>CALLSIGN · REQUIRED</span>
@@ -162,7 +129,7 @@ export function RetroCabinet({
               autoCapitalize="characters"
               autoComplete="off"
               spellCheck={false}
-              disabled={paying}
+              disabled={paying || pending}
             />
           </label>
 
@@ -184,15 +151,10 @@ export function RetroCabinet({
           ) : !aliasOk && !canPlay ? (
             <p className="cab-hint">
               {game
-                ? "ENTER CALLSIGN (2–16) THEN INSERT COIN"
-                : "PICK A GAME, THEN CALLSIGN, THEN INSERT COIN"}
+                ? "ENTER CALLSIGN (2–16) THEN INSERT ON THE GLASS"
+                : "PICK A GAME, THEN CALLSIGN, THEN INSERT ON THE GLASS"}
             </p>
-          ) : (
-            <p className="cab-coin-note">
-              {ARCADE_PRICE_SATS} SATS = {ARCADE_CREDITS_PER_PAY} CREDITS ·
-              RETRO POOL · NO KYC
-            </p>
-          )}
+          ) : null}
 
           {error ? <p className="cab-error">{error}</p> : null}
         </div>
