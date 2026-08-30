@@ -2327,7 +2327,8 @@ body:has(.graffiti-page) .site-watermark {
 .tidechain-page {
   position: relative;
   min-height: calc(100dvh - var(--site-chrome-h));
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   background-color: #05060a;
   background-image:
     linear-gradient(rgba(61, 255, 243, 0.04) 1px, transparent 1px),
@@ -2401,6 +2402,7 @@ body:has(.graffiti-page) .site-watermark {
   grid-template-areas:
     "price moscow"
     "core core"
+    "tick tick"
     "hash diff"
     "fees fees";
   gap: 0.55rem 0.7rem;
@@ -2459,14 +2461,34 @@ body:has(.graffiti-page) .site-watermark {
 .tide-core {
   position: relative;
   display: grid;
-  min-height: 68vh;
+  min-height: 0;
   place-items: center;
 }
 
 .tide-clock {
   display: block;
-  width: min(100%, 100vh);
+  width: min(100%, 62vh);
   height: auto;
+}
+
+.tide-tick {
+  grid-area: tick;
+  z-index: 4;
+  justify-self: center;
+  width: min(320px, 100%);
+  margin: 0;
+}
+
+.tide-tick video {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #000;
+}
+
+.tide-tick p {
+  margin: 0.35rem 0 0;
+  text-align: center;
 }
 
 .tide-heart {
@@ -2601,22 +2623,30 @@ body:has(.graffiti-page) .site-watermark {
 
   .tide-stage {
     grid-template-columns: 15rem minmax(0, 1fr) 15rem;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
       "price core moscow"
       "hash  core diff"
       "hash  fees diff";
-    min-height: calc(100dvh - 12.5rem);
+    min-height: 0;
     padding: 0.2rem 0.7rem 0.15rem;
   }
 
   .tide-core {
-    min-height: calc(100dvh - 13rem);
+    min-height: 0;
   }
 
   .tide-clock {
-    width: min(76vw, 94vh);
-    max-height: calc(100dvh - 12rem);
+    width: min(76vw, 78vh);
+    max-height: calc(100dvh - 18rem);
+  }
+
+  .tide-tick {
+    grid-area: core;
+    align-self: end;
+    justify-self: start;
+    width: 320px;
+    margin: 0 0 0.15rem 0.15rem;
   }
 
   .tide-hash,

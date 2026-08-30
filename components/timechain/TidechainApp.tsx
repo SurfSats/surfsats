@@ -180,6 +180,25 @@ export function TidechainApp({ initial }: { initial: TimechainSnapshot }) {
           </div>
         </div>
 
+        <figure className="tide-tick">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            width={320}
+            aria-label="Tick tock next block"
+          >
+            <source
+              src="/tidechain/tick-tock-next-block.mp4"
+              type="video/mp4"
+            />
+          </video>
+          <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
+            tick tock next block · artdesignbySF · cc0
+          </p>
+        </figure>
+
         <article className="tide-panel tide-hash">
           <p className="tide-hud-label">HASHRATE</p>
           <p className="tide-hud-value text-magenta">
