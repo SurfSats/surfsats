@@ -1,163 +1,1239 @@
 {
   "meta": {
-    "title": "THE TAB",
-    "subtitle": "A sitting. One credit. Three mouths in your head.",
+    "title": "THE SOJOURN",
+    "subtitle": "Act I · THE TAB · One sitting. No name. A story that cannot be filed.",
     "start": "sit",
-    "version": 2,
-    "voice": "rex"
+    "version": 3,
+    "voice": "rex",
+    "act": 1,
+    "acts": 3,
+    "nextAct": "cell"
   },
   "endings": {
-    "settled": { "title": "TAB SETTLED", "score": 21 },
-    "thrown": { "title": "THROWN OUT", "score": 7 },
-    "converted": { "title": "CONVERTED", "score": 21 }
+    "sent": {
+      "title": "THE WOOD ENDS",
+      "score": 21,
+      "next": "act2"
+    },
+    "settled": {
+      "title": "THE WOOD ENDS",
+      "score": 21
+    },
+    "thrown": {
+      "title": "THE WOOD ENDS",
+      "score": 21
+    },
+    "converted": {
+      "title": "THE WOOD ENDS",
+      "score": 21
+    }
+  },
+  "flags": [
+    "asked_name",
+    "said_home",
+    "asked_to_stay",
+    "insulted_wood",
+    "touched_lamp",
+    "believed_the_leak",
+    "laughed",
+    "believed_the_tale",
+    "called_bullshit",
+    "wanted_the_box"
+  ],
+  "art": {
+    "stage": "tab-night",
+    "faces": [
+      "idle",
+      "squint",
+      "grin"
+    ],
+    "speaker": "barkeep"
   },
   "nodes": {
     "sit": {
       "face": "idle",
-      "audio": "/tab/audio/sit.mp3",
-      "him": "He doesn’t look up. The ash on the joint is longer than the conversation deserves. Behind him the cabinet hums like a fridge that found religion.",
-      "voices": [
-        { "skill": "SHIVERS", "line": "Ozone. Cheap lager. Somebody paid 21 sats in another room and the air changed." }
-      ],
+      "him": "He doesn’t look up. The ash on the joint is longer than the welcome and twice as intimate. Behind him the cabinet hums like a fridge that found God and then found out God wanted rent. Out the window the harbor is doing that black-glass thing harbors do when they want you to believe the world still has an edge you could fuck against and live.",
       "choices": [
-        { "id": "what", "skill": "RHETORIC", "label": "What is this place.", "next": "what_is" },
-        { "id": "tab", "skill": "AUTHORITY", "label": "Put it on my tab.", "next": "tab" },
-        { "id": "lamp", "skill": "INLAND EMPIRE", "label": "That lamp is watching us.", "next": "lamp" }
-      ]
+        {
+          "id": "pour",
+          "skill": "EMPATHY",
+          "label": "I’ll take whatever you’re pouring.",
+          "next": "pour"
+        },
+        {
+          "id": "place",
+          "skill": "RHETORIC",
+          "label": "What is this place.",
+          "next": "place"
+        },
+        {
+          "id": "look",
+          "skill": "AUTHORITY",
+          "label": "You going to look at me, or do I have to earn it.",
+          "next": "look"
+        }
+      ],
+      "voices": [
+        {
+          "skill": "SHIVERS",
+          "line": "Ozone. Cheap lager. Somebody’s sweat in the varnish. The invoice against your thigh is still warm, like a mouth that just stopped."
+        }
+      ],
+      "act": 1
     },
-    "what_is": {
+    "pour": {
       "face": "squint",
-      "audio": "/tab/audio/what_is.mp3",
-      "him": "International waters. That’s the only address that ever stuck. Jukebox upstairs, wall out back, machines that take a number you can count on two hands. We don’t keep a treasury. You drop sats, they leave. Same night.",
-      "voices": [
-        { "skill": "EMPATHY", "line": "He’s proud of the leak. A man who would rather bleed than bank." }
-      ],
+      "him": "He pours something the color of a warning light and sets it where your money used to be. The glass clicks. That is the most he will touch you tonight.\n“Sitting’s paid. That isn’t hospitality. That’s arithmetic. Don’t toast. Toasts are how lonely fucks try to marry a room.”",
       "choices": [
-        { "id": "who", "skill": "RHETORIC", "label": "Who gets the sats.", "next": "what_who" },
-        { "id": "why21", "skill": "AUTHORITY", "label": "Why twenty-one.", "next": "what_21" },
-        { "id": "drink", "skill": "INLAND EMPIRE", "label": "Pour whatever the lamp is drinking.", "next": "closer_converted" }
-      ]
-    },
-    "what_who": {
-      "face": "grin",
-      "audio": "/tab/audio/what_who.mp3",
-      "him": "Nostr. The wall. A song somebody else wanted. The arcade if you lose with dignity. Never a company account. Never a conversion desk. If it sits here overnight I consider it a crime scene.",
-      "voices": [
-        { "skill": "RHETORIC", "line": "He’s reciting a manifesto and calling it a pour policy." }
+        {
+          "id": "no_toast",
+          "skill": "RHETORIC",
+          "label": "I wasn’t going to toast.",
+          "next": "pour_no_toast"
+        },
+        {
+          "id": "toast",
+          "skill": "INLAND EMPIRE",
+          "label": "To the leak, then.",
+          "next": "toast"
+        },
+        {
+          "id": "lonely",
+          "skill": "EMPATHY",
+          "label": "Arithmetic looks like it wants a hand on it.",
+          "next": "lonely"
+        }
       ],
-      "choices": [
-        { "id": "believe", "skill": "EMPATHY", "label": "I believe you.", "next": "closer_settled" },
-        { "id": "liar", "skill": "AUTHORITY", "label": "Everybody hodls a little.", "next": "closer_thrown" },
-        { "id": "toast", "skill": "INLAND EMPIRE", "label": "To the crime scene.", "next": "closer_converted" }
-      ]
+      "act": 1
     },
-    "what_21": {
+    "pour_no_toast": {
       "face": "idle",
-      "audio": "/tab/audio/what_21.mp3",
-      "him": "It’s a joke that got teeth. Twenty-one million. Twenty-one sats. Twenty-one hours on the wall. You pick a number the printers can’t inflate and you repeat it until it feels like liturgy.",
-      "voices": [
-        { "skill": "SHIVERS", "line": "Somewhere a clock called Moscow Time ticks the other direction." }
-      ],
+      "him": "“Good. Last bastard who blessed the wood tried to leave a name in it like a come stain. I sanded him off before the ash dropped.” He drags. Eyes on the lantern, not on you. “Drink. The night will do the rest. It always does. Night’s a cheaper lover than I am.”",
       "choices": [
-        { "id": "amen", "skill": "EMPATHY", "label": "Amen.", "next": "closer_settled" },
-        { "id": "dumb", "skill": "RHETORIC", "label": "That’s just branding.", "next": "closer_thrown" },
-        { "id": "another", "skill": "AUTHORITY", "label": "Then I sit until the ash falls.", "next": "closer_converted" }
-      ]
-    },
-    "tab": {
-      "face": "squint",
-      "audio": "/tab/audio/tab.mp3",
-      "him": "There is no tab. There is an invoice. Twenty-one sats, three sittings, no signature. Fiat doesn’t live on this wood. If you came in with a card, the door should have bitten you.",
-      "voices": [
-        { "skill": "AUTHORITY", "line": "He wants you to flinch. Don’t." }
+        {
+          "id": "name",
+          "skill": "RHETORIC",
+          "label": "What’s wrong with a name.",
+          "next": "name"
+        },
+        {
+          "id": "drink",
+          "skill": "EMPATHY",
+          "label": "Then I’ll drink.",
+          "next": "drink"
+        },
+        {
+          "id": "cruel",
+          "skill": "AUTHORITY",
+          "label": "You sand people off for fun.",
+          "next": "cruel_early"
+        }
       ],
-      "choices": [
-        { "id": "paid", "skill": "RHETORIC", "label": "I already paid.", "next": "tab_paid" },
-        { "id": "owe", "skill": "EMPATHY", "label": "Then I owe the room, not you.", "next": "closer_settled" },
-        { "id": "card", "skill": "INLAND EMPIRE", "label": "My card is a prayer card.", "next": "closer_thrown" }
-      ]
+      "act": 1
     },
-    "tab_paid": {
+    "toast": {
       "face": "grin",
-      "audio": "/tab/audio/tab_paid.mp3",
-      "him": "Then you’re crew for the length of a song. Don’t confuse that with ownership. The ship doesn’t keep passengers. It keeps weather.",
-      "voices": [
-        { "skill": "SHIVERS", "line": "A track changes on the deck above. Somebody else just bought the air." }
-      ],
+      "him": "“There it is.” The smile is a knife finding the soft place under a rib. “Every sojourner thinks a pretty sentence will get the furniture wet. The furniture is older than your mouth. Sip or don’t. The glass doesn’t come for speeches.”",
       "choices": [
-        { "id": "crew", "skill": "EMPATHY", "label": "Aye.", "next": "closer_settled" },
-        { "id": "own", "skill": "AUTHORITY", "label": "I want the deed.", "next": "closer_thrown" },
-        { "id": "weather", "skill": "INLAND EMPIRE", "label": "Then pour the weather.", "next": "closer_converted" }
-      ]
+        {
+          "id": "fine",
+          "skill": "RHETORIC",
+          "label": "Fine. No toast.",
+          "next": "drink"
+        },
+        {
+          "id": "glass",
+          "skill": "INLAND EMPIRE",
+          "label": "Everything comes for something. Even the glass.",
+          "next": "lamp"
+        },
+        {
+          "id": "wet",
+          "skill": "AUTHORITY",
+          "label": "You’re afraid of rooms that get wet.",
+          "next": "stay_seed"
+        }
+      ],
+      "act": 1
+    },
+    "lonely": {
+      "face": "idle",
+      "him": "“Lonely is a shore word. Shore people say it when they want to be fucked back into a story. Out here it’s inventory. One stool. One glass. One man who stopped stocking mornings because mornings want you dressed and counted and someone else’s.”\nHe taps the wood once. Not for you.\n“You bought a sitting. Use it. Or stare at the ships until your cock — or whatever you’ve got that aches — turns them into a feeling. I don’t charge extra for aching.”",
+      "choices": [
+        {
+          "id": "know",
+          "skill": "EMPATHY",
+          "label": "I know what lonely is.",
+          "next": "home"
+        },
+        {
+          "id": "use",
+          "skill": "RHETORIC",
+          "label": "I’ll use the sitting.",
+          "next": "drink"
+        },
+        {
+          "id": "morning",
+          "skill": "AUTHORITY",
+          "label": "Stock a morning. Stay long enough to be seen.",
+          "next": "stay_seed"
+        }
+      ],
+      "act": 1
+    },
+    "place": {
+      "face": "idle",
+      "him": "“International waters. That’s the only address that ever stuck to me. Jukebox upstairs selling air by the song. Wall out back where hope goes to get fucked in public for twenty-one hours and then die. Machines that take a number you can count on two hands.”\nHe knocks ash. Still not you.\n“We don’t keep a treasury. You drop sats, they leave. Same night. If it sits here till dawn I treat it like a body nobody claimed. I don’t do unclaimed bodies. They start wanting names.”",
+      "choices": [
+        {
+          "id": "who",
+          "skill": "RHETORIC",
+          "label": "Who gets the sats.",
+          "next": "who"
+        },
+        {
+          "id": "church",
+          "skill": "INLAND EMPIRE",
+          "label": "That’s a church with the hymns scraped off and the collection plate still sticky.",
+          "next": "church"
+        },
+        {
+          "id": "dawn",
+          "skill": "AUTHORITY",
+          "label": "And if I sit till dawn.",
+          "next": "stay_seed"
+        }
+      ],
+      "voices": [
+        {
+          "skill": "EMPATHY",
+          "line": "He’s proud of the hole in himself. A man who would rather bleed than be entered."
+        }
+      ],
+      "act": 1
+    },
+    "who": {
+      "face": "squint",
+      "him": "“Not a company. Not a desk. Not some lord with a plaque and a boy to warm the books. The wall. A song a stranger wanted. A machine if you lose with your dignity still on.”\nHe shows you nothing. He is good at nothing.\n“I am not a vault. I am the hole they pour through so the night stays honest. You want to be held, find a shore. Shores hold. Then they bill you for the grip.”",
+      "choices": [
+        {
+          "id": "believe",
+          "skill": "EMPATHY",
+          "label": "I believe you.",
+          "next": "believe"
+        },
+        {
+          "id": "keep",
+          "skill": "AUTHORITY",
+          "label": "Everybody keeps a little in the mattress.",
+          "next": "accuse"
+        },
+        {
+          "id": "honest",
+          "skill": "RHETORIC",
+          "label": "Honest is a big word for a man who won’t look at me.",
+          "next": "drink"
+        }
+      ],
+      "act": 1
+    },
+    "church": {
+      "face": "grin",
+      "him": "“If this is a church the god is out back with his cock in his hand and the plate has a hole on purpose. Tithe goes through. That’s the whole miracle.”\nA pull. The ember stares at you for him.\n“You want parable, go feed the box upstairs and let a dead singer lie to you. You want a fight, insult the wood. You want to get fucked by meaning, pick the lamp. The light’s been dying to judge somebody.”",
+      "choices": [
+        {
+          "id": "thesis",
+          "skill": "INLAND EMPIRE",
+          "label": "What’s the lamp’s thesis.",
+          "next": "lamp"
+        },
+        {
+          "id": "insult",
+          "skill": "AUTHORITY",
+          "label": "I’ll insult what I like.",
+          "next": "insult_wood"
+        },
+        {
+          "id": "nogo",
+          "skill": "RHETORIC",
+          "label": "I didn’t come for a god. I came to sit.",
+          "next": "drink"
+        }
+      ],
+      "act": 1
+    },
+    "look": {
+      "face": "squint",
+      "him": "“I looked at the last twenty of you. You all wear the same weather. Invoice still warm in the pocket like you just got finished. Alias cheap as a whore’s weekday name. Eyes like you left a kitchen light on in another country and walked out of somebody’s bed and came here to call that freedom.”\nSmoke goes up like a private weather system.\n“Drink. My face isn’t the attraction. If you needed a face you should’ve stayed in the bed.”",
+      "choices": [
+        {
+          "id": "bed",
+          "skill": "EMPATHY",
+          "label": "You don’t know whose bed I left.",
+          "next": "home"
+        },
+        {
+          "id": "cage",
+          "skill": "RHETORIC",
+          "label": "Freedom was the kitchen light. The bed was the cage.",
+          "next": "home"
+        },
+        {
+          "id": "keep",
+          "skill": "AUTHORITY",
+          "label": "Fine. Keep your face. Pour.",
+          "next": "pour"
+        }
+      ],
+      "act": 1
+    },
+    "drink": {
+      "face": "idle",
+      "him": "You drink. It tastes like a bad decision made of metal and pepper and somebody’s old heat. He lets a whole minute go by that costs more than the invoice. Upstairs a needle finds a groove the way a hand finds a hip in the dark.",
+      "choices": [
+        {
+          "id": "name",
+          "skill": "RHETORIC",
+          "label": "You ever going to tell me your name.",
+          "next": "name"
+        },
+        {
+          "id": "juke",
+          "skill": "INLAND EMPIRE",
+          "label": "Play me something from upstairs.",
+          "next": "juke"
+        },
+        {
+          "id": "go",
+          "skill": "AUTHORITY",
+          "label": "I should go before I do something stupid.",
+          "next": "go_early"
+        },
+        {
+          "id": "papers",
+          "skill": "EMPATHY",
+          "label": "This is the first room that didn’t ask for papers or a look at my teeth.",
+          "next": "papers"
+        }
+      ],
+      "act": 1
+    },
+    "papers": {
+      "face": "idle",
+      "him": "“Papers are how a shore fucks you with a smile and calls it remembering. Signature. Stamp. A clerk who never has to smell you. We don’t keep that kind of memory. Bad for the varnish. Bad for the hands.”\nOne knuckle on the bar.\n“Don’t get wet about it. A room that forgets you can also fail to miss you. That’s the other half of freedom nobody puts on the wall. Nobody wants to paint you will not be missed. It doesn’t sell hope. It just happens to be true.”",
+      "choices": [
+        {
+          "id": "notwet",
+          "skill": "RHETORIC",
+          "label": "I wasn’t getting wet.",
+          "next": "name"
+        },
+        {
+          "id": "missed",
+          "skill": "EMPATHY",
+          "label": "I wanted to be missed. That’s the whole sickness.",
+          "next": "home"
+        },
+        {
+          "id": "unfiled",
+          "skill": "AUTHORITY",
+          "label": "Forgetting is the point. I came to be unfiled.",
+          "next": "believe"
+        }
+      ],
+      "act": 1
+    },
+    "name": {
+      "face": "idle",
+      "him": "He watches the ash like it was a clock with better manners than God and a dirtier mind.\n“Names are how they get a hand on you. How they marry you to a ledger and fuck the marriage for tax. I sand files. You bought a sitting, not a biography, not a night in my mouth, not the right to be loved by the furniture.”\nStill not looking.\n“Call me the leak. Call me the man who pours. Call the stool yours for the length of a song. That’s the whole directory. The rest is how kingdoms eat people.”",
+      "choices": [
+        {
+          "id": "person",
+          "skill": "EMPATHY",
+          "label": "I’m asking you as a person. Look at me.",
+          "next": "name_person"
+        },
+        {
+          "id": "refuse",
+          "skill": "AUTHORITY",
+          "label": "Then I won’t give you mine either.",
+          "next": "name_refuse"
+        },
+        {
+          "id": "thin",
+          "skill": "RHETORIC",
+          "label": "Directory’s thin. I like thin.",
+          "next": "drink_2"
+        }
+      ],
+      "voices": [
+        {
+          "skill": "AUTHORITY",
+          "line": "Ask again. Make him flinch. Put a collar on it. Be a little lord about it."
+        }
+      ],
+      "setFlags": [
+        "asked_name"
+      ],
+      "act": 1
+    },
+    "name_person": {
+      "face": "squint",
+      "him": "“Person is a shore word. Person is what they call you right before they count your teeth and ask who last had you.”\nSofter now, and the softness looks like it costs him skin.\n“You want a person, go back to the kitchen light and the bed that knew your noises. You want to finish the sitting, stay in the inventory. I can do inventory. I am very, very good at not being kept. Keeping is just fucking with a filing system.”",
+      "choices": [
+        {
+          "id": "here",
+          "skill": "EMPATHY",
+          "label": "Then don’t be kept. Just be here. With me.",
+          "next": "stay_seed"
+        },
+        {
+          "id": "kitchen",
+          "skill": "RHETORIC",
+          "label": "What kitchen did you leave. Who knew your noises.",
+          "next": "home_him"
+        },
+        {
+          "id": "off",
+          "skill": "AUTHORITY",
+          "label": "All right. Inventory. Hands off.",
+          "next": "drink_2"
+        }
+      ],
+      "setFlags": [
+        "asked_name"
+      ],
+      "act": 1
+    },
+    "name_refuse": {
+      "face": "grin",
+      "him": "“Now you’re learning the local custom.” Almost fond. Almost a hand at the back of your neck that never arrives.\n“Alias to alias. Two ghosts splitting a glass and pretending not to want the other one’s mouth. Don’t get proud. Pride is just a name that hasn’t been sanded off yet. Pride is how you end up signed, sealed, and somebody’s.”",
+      "choices": [
+        {
+          "id": "ghosts",
+          "skill": "RHETORIC",
+          "label": "Two ghosts, then. Drink.",
+          "next": "drink_2"
+        },
+        {
+          "id": "body",
+          "skill": "EMPATHY",
+          "label": "I’m not a ghost. I have a home and a body that still answers.",
+          "next": "home"
+        },
+        {
+          "id": "pride",
+          "skill": "AUTHORITY",
+          "label": "Pride’s all I brought. And the want.",
+          "next": "stay_seed"
+        }
+      ],
+      "setFlags": [
+        "laughed"
+      ],
+      "act": 1
+    },
+    "home": {
+      "face": "idle",
+      "him": "The word sits on the wood like a wet coat. Or like underwear kicked off and left. He does not pick it up.\n“Everybody who finds this stool has been at sea too long. That’s the cover charge they don’t print. You pay it with the look. Home is a story the shore sells so you’ll come back, get counted, get married to a flag, get fucked by a calendar.”\nAsh leans.\n“Out here the tide counts. The invoice counts. I do not. I am not your dock. I am not your mouth to come home to.”",
+      "choices": [
+        {
+          "id": "didyou",
+          "skill": "EMPATHY",
+          "label": "Did you have one. A door. A bed. A name they used in the dark.",
+          "next": "home_him"
+        },
+        {
+          "id": "notback",
+          "skill": "AUTHORITY",
+          "label": "I’m not going back. I’d rather rot honest.",
+          "next": "stay_seed"
+        },
+        {
+          "id": "count",
+          "skill": "RHETORIC",
+          "label": "Then what do you count, if you don’t count me.",
+          "next": "count"
+        }
+      ],
+      "voices": [
+        {
+          "skill": "EMPATHY",
+          "line": "He left one. You can hear the empty hook on the wall. You can hear the bed going cold in another country."
+        }
+      ],
+      "setFlags": [
+        "said_home"
+      ],
+      "act": 1
+    },
+    "home_him": {
+      "face": "squint",
+      "him": "A long pull. The ash holds like a last good decision.\n“I had a door that knew my step. A kitchen that knew how I take a thing from behind — a cup, a body, doesn’t matter. That’s all I’ll donate. Doors learn you. Then they learn the hole you leave. Then they learn somebody else’s rhythm and they don’t even have the decency to feel filthy about it.”\nHe almost looks. Not at you. At the window, where the ships are still a painting.\n“Don’t make me describe the street. I didn’t keep the street. I didn’t keep the mouth that said my name like it was food. I chose a room that refuses to study me. Studying is just love with a badge.”",
+      "choices": [
+        {
+          "id": "sorry",
+          "skill": "EMPATHY",
+          "label": "I’m sorry.",
+          "next": "kindness"
+        },
+        {
+          "id": "coward",
+          "skill": "AUTHORITY",
+          "label": "Coward’s choice. You ran because somebody could have kept you.",
+          "next": "cruel"
+        },
+        {
+          "id": "teach",
+          "skill": "RHETORIC",
+          "label": "Teach me how to refuse like that.",
+          "next": "stay_seed"
+        }
+      ],
+      "setFlags": [
+        "said_home"
+      ],
+      "act": 1
+    },
+    "kindness": {
+      "face": "idle",
+      "him": "“Don’t.”\nIt comes out like a sprain. Like he wanted the hand and bit it.\n“Sorry is how people try to move in. Sorry is a suitcase on the floor and a cock that thinks it’s found harbor. Drink your sitting. The night still has work, and the work is not you undressing my wound with manners.”",
+      "choices": [
+        {
+          "id": "leave",
+          "skill": "RHETORIC",
+          "label": "I won’t move in. I know how to leave.",
+          "next": "drink_2"
+        },
+        {
+          "id": "need",
+          "skill": "EMPATHY",
+          "label": "Maybe you need someone to move in. You’re rotting polite.",
+          "next": "stay_seed"
+        },
+        {
+          "id": "work",
+          "skill": "AUTHORITY",
+          "label": "Then give me the work. Pay me in something I can’t file.",
+          "next": "tale"
+        }
+      ],
+      "setFlags": [
+        "believed_the_leak"
+      ],
+      "act": 1
+    },
+    "cruel": {
+      "face": "grin",
+      "him": "“There. A little warfare in the mouth. Good. I was worried you’d only brought hope, and hope is a slut with a paint can.”\nHe points with the joint, still not at your eyes. The ember does the looking.\n“Hope stays. That’s what they paint on the wall out back, ten feet high, dripping, like a prayer somebody came to. Stays is not the same as saves. Remember that when the wood ends. Remember it when something warm offers to keep you.”",
+      "choices": [
+        {
+          "id": "mean",
+          "skill": "EMPATHY",
+          "label": "I didn’t mean it like that.",
+          "next": "kindness"
+        },
+        {
+          "id": "cheap",
+          "skill": "RHETORIC",
+          "label": "Hope’s a cheap word. So is coward.",
+          "next": "drink_2"
+        },
+        {
+          "id": "ends",
+          "skill": "AUTHORITY",
+          "label": "When the wood ends, then what. Where do the warm things go.",
+          "next": "tale"
+        }
+      ],
+      "setFlags": [
+        "insulted_wood"
+      ],
+      "act": 1
+    },
+    "cruel_early": {
+      "face": "grin",
+      "him": "“Fun.” He tastes the word like a bad olive. “Fun is for people with mornings. I sand names because names grow teeth. You let one stay overnight, it starts paying rent in your chest. Then you’re a husband. Then you’re a citizen. Then you’re meat with a file.”\nHe slides the glass a half-inch closer. That is the apology, if you want one.\n“Drink or pick a fight that isn’t this one.”",
+      "choices": [
+        {
+          "id": "drink",
+          "skill": "EMPATHY",
+          "label": "I’ll drink.",
+          "next": "drink"
+        },
+        {
+          "id": "wood",
+          "skill": "AUTHORITY",
+          "label": "Then I’ll pick the wood.",
+          "next": "insult_wood"
+        },
+        {
+          "id": "fear",
+          "skill": "RHETORIC",
+          "label": "You sound married to the fear.",
+          "next": "home_him"
+        }
+      ],
+      "act": 1
+    },
+    "count": {
+      "face": "idle",
+      "him": "“Ash. Songs. Whether the lamp is still judging like a priest who never got laid enough to be kind. Whether you walk when I tell you the sitting is done.”\nOne shoulder.\n“Twenty-one because the printers can’t eat it and the lords can’t fuck it into a different number. That’s the closest thing I’ve got to liturgy. Don’t kneel. Kneeling scratches the varnish. Kneeling is how they start liking you.”",
+      "choices": [
+        {
+          "id": "amen",
+          "skill": "EMPATHY",
+          "label": "Amen.",
+          "next": "believe"
+        },
+        {
+          "id": "number",
+          "skill": "RHETORIC",
+          "label": "That’s just a number you got hard for.",
+          "next": "accuse"
+        },
+        {
+          "id": "hate",
+          "skill": "AUTHORITY",
+          "label": "Tell me when the sitting is done so I can hate you on time.",
+          "next": "tale"
+        }
+      ],
+      "act": 1
+    },
+    "believe": {
+      "face": "idle",
+      "him": "He nods once, the way a dock nods when a rope is tied well enough to hold a body.\n“Don’t make a life out of agreeing with me. Agreeing is another way of being kept. Next thing you’re finishing my sentences with your mouth full. I have seen that marriage. I poured for it until it drowned.”",
+      "choices": [
+        {
+          "id": "argue",
+          "skill": "RHETORIC",
+          "label": "Then I’ll argue when it counts.",
+          "next": "drink_2"
+        },
+        {
+          "id": "touch",
+          "skill": "EMPATHY",
+          "label": "I don’t want to be kept. I want to be touched and released.",
+          "next": "stay_seed"
+        },
+        {
+          "id": "right",
+          "skill": "AUTHORITY",
+          "label": "I want to be kept by the right room. That’s not a crime.",
+          "next": "home"
+        }
+      ],
+      "setFlags": [
+        "believed_the_leak"
+      ],
+      "act": 1
+    },
+    "accuse": {
+      "face": "squint",
+      "him": "“Sure. I swallow a coin when you blink. I have a little mattress stuffed with other men’s mornings and a hole worn in the middle from all the nights I pretended I was a bank.”\nHe shows you his hands. Empty. Stained. Ordinary. A worker’s hands. A lover’s hands that retired without a speech.\n“If I were lying I’d have better furniture. Liars buy velvet. I bought a stool that hates company.”",
+      "choices": [
+        {
+          "id": "line",
+          "skill": "EMPATHY",
+          "label": "I was out of line.",
+          "next": "kindness"
+        },
+        {
+          "id": "trick",
+          "skill": "AUTHORITY",
+          "label": "Empty hands are an old trick. I’ve been fucked by worse theater.",
+          "next": "cruel"
+        },
+        {
+          "id": "hole",
+          "skill": "RHETORIC",
+          "label": "All right. I see the hole.",
+          "next": "believe"
+        }
+      ],
+      "act": 1
     },
     "lamp": {
       "face": "idle",
-      "audio": "/tab/audio/lamp.mp3",
-      "him": "It’s a lamp. It hangs. It judges. Same as every bar that ever pretended it wasn’t a church. You want prophecy, go upstairs and feed the jukebox. You want a fight, insult the wood, not the light.",
-      "voices": [
-        { "skill": "INLAND EMPIRE", "line": "The lamp blinks once, like it heard its name in a language lamps aren’t supposed to know." }
-      ],
+      "him": "“It’s a lamp. It hangs. It judges. Same as every bar that ever pretended it wasn’t a church and every church that ever pretended it wasn’t a place you go to get on your knees and call it grace.”\nAsh. Ember. The light does something small.\n“You want prophecy, feed the box. You want a fight, pick the wood. You want to be seen, stop flirting with the furniture and finish the glass. The light has enough work. The light has seen every dirty prayer this harbor knows.”",
       "choices": [
-        { "id": "sorry", "skill": "EMPATHY", "label": "Sorry. Long voyage.", "next": "lamp_sorry" },
-        { "id": "wood", "skill": "AUTHORITY", "label": "The wood looks soft.", "next": "closer_thrown" },
-        { "id": "prophecy", "skill": "RHETORIC", "label": "What’s the lamp’s thesis.", "next": "lamp_thesis" }
-      ]
+        {
+          "id": "blink",
+          "skill": "INLAND EMPIRE",
+          "label": "The lamp blinked. Don’t lie.",
+          "next": "lamp_blink"
+        },
+        {
+          "id": "wood",
+          "skill": "AUTHORITY",
+          "label": "I’ll pick the wood.",
+          "next": "insult_wood"
+        },
+        {
+          "id": "leave",
+          "skill": "RHETORIC",
+          "label": "I’ll leave the light alone. Some things shouldn’t be wanted.",
+          "next": "drink_2"
+        }
+      ],
+      "voices": [
+        {
+          "skill": "INLAND EMPIRE",
+          "line": "It blinked. Not the bulb. The idea of a bulb. It looked at your mouth like it paid."
+        }
+      ],
+      "setFlags": [
+        "touched_lamp"
+      ],
+      "act": 1
     },
-    "lamp_sorry": {
+    "lamp_blink": {
       "face": "squint",
-      "audio": "/tab/audio/lamp_sorry.mp3",
-      "him": "Everybody who finds this stool has been at sea too long. That’s the cover charge they don’t print. Drink. Then go tag the wall or lose at the machine. Sitting is not a personality.",
-      "voices": [
-        { "skill": "EMPATHY", "line": "He’s trying to be kind and it looks like a sprain." }
-      ],
+      "him": "“Then you and the light can start a club. Membership’s free. Sleep is extra. Sex is a rumor you tell yourself so the dark has a plot.”\nHe almost smiles and kills it like a fish.\n“People who see blinks last a long time at sea and a short time on stools. The sea likes prophets. Stools like drunks. Finish the glass before you marry the lantern.”",
       "choices": [
-        { "id": "go", "skill": "RHETORIC", "label": "I’ll go make a mark.", "next": "closer_settled" },
-        { "id": "stay", "skill": "INLAND EMPIRE", "label": "Sitting is all I brought.", "next": "closer_converted" },
-        { "id": "rude", "skill": "AUTHORITY", "label": "Kindness looks bad on you.", "next": "closer_thrown" }
-      ]
-    },
-    "lamp_thesis": {
-      "face": "grin",
-      "audio": "/tab/audio/lamp_thesis.mp3",
-      "him": "Hard money. Soft heads. The printers stimulate. We do not. If that needs a parable, you’re in the wrong church.",
-      "voices": [
-        { "skill": "RHETORIC", "line": "That’s the whole site, compressed into a sneer." }
+        {
+          "id": "fine",
+          "skill": "RHETORIC",
+          "label": "I’m fine.",
+          "next": "drink_2"
+        },
+        {
+          "id": "sea",
+          "skill": "EMPATHY",
+          "label": "How long have you been at sea. How long since a mouth.",
+          "next": "home_him"
+        },
+        {
+          "id": "lightname",
+          "skill": "INLAND EMPIRE",
+          "label": "I think the light knows your name. That’s why you won’t look up.",
+          "next": "name"
+        }
       ],
-      "choices": [
-        { "id": "church", "skill": "EMPATHY", "label": "This is the right church.", "next": "closer_settled" },
-        { "id": "parable", "skill": "INLAND EMPIRE", "label": "Give me the parable anyway.", "next": "closer_converted" },
-        { "id": "sneer", "skill": "AUTHORITY", "label": "Cute slogan.", "next": "closer_thrown" }
-      ]
+      "act": 1
     },
-    "closer_settled": {
-      "face": "grin",
-      "ending": "settled",
-      "audio": "/tab/audio/closer_settled.mp3",
-      "him": "He knocks the bar twice. Ash finally falls. “Tab’s settled. Don’t make me remember your name.”",
-      "voices": [
-        { "skill": "SHIVERS", "line": "The room lets you leave with your spine intact." }
-      ],
-      "choices": []
-    },
-    "closer_thrown": {
+    "insult_wood": {
       "face": "squint",
-      "ending": "thrown",
-      "audio": "/tab/audio/closer_thrown.mp3",
-      "him": "He points at the dark without looking. “Door’s that way. The wall will take your money. I won’t.”",
-      "voices": [
-        { "skill": "AUTHORITY", "line": "You got exactly the ending you paid for." }
+      "him": "“There it is. Every sojourner tests the furniture like the furniture might adopt them if they hurt it just right. That’s a child’s idea of love. That’s also most of politics.”\nHe puts his palm on the bar. Gentle. Worse than a slap. Worse than a kiss.\n“This wood has buried better remarks than yours, and a few better bodies. Say what you came to say or drink. Don’t tease a room that has already decided not to keep you.”",
+      "choices": [
+        {
+          "id": "sit",
+          "skill": "EMPATHY",
+          "label": "I came to sit. That’s all.",
+          "next": "stay_seed"
+        },
+        {
+          "id": "mark",
+          "skill": "AUTHORITY",
+          "label": "I came to leave a mark. Something that knows how to die.",
+          "next": "tale"
+        },
+        {
+          "id": "who",
+          "skill": "RHETORIC",
+          "label": "I came to find out who you are before I wanted it.",
+          "next": "name"
+        }
       ],
-      "choices": []
+      "setFlags": [
+        "insulted_wood"
+      ],
+      "act": 1
     },
-    "closer_converted": {
+    "juke": {
       "face": "idle",
-      "ending": "converted",
-      "audio": "/tab/audio/closer_converted.mp3",
-      "him": "He pours something the color of a warning light. “Welcome to the leak. Sats in. Sats out. Don’t you dare call it a community.”",
-      "voices": [
-        { "skill": "INLAND EMPIRE", "line": "For a second the lamp and the invoice are the same object." }
+      "him": "“Upstairs is not my house. Somebody paid. The air changed. That’s the whole review. You don’t get to pick the song any more than you get to pick who you dream about with your hand down your own dark.”\nA different track leaks through the boards, thin as a wire, mean as a rumor.\n“You don’t request. You overhear. That’s closer to the truth of most lives anyway. Most lives are other people’s noise and a stool you rented.”",
+      "choices": [
+        {
+          "id": "hear",
+          "skill": "EMPATHY",
+          "label": "Then I’ll overhear.",
+          "next": "drink_2"
+        },
+        {
+          "id": "paid",
+          "skill": "AUTHORITY",
+          "label": "I paid too. That should buy me a request.",
+          "next": "papers"
+        },
+        {
+          "id": "gone",
+          "skill": "RHETORIC",
+          "label": "When my song’s done I’m gone.",
+          "next": "tale"
+        }
       ],
-      "choices": []
+      "act": 1
+    },
+    "drink_2": {
+      "face": "idle",
+      "him": "The glass is lower. The ash is not. He speaks like a man dictating a letter he will burn before it finds a bed.\n“You can stay until it falls. That’s the contract. After that the stool is just furniture again — wood that has been between other people’s legs, wood that will be again — and you are a person who has to pick a direction.”\nA pull.\n“I don’t do directions. I do pours. Directions are how lords talk when they want your body in their war.”\nHe watches the ash lean. Something in him decides you have been here long enough to be dangerous.",
+      "choices": [
+        {
+          "id": "stay",
+          "skill": "EMPATHY",
+          "label": "I’ll stay till it falls.",
+          "next": "tale"
+        },
+        {
+          "id": "dir",
+          "skill": "AUTHORITY",
+          "label": "Give me a direction anyway. I can hate it later.",
+          "next": "tale"
+        },
+        {
+          "id": "haunt",
+          "skill": "INLAND EMPIRE",
+          "label": "What if I refuse both. Stay and go. Haunt you.",
+          "next": "tale"
+        }
+      ],
+      "act": 1
+    },
+    "stay_seed": {
+      "face": "squint",
+      "him": "“Sitting is not a personality.”\nHe has worn the sentence down to the grain. You could fuck the groove it left.\n“I have watched men turn into stools. Women too. People. They get very good at night and very bad at mornings. They learn how to be wanted by wood and then they call it love because the wood doesn’t leave.”\nStill not looking.\n“You have a morning somewhere. It is not an insult. It is a weather report. Weather doesn’t care if you wanted to sleep in my inventory.”",
+      "choices": [
+        {
+          "id": "nomorn",
+          "skill": "EMPATHY",
+          "label": "I don’t have a morning. I have this mouth and this night.",
+          "next": "home"
+        },
+        {
+          "id": "weather",
+          "skill": "RHETORIC",
+          "label": "Then report the weather.",
+          "next": "tale"
+        },
+        {
+          "id": "stool",
+          "skill": "AUTHORITY",
+          "label": "Let me turn into a stool. I’m tired of being a person.",
+          "next": "stay_hard"
+        }
+      ],
+      "setFlags": [
+        "asked_to_stay"
+      ],
+      "act": 1
+    },
+    "stay_hard": {
+      "face": "idle",
+      "him": "Something in him slips and is caught, like a moan he didn’t budget for.\n“I know.”\nTwo words. Expensive. Almost a hand.\n“Tired is how they get you. Take a name. Take a paper. Take a room that studies your step and your noises and the way you like to be finished. Tired is the oldest clerk. Tired will marry you to anything that offers a bed and a story.”\nHe knocks twice, early, practicing the funeral.\n“When the ash falls I’m going to send you. Not because I don’t believe you. Because I do. Because if I let you stay I will start learning you, and I did not survive a door to become one.”",
+      "choices": [
+        {
+          "id": "send",
+          "skill": "AUTHORITY",
+          "label": "Then send me. Before I ask again.",
+          "next": "tale"
+        },
+        {
+          "id": "mattered",
+          "skill": "EMPATHY",
+          "label": "Say my being here mattered. Say it like you mean a body.",
+          "next": "kindness"
+        },
+        {
+          "id": "hate",
+          "skill": "RHETORIC",
+          "label": "I hate you a little. That’s honest.",
+          "next": "cruel"
+        }
+      ],
+      "voices": [
+        {
+          "skill": "EMPATHY",
+          "line": "He is sending you because your tired got him hard in the only place he still feels anything. That is the sprain. That is the whole romance."
+        }
+      ],
+      "act": 1
+    },
+    "tale": {
+      "face": "idle",
+      "him": "He does not look up. He never does. The joint hangs like a small bad planet.\n“I don’t do directions. So I’ll pay you in something worse.”\nA pull. The lantern makes a church out of his mouth.\n“There’s a thing in the dark that isn’t us. Never was us. Men with no faces have been shaking hands with it since your grandfather was a rumor. They didn’t put it on a ballot. Ballots are for livestock. They kept the handshake in a room without windows and called the room security, which is what priests say when they mean ours.”",
+      "choices": [
+        {
+          "id": "impos",
+          "skill": "RHETORIC",
+          "label": "That’s impossible.",
+          "next": "tale_spit"
+        },
+        {
+          "id": "keep",
+          "skill": "EMPATHY",
+          "label": "Keep talking.",
+          "next": "tale_swallow"
+        },
+        {
+          "id": "touch",
+          "skill": "INLAND EMPIRE",
+          "label": "Have you touched it.",
+          "next": "tale_hunger"
+        }
+      ],
+      "voices": [
+        {
+          "skill": "SHIVERS",
+          "line": "The harbor window goes older. Not darker. Older. Like the ships have been waiting for the sentence."
+        }
+      ],
+      "act": 1
+    },
+    "tale_spit": {
+      "face": "grin",
+      "him": "“Good. Spit. I would spit too if I still wanted to be a citizen.”\nHe knocks ash into nothing.\n“Impossible is a shore word. Shore people use it to keep their kitchens neat. The men without faces don’t need you to believe. They need you busy. Wars. Markets. A little god in your pocket that prints. A mystery with lights so pretty you forget the lock on your own skull.”\nStill not looking. The grin dies like it was never authorized.\n“I didn’t ask you to kneel. I asked you to hear it and stay ugly. Ugly is harder to herd.”",
+      "choices": [
+        {
+          "id": "why",
+          "skill": "RHETORIC",
+          "label": "Then why tell me.",
+          "next": "tale_why"
+        },
+        {
+          "id": "circus",
+          "skill": "AUTHORITY",
+          "label": "Lights. You’re describing a circus.",
+          "next": "tale_bait"
+        },
+        {
+          "id": "plain",
+          "skill": "INLAND EMPIRE",
+          "label": "Say it plain. What is the thing.",
+          "next": "tale_plain"
+        }
+      ],
+      "setFlags": [
+        "called_bullshit"
+      ],
+      "act": 1
+    },
+    "tale_swallow": {
+      "face": "idle",
+      "him": "“There. That’s the wet look. That’s how they get a hand on a sojourner — not with papers. With a secret that makes the papers feel small.”\nHe is not kind about it. Kindness would be letting you stay ignorant and warm.\n“It isn’t new. That’s the part the sermon-people skip because new sells tickets. Your blood has been walking under this weather since blood learned how to walk. The unelected ones only industrialized it. They built a church that doesn’t have to call itself a church. You’d recognize the furniture. Ledgers. Compartments. Boys who die for a briefing they never get to fuck.”",
+      "choices": [
+        {
+          "id": "who",
+          "skill": "RHETORIC",
+          "label": "Who are they. The unelected.",
+          "next": "tale_priests"
+        },
+        {
+          "id": "secret",
+          "skill": "AUTHORITY",
+          "label": "If it isn’t new, why is it a secret.",
+          "next": "tale_why"
+        },
+        {
+          "id": "how",
+          "skill": "INLAND EMPIRE",
+          "label": "How do you touch it.",
+          "next": "tale_hunger"
+        }
+      ],
+      "setFlags": [
+        "believed_the_tale"
+      ],
+      "act": 1
+    },
+    "tale_hunger": {
+      "face": "squint",
+      "him": "“There it is. Hunger. Worse than belief. Belief sits. Hunger tries to log on.”\nHe turns the glass a quarter inch. That is all the theater you get.\n“You ever watch a man eat soup while a whole market screams in the air over his head? You tell him. He calls you drunk. You put a box in his hand and the screaming gets a street name. Suddenly there’s a city he was born under and never saw.”\nAsh leans.\n“The other thing’s like that. The box is you. Most people never switch it on. They live their whole sojourn as soup. The ones who do switch it on don’t always like who answers. Sometimes what answers is you, wearing a bigger night. Sometimes it isn’t. I am not in the business of promising which.”",
+      "choices": [
+        {
+          "id": "show",
+          "skill": "AUTHORITY",
+          "label": "Switch it on. Show me.",
+          "next": "tale_show"
+        },
+        {
+          "id": "head",
+          "skill": "RHETORIC",
+          "label": "That sounds like getting fucked by your own head.",
+          "next": "tale_spit"
+        },
+        {
+          "id": "faces",
+          "skill": "INLAND EMPIRE",
+          "label": "And the men without faces — they have a box.",
+          "next": "tale_priests"
+        }
+      ],
+      "voices": [
+        {
+          "skill": "INLAND EMPIRE",
+          "line": "The lamp is a box. The invoice is a box. Your skull is a box that thinks it is a house."
+        }
+      ],
+      "setFlags": [
+        "wanted_the_box"
+      ],
+      "act": 1
+    },
+    "tale_plain": {
+      "face": "idle",
+      "him": "“Plain.” He tastes it. “Plain is for weather reports and autopsies.”\nA long pull.\n“A presence that is not human and not a story your mother made to keep you in bed. It has been in the water and over the water and in the rooms where countries pretend they have a father. The fathers know. They do not tell the children. Children print money and hold elections and paint hope on walls and sleep like the sky is empty.”\nHe shrugs one shoulder, a man describing a leak under the sink.\n“That’s as plain as it gets without drawing you a cock and calling it a craft. I don’t draw.”",
+      "choices": [
+        {
+          "id": "believe",
+          "skill": "EMPATHY",
+          "label": "I believe you.",
+          "next": "tale_swallow"
+        },
+        {
+          "id": "drunk",
+          "skill": "AUTHORITY",
+          "label": "You’re drunk and you want company in it.",
+          "next": "tale_spit"
+        },
+        {
+          "id": "touch",
+          "skill": "INLAND EMPIRE",
+          "label": "How do you touch it.",
+          "next": "tale_hunger"
+        }
+      ],
+      "act": 1
+    },
+    "tale_priests": {
+      "face": "squint",
+      "him": "“Not kings. Kings have to wave. These ones don’t wave. They file. They marry a phenomenon to a budget and fuck the marriage in a language they invented so you can’t sit in.”\nThe ember looks at you for him.\n“Some of them think they own the handshake. That’s the joke that would be funny if it didn’t get people disappeared. You don’t own a tide. You don’t own a net that was there before the first clerk licked his thumb. You can only build a booth on the beach and charge for the view.”\nA beat.\n“Booths like that hate a man with no papers. They also hate a man who can open his own box. Pick which hate you can live inside.”",
+      "choices": [
+        {
+          "id": "net",
+          "skill": "INLAND EMPIRE",
+          "label": "I don’t want a booth. I want the net.",
+          "next": "tale_hunger"
+        },
+        {
+          "id": "church",
+          "skill": "RHETORIC",
+          "label": "Sounds like every church I already left.",
+          "next": "tale_bait"
+        },
+        {
+          "id": "why",
+          "skill": "EMPATHY",
+          "label": "Why tell a stranger with an alias.",
+          "next": "tale_why"
+        }
+      ],
+      "act": 1
+    },
+    "tale_why": {
+      "face": "idle",
+      "him": "“Because I won’t look at you.”\nIt comes out clean. Almost tender. Almost a crime.\n“A sitting is a stolen hour. I don’t give names and I don’t give mornings, so I pay in the only coin I still have that isn’t furniture. A story that will make the dark heavier when I send you into it.”\nHe knocks the bar once. Practice.\n“Also because you have the look. The look that will walk toward a booth or a box or a wall and call it freedom. I’d rather you walked ugly. I’d rather you kept one thing they cannot compartment.”",
+      "choices": [
+        {
+          "id": "what",
+          "skill": "EMPATHY",
+          "label": "What thing.",
+          "next": "tale_hope"
+        },
+        {
+          "id": "curse",
+          "skill": "AUTHORITY",
+          "label": "That’s not a gift. That’s a curse you were lonely enough to share.",
+          "next": "tale_spit"
+        },
+        {
+          "id": "stay",
+          "skill": "RHETORIC",
+          "label": "Then don’t send me. Finish the story with me still on the stool.",
+          "next": "stay_seed"
+        }
+      ],
+      "act": 1
+    },
+    "tale_show": {
+      "face": "grin",
+      "him": "“No.”\nThe grin is not kind. The grin is a door closing with a hand still on it.\n“If I could switch it on for you I would be one of the men without faces, and you would be livestock with a nicer alias. Nobody shows you. That’s the whole cruelty. That’s why the booths stay in business. They sell tickets to a door they cannot open either — they just have better letterhead.”\nAsh. Almost gone.\n“You want a demonstration, go stand in the dark after I throw you out and ask your own skull politely. Don’t come back here to tell me what answered. I am not your priest. I am the hole.”",
+      "choices": [
+        {
+          "id": "keep",
+          "skill": "EMPATHY",
+          "label": "Then what do I keep if I can’t have proof.",
+          "next": "tale_hope"
+        },
+        {
+          "id": "coward",
+          "skill": "AUTHORITY",
+          "label": "You’re a coward. You start a fire and hide the matches.",
+          "next": "tale_spit"
+        },
+        {
+          "id": "send",
+          "skill": "RHETORIC",
+          "label": "All right. The hole. Send me with it.",
+          "next": "sending_seed"
+        }
+      ],
+      "setFlags": [
+        "wanted_the_box"
+      ],
+      "act": 1
+    },
+    "tale_bait": {
+      "face": "idle",
+      "him": "“Now you’re using your teeth. Good.”\nHe almost looks. He doesn’t.\n“Lights. Craft. Hearings. A man at a table swearing like swearing ever unfucked a secret. All of it can be true and still be bait. The booth loves a spectacle. Spectacle is how you keep a sojourner staring at the sky while somebody counts his step.”\nA sip he does not need.\n“If the thing is real, the circus is still a leash. If the thing is a lie, the circus is a leash with better posters. Either way they would like you very busy. Busy people don’t pick their own hope. Busy people rent it.”",
+      "choices": [
+        {
+          "id": "leash",
+          "skill": "RHETORIC",
+          "label": "So the story is a leash too. You just handed me one.",
+          "next": "tale_hope"
+        },
+        {
+          "id": "true",
+          "skill": "EMPATHY",
+          "label": "I still want it to be true.",
+          "next": "tale_swallow"
+        },
+        {
+          "id": "notbait",
+          "skill": "AUTHORITY",
+          "label": "Then what isn’t bait.",
+          "next": "tale_hope"
+        }
+      ],
+      "act": 1
+    },
+    "tale_hope": {
+      "face": "idle",
+      "him": "The ash is a ruin with one red nerve left.\n“I don’t sell hope. They paint it on the wall out back so it can die on a timer. Twenty-one hours. Then it fades. That’s honest advertising.”\nQuieter.\n“What I mean is the thing in you that does not need a craft to justify staying alive. The thing that does not need a booth. The thing that can look at an empty sky and an unelected handshake and a stool that will not keep you — and still choose a brighter hour without being shown a ticket.”\nHe kills nothing yet. The joint is almost a metaphor and he hates that.\n“If the dark is populated, you’ll need that. If the dark is empty, you’ll need that more. I am not telling you which. I am telling you they will try to rent it back to you with lights. Don’t buy. Walk.”",
+      "choices": [
+        {
+          "id": "true",
+          "skill": "EMPATHY",
+          "label": "That’s the first true thing you’ve said.",
+          "next": "sending_seed"
+        },
+        {
+          "id": "slogan",
+          "skill": "RHETORIC",
+          "label": "Hope is a slogan. You said so.",
+          "next": "stay_seed"
+        },
+        {
+          "id": "walk",
+          "skill": "AUTHORITY",
+          "label": "I’ll walk. Keep the rest.",
+          "next": "sending_seed"
+        }
+      ],
+      "voices": [
+        {
+          "skill": "EMPATHY",
+          "line": "He is giving you the only religion he didn’t sand off. It looks like shame. It looks like love if you are stupid enough, or brave enough."
+        }
+      ],
+      "act": 1
+    },
+    "sending_seed": {
+      "face": "idle",
+      "him": "“The wood ends. That’s the first thing. After the wood there’s dark, and after the dark there’s a shore that still believes in countries the way old men believe a young mouth might save them.”\nHe watches the ash lean like it owes him money.\n“I can pour until then. I cannot go with you. Don’t ask. The answer looks like a man who already chose the inventory over a warm thing. I am not proud of it. Pride is for people who still fuck like they have a future.”",
+      "choices": [
+        {
+          "id": "countries",
+          "skill": "AUTHORITY",
+          "label": "I’m not afraid of countries.",
+          "next": "sending"
+        },
+        {
+          "id": "come",
+          "skill": "EMPATHY",
+          "label": "Come anyway. I’m not asking as a citizen. I’m asking as a body.",
+          "next": "stay_hard"
+        },
+        {
+          "id": "which",
+          "skill": "INLAND EMPIRE",
+          "label": "Just tell me which dark is mine.",
+          "next": "sending"
+        }
+      ],
+      "act": 1
+    },
+    "go_early": {
+      "face": "squint",
+      "him": "“You paid for a sitting and you want a refund in footsteps. Fine. The door works. It will also work later, after the ash, when the sitting has actually happened and you have actually been here, in your skin, not just passing through like a cock that got scared of its own heat.”\nA shrug.\n“Leave now and all you bought is a temperature.”",
+      "choices": [
+        {
+          "id": "stay",
+          "skill": "EMPATHY",
+          "label": "I’ll stay. Heat and all.",
+          "next": "drink_2"
+        },
+        {
+          "id": "gone",
+          "skill": "AUTHORITY",
+          "label": "Then I’m gone.",
+          "next": "sending_early"
+        },
+        {
+          "id": "want",
+          "skill": "RHETORIC",
+          "label": "I don’t know how to stay without wanting.",
+          "next": "stay_hard"
+        }
+      ],
+      "act": 1
+    },
+    "sending_early": {
+      "face": "idle",
+      "him": "“Then go.”\nNo drama. He is good at no drama. Drama is how you end up in somebody’s mouth making promises.\n“If the night has any manners it will teach you the rest. Nights usually do. Nights are sluts for a lesson.”\nAsh still holding. He does not knock.\n“I won’t remember the alias. That’s the courtesy. That’s also the knife. You wanted to be forgotten. Congratulations. You sexy, unfiled thing. Walk.”",
+      "choices": [],
+      "ending": "sent",
+      "act": 1
+    },
+    "sending": {
+      "face": "idle",
+      "him": "The ash falls. It makes no sound and it makes the whole room. A small death. A small orgasm the night had without you. He knocks the bar twice.\n“That’s the sitting. Door’s that way. Not because you failed. Because the wood ends, and I am not a home, and I am not a bed, and I will not be the warm thing that turns you into a citizen.”\nStill not looking at you. That is the last intimacy he will afford.\n“Walk. If you find a wall, leave something that knows how to die. If you find a morning, don’t write. Mornings get people counted. Counting is a kind of undressing you don’t get to take back.”\nA breath. Smaller. Almost a mouth on the rim of the glass.\n“I won’t keep your name. Don’t try to keep mine. After-fame is a kind of rot. After-fame is a thousand hands on a body that wanted to be left alone. Go while you’re still a sojourner and not a stool. Go while I still haven’t looked at you. That was the kindness. It will not feel like one until later.”",
+      "choices": [
+        {
+          "id": "stand",
+          "skill": "AUTHORITY",
+          "label": "(stand)",
+          "next": "act1_end"
+        },
+        {
+          "id": "call",
+          "skill": "EMPATHY",
+          "label": "I still don’t know what to call you.",
+          "next": "sending_name_last"
+        }
+      ],
+      "voices": [
+        {
+          "skill": "SHIVERS",
+          "line": "The harbor leans in, wet, interested. Somewhere a shore is already practicing your papers. Somewhere a clerk licks a thumb."
+        }
+      ],
+      "act": 1
+    },
+    "sending_name_last": {
+      "face": "idle",
+      "him": "“Call me the man who poured.”\nHe kills the joint on nothing you can see. It dies like a secret.\n“If there’s another word, it doesn’t live on this wood. It doesn’t live in your mouth either. Not tonight. Go. Before I forget how not to want you.”",
+      "choices": [
+        {
+          "id": "stand",
+          "skill": "AUTHORITY",
+          "label": "(stand)",
+          "next": "act1_end"
+        }
+      ],
+      "setFlags": [
+        "asked_name"
+      ],
+      "act": 1
+    },
+    "act1_end": {
+      "face": "idle",
+      "him": "The glass is empty. The stool is furniture that has been between people. The door is working. He never looked up.\nAct II does not fade from this. Act II is already the next air — colder, narrower, already touching you.",
+      "choices": [],
+      "ending": "sent",
+      "act": 1
     }
   }
 }

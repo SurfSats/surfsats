@@ -1,14 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
-import { TabAudio } from "@/components/tab/TabAudio";
+import { TabTalk } from "@/components/tab/TabTalk";
 import {
   loadBarTree,
-  nodeEnding,
-  type BarEnding,
   type BarNode,
   type BarTree,
 } from "@/lib/bar-tree";
@@ -20,14 +18,19 @@ import {
   formatTabCredits,
   isPlayerId,
   sanitizeAlias,
-  tabEndingGame,
   type TabHighScore,
   type TabRecent,
 } from "@/lib/tab";
 
 type SessionCache = { playerId: string; alias: string };
-type Mode = "idle" | "invoice" | "sitting" | "ended";
+type Mode = "idle" | "invoice" | "sitting";
 type DeckTab = "sit" | "ledger" | "how";
+
+const FACE_SRC: Record<NonNullable<BarNode["face"]>, string> = {
+  idle: "/tab/art/barkeep-idle.jpg",
+  squint: "/tab/art/barkeep-squint.jpg",
+  grin: "/tab/art/barkeep-grin.jpg",
+};
 
 export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
   const [playerId, setPlayerId] = useState("");
@@ -36,8 +39,8 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
   const [tree, setTree] = useState<BarTree | null>(initialTree);
   const [treeError, setTreeError] = useState(!initialTree);
   const [node, setNode] = useState<BarNode | null>(null);
-  const [ending, setEnding] = useState<BarEnding | null>(null);
   const [mode, setMode] = useState<Mode>("idle");
+  const [flags, setFlags] = useState<string[]>([]);
   const [highScores, setHighScores] = useState<TabHighScore[]>([]);
   const [lastPlayers, setLastPlayers] = useState<TabRecent[]>([]);
   const [pending, setPending] = useState(false);
@@ -221,7 +224,8 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
   const aliasOk = sanitizeAlias(alias).ok;
   const face = node?.face ?? "idle";
-  const whisper = node?.voices[0];
+  const portrait = FACE_SRC[face] ?? FACE_SRC.idle;
+  const actClosed = mode === "sitting" && node?.ending === "sent";
 
   async function requestInvoice() {
     if (treeError || !tree) {
@@ -282,7 +286,8 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
   }
 
   const sit = useCallback(async () => {
-    if (mode === "invoice" || mode === "sitting" || startLock.current) return;
+    if (mode === "invoice" || startLock.current) return;
+    if (mode === "sitting" && node && node.ending !== "sent") return;
     if (!tree) {
       setError("TREE MISSING · CANNOT SIT");
       return;
@@ -323,7 +328,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
       }
       if (typeof data.credits === "number") setCredits(data.credits);
       playIdRef.current = data.playId ?? null;
-      setEnding(null);
+      setFlags(start.setFlags ?? []);
       setNode(start);
       setMode("sitting");
     } catch {
@@ -331,37 +336,23 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
     } finally {
       startLock.current = false;
     }
-  }, [alias, credits, mode, playerId, tree]);
+  }, [alias, credits, mode, node, playerId, tree]);
 
   const choose = useCallback(
-    async (nextId: string) => {
+    (nextId: string) => {
       if (!tree || mode !== "sitting") return;
       const next = tree.nodes[nextId];
       if (!next) return;
-      setNode(next);
-      const hit = nodeEnding(tree, next);
-      if (!hit) return;
-      setEnding(hit);
-      setMode("ended");
-      const game = tabEndingGame(hit.id);
-      if (!game) return;
-      try {
-        await fetch("/api/tab/score", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            playerId,
-            playId: playIdRef.current,
-            score: hit.score,
-            game,
-          }),
+      if (next.setFlags.length) {
+        setFlags((current) => {
+          const merged = new Set(current);
+          for (const flag of next.setFlags) merged.add(flag);
+          return [...merged];
         });
-        await loadBoards();
-      } catch {
-        // credit already spent
       }
+      setNode(next);
     },
-    [loadBoards, mode, playerId, tree],
+    [mode, tree],
   );
 
   async function copyInvoice() {
@@ -387,10 +378,6 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
   }
 
   const showInvoice = mode === "invoice" || pending;
-  const endingTitle = useMemo(() => {
-    if (!ending) return "";
-    return ending.title;
-  }, [ending]);
 
   return (
     <div className="tab-page">
@@ -405,23 +392,23 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
         }
         stage={
           <>
-            <div className="tab-stage-harbor" aria-hidden="true">
+            <div className="tab-stage-night" aria-hidden="true">
               <Image
-                src="/tab/harbor.jpg"
+                src="/tab/art/tab-night.jpg"
                 alt=""
                 fill
                 priority
                 sizes="(max-width: 1023px) 100vw, 65vw"
-                className="tab-harbor-img"
+                className="tab-night-img"
               />
               <div className="tab-vignette" />
             </div>
             <figure className={`tab-keep is-${face}`}>
               <Image
-                src="/tab/bartender.jpg"
-                alt="The bartender"
-                width={720}
-                height={1080}
+                src={portrait}
+                alt=""
+                width={784}
+                height={1168}
                 className="tab-keep-img"
                 priority
               />
@@ -437,7 +424,11 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
         onTab={(id) => setTab(id as DeckTab)}
       >
         {tab === "sit" ? (
-          <section className="tab-glass" aria-label="THE TAB">
+          <section
+            className="tab-glass"
+            aria-label="THE TAB"
+            data-flags={flags.join(" ")}
+          >
             {treeError ? (
               <p className="tab-tree-error">TREE MISSING · CANNOT SIT</p>
             ) : !tree ? (
@@ -451,48 +442,12 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                 </header>
 
                 {mode === "sitting" && node ? (
-                  <div className="tab-talk">
-                    <p className="tab-him">{node.him}</p>
-                    {whisper ? (
-                      <p className="tab-voice">
-                        {whisper.skill} — {whisper.line}
-                      </p>
-                    ) : null}
-                    <TabAudio src={node.audio} nodeId={node.id} />
-                    {node.choices.length ? (
-                      <div className="tab-choices">
-                        {node.choices.map((choice) => (
-                          <button
-                            key={choice.id}
-                            type="button"
-                            className="tab-choice"
-                            onClick={() => void choose(choice.next)}
-                          >
-                            [{choice.skill}] {choice.label}
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                ) : mode === "ended" && ending ? (
-                  <div className="tab-ending">
-                    <p className="tab-ending-kicker">sitting over</p>
-                    <p className="tab-ending-title">{endingTitle}</p>
-                    <p className="tab-ending-score">{ending.score}</p>
-                    <button
-                      type="button"
-                      className="tab-choice"
-                      onClick={
-                        credits > 0
-                          ? () => void sit()
-                          : () => void requestInvoice()
-                      }
-                    >
-                      {credits > 0
-                        ? "SIT AGAIN · 1 CREDIT"
-                        : `INSERT ${TAB_PRICE_SATS} SATS`}
-                    </button>
-                  </div>
+                  <TabTalk
+                    key={node.id}
+                    node={node}
+                    tree={tree}
+                    onChoose={choose}
+                  />
                 ) : (
                   <p className="tab-invite">
                     One credit. One stool. Talk until the ash falls.
@@ -501,13 +456,13 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
 
                 <div className="tab-coin">
                   <div className="tab-coin-row">
-                    {credits > 0 && mode !== "sitting" && aliasOk ? (
+                    {credits > 0 && aliasOk && (mode !== "sitting" || actClosed) ? (
                       <button
                         type="button"
                         className="tab-sit"
                         onClick={() => void sit()}
                       >
-                        SIT
+                        {actClosed ? "SIT AGAIN" : "SIT"}
                         <span>1 CREDIT</span>
                       </button>
                     ) : (
@@ -517,7 +472,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                         disabled={
                           !aliasOk ||
                           pending ||
-                          mode === "sitting" ||
+                          (mode === "sitting" && !actClosed) ||
                           treeError
                         }
                         onClick={() => void requestInvoice()}
@@ -545,7 +500,9 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                       autoCapitalize="characters"
                       autoComplete="off"
                       spellCheck={false}
-                      disabled={mode === "sitting" || mode === "invoice"}
+                      disabled={
+                        (mode === "sitting" && !actClosed) || mode === "invoice"
+                      }
                     />
                   </label>
                   {error ? <p className="tab-error">{error}</p> : null}

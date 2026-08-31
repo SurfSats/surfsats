@@ -30,6 +30,10 @@ export const metadata: Metadata = {
   },
   description:
     "Bitcoin + surf lifestyle. Stories from the lineup and a global jukebox you can feed with 21 sats.",
+  icons: {
+    icon: "/brand/mark-circle-512.png",
+    apple: "/brand/mark-circle-512.png",
+  },
   openGraph: {
     title: "SurfSats",
     description: ogDescription,

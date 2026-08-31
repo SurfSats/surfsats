@@ -18,6 +18,7 @@ export type BarNode = {
   him: string;
   voices: BarVoice[];
   choices: BarChoice[];
+  setFlags: string[];
   ending?: string;
   audio?: string;
 };
@@ -65,19 +66,19 @@ export function parseBarTree(raw: unknown): BarTree | null {
   for (const [id, value] of Object.entries(nodesRaw)) {
     const rec = asRecord(value);
     if (!rec) return null;
-    const him = str(rec.him);
+    const him = himText(rec.him);
     const faceRaw = str(rec.face) as BarFace;
     const face: BarFace = FACES.has(faceRaw) ? faceRaw : "idle";
     if (!him) return null;
     const voices = asArray(rec.voices).flatMap((item) => {
       const voice = asRecord(item);
       const skill = voice ? str(voice.skill) : "";
-      const line = voice ? str(voice.line) : "";
+      const line = voice ? himText(voice.line) : "";
       if (!skill || !line) return [];
       return [{ skill, line }];
     });
     const choices = asArray(rec.choices)
-      .slice(0, 3)
+      .slice(0, 4)
       .flatMap((item) => {
         const choice = asRecord(item);
         const next = choice ? str(choice.next) : "";
@@ -87,6 +88,10 @@ export function parseBarTree(raw: unknown): BarTree | null {
         if (!next || !label) return [];
         return [{ id: cid || next, skill, label, next }];
       });
+    const setFlags = asArray(rec.setFlags).flatMap((item) => {
+      const flag = str(item);
+      return flag ? [flag] : [];
+    });
     const ending = str(rec.ending) || undefined;
     if (ending && !endings[ending]) return null;
     const audioRaw = str(rec.audio);
@@ -99,7 +104,8 @@ export function parseBarTree(raw: unknown): BarTree | null {
       face,
       him,
       voices,
-      choices: ending ? [] : choices,
+      choices,
+      setFlags,
       ending,
       audio,
     };
@@ -158,6 +164,10 @@ function asArray(value: unknown): unknown[] {
 
 function str(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function himText(value: unknown) {
+  return typeof value === "string" ? value.replace(/^\n+|\n+$/g, "") : "";
 }
 
 function num(value: unknown) {
