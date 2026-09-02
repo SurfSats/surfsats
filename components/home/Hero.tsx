@@ -6,12 +6,13 @@ export function Hero() {
     <section className="home-stage">
       <div className="home-stage-plate" aria-hidden="true">
         <Image
-          src="/tab/art/tab-night.jpg"
+          src="/home-hero.jpg"
           alt=""
           fill
           priority
           sizes="100vw"
           className="home-stage-img"
+          style={{ objectFit: "cover", objectPosition: "center right" }}
         />
         <div className="home-stage-veil" />
       </div>
