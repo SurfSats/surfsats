@@ -13,8 +13,10 @@ const WAVE = {
 
 export function SwellScorecard({
   initial,
+  compact = false,
 }: {
   initial: TimechainSnapshot | null;
+  compact?: boolean;
 }) {
   const { snapshot } = useTimechainSnapshot(initial);
   const pct = snapshot.priceChangePct;
@@ -31,14 +33,13 @@ export function SwellScorecard({
     <div
       className={cn(
         "swell-stack",
+        compact && "swell-stack-compact",
         swell ? (up ? "swell-card-up" : "swell-card-down") : "swell-card-idle",
       )}
       data-art={artMissing ? "missing" : undefined}
-      style={{ minHeight: "21.75rem" }}
     >
       <aside
         className="swell-card"
-        style={{ position: "relative", overflow: "hidden", minHeight: "13.5rem" }}
         aria-label={
           swell
             ? `Swell ${swell.size}, ${swell.rating}, ${formatChange(swell.pct)} 24h`
@@ -49,12 +50,6 @@ export function SwellScorecard({
         <div
           className={cn("swell-art", up ? "swell-wave-up" : "swell-wave-down")}
           aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: "0 0 0 auto",
-            width: "62%",
-            overflow: "hidden",
-          }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -63,14 +58,6 @@ export function SwellScorecard({
             width={1168}
             height={784}
             decoding="async"
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              maxWidth: "none",
-              objectFit: "cover",
-            }}
             onLoad={() => setArtMissing(false)}
             onError={() => setArtMissing(true)}
           />

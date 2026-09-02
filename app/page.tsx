@@ -19,8 +19,8 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero initial={snapshot} />
-      <FeaturedTools />
+      <Hero />
+      <FeaturedTools initial={snapshot} />
       <FromTheCoast />
       <HomeClose />
     </>

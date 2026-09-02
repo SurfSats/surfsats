@@ -1,53 +1,41 @@
-import { SwellScorecard } from "@/components/home/SwellScorecard";
-import { ButtonLink } from "@/components/ui/ButtonLink";
+import Image from "next/image";
 import { Container } from "@/components/ui/Container";
-import { TerminalLabel } from "@/components/ui/TerminalLabel";
-import type { TimechainSnapshot } from "@/lib/timechain";
 
-export function Hero({ initial }: { initial: TimechainSnapshot | null }) {
+export function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="hero-glow pointer-events-none absolute inset-0" />
-      <Container className="relative grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,26.5rem)] lg:py-28">
-        <div className="min-w-0">
-        <TerminalLabel>bitcoin · surf · no masters</TerminalLabel>
-        <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
+    <section className="home-stage">
+      <div className="home-stage-plate" aria-hidden="true">
+        <Image
+          src="/tab/art/tab-night.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="home-stage-img"
+        />
+        <div className="home-stage-veil" />
+      </div>
+      <Container className="home-stage-copy">
+        <p className="home-stage-boot">
           <span className="text-cyan">root@surfsats:~$</span> boot --btc --no-kyc
         </p>
         <h1
           data-text="SurfSats"
-          className="glitch-title flicker mt-4 max-w-4xl font-display text-5xl font-extrabold uppercase leading-[0.9] tracking-tight text-foreground sm:text-7xl lg:text-8xl"
+          className="glitch-title flicker mt-3 max-w-4xl font-display text-5xl font-extrabold uppercase leading-[0.9] tracking-tight text-foreground sm:text-7xl lg:text-8xl"
         >
           SurfSats
         </h1>
-        <p className="mt-6 max-w-2xl font-display text-xl font-semibold uppercase tracking-wide text-sats sm:text-3xl">
-          No banks. No bosses. No closed beach signs.
+        <p className="home-stage-thesis">
+          No banks. No bosses.{" "}
+          <span className="home-stage-thesis-tail">No closed beach signs.</span>
         </p>
-        <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
-          Lightning sandbox. Five machines on the floor. 21 sats. No accounts.
+        <p className="home-stage-sub">
+          Lightning sandbox. 21 sats. No accounts.
         </p>
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <ButtonLink href="/graffiti">Tag the wall</ButtonLink>
-          <ButtonLink href="/arcade" variant="ghost">
-            Smash the arcade
-          </ButtonLink>
-          <ButtonLink href="/tab" variant="ghost">
-            Sit the tab
-          </ButtonLink>
-          <ButtonLink href="/music" variant="ghost">
-            Enter Surf Radio
-          </ButtonLink>
-          <ButtonLink href="/jukebox" variant="ghost">
-            Drop 21 sats
-          </ButtonLink>
-        </div>
-        </div>
-        <SwellScorecard initial={initial} />
+        <a href="#the-floor" className="home-walk">
+          Walk the floor
+        </a>
       </Container>
-      <div
-        className="h-px w-full bg-gradient-to-r from-transparent via-cyan/50 to-transparent"
-        aria-hidden="true"
-      />
     </section>
   );
 }

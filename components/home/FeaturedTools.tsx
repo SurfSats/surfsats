@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SwellScorecard } from "@/components/home/SwellScorecard";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { cn } from "@/lib/cn";
@@ -6,52 +7,52 @@ import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
 import { GRAFFITI_PRICE_SATS, GRAFFITI_TTL_HOURS } from "@/lib/graffiti";
 import { STORY_PRICE_SATS } from "@/lib/story";
 import { TAB_PRICE_SATS } from "@/lib/tab";
+import type { TimechainSnapshot } from "@/lib/timechain";
 
 const machines = [
   {
     href: "/graffiti",
-    code: "01",
     name: "Graffiti Wall",
     hook: `${GRAFFITI_PRICE_SATS} sats. ${GRAFFITI_TTL_HOURS} hours.`,
-    body: "Leave a mark. Bitcoin Is Hope stays forever. Everything else fades.",
     cta: "Tag the wall",
     accent: "sats",
+    fallback: "wall",
   },
   {
     href: "/arcade",
-    code: "02",
     name: "Lightning Arcade",
     hook: `${ARCADE_PRICE_SATS} sats. ${ARCADE_CREDITS_PER_PAY} credits.`,
-    body: "Insert coin. WAVE RUNNER. High scores on the cabinet. No tokens, no app store.",
     cta: "Smash the arcade",
     accent: "magenta",
+    src: "/arcade-cabinet-front.jpg",
+    position: "50% 40%",
   },
   {
     href: "/tab",
-    code: "03",
     name: "THE TAB",
-    hook: `${TAB_PRICE_SATS} sats. One sitting.`,
-    body: "One credit. One stool. Talk until the ash falls. Isolated pool. No KYC.",
+    hook: `${TAB_PRICE_SATS} sats. One stool.`,
     cta: "Sit the tab",
     accent: "cyan",
+    src: "/tab/art/tab-night.jpg",
+    position: "28% 82%",
   },
   {
     href: "/music",
-    code: "04",
     name: "Surf Radio",
     hook: "Live on the ship.",
-    body: "Listen from international waters. Request on the ship. Public is the DJ.",
     cta: "Enter Surf Radio",
     accent: "sats",
+    src: "/jukebox-ship.png",
+    position: "50% 42%",
   },
   {
     href: "/story",
-    code: "05",
     name: "Story Chain",
     hook: `${STORY_PRICE_SATS} sats. One line.`,
-    body: "Write the next sentence. Lightning seals it. The book stays.",
     cta: "Write a line",
     accent: "magenta",
+    src: "/story-writer-quarters.jpg",
+    position: "50% 55%",
   },
 ] as const;
 
@@ -93,64 +94,26 @@ const readouts = [
   },
 ] as const;
 
-export function FeaturedTools() {
+export function FeaturedTools({
+  initial,
+}: {
+  initial: TimechainSnapshot | null;
+}) {
   return (
     <>
-      <section>
-        <Container className="py-14 sm:py-20">
-          <SectionHeading
-            eyebrow="the_floor"
-            title="The machines"
-            description="Pay 21 sats. The thing happens. No accounts. No committee."
-          />
-          <div className="mt-10 grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section id="the-floor" className="floor-section">
+        <Container className="py-10 sm:py-14">
+          <SwellScorecard initial={initial} compact />
+          <div className="mt-10 sm:mt-12">
+            <SectionHeading
+              eyebrow="the_floor"
+              title="The machines"
+              description="Pay 21 sats. The thing happens. No accounts. No committee."
+            />
+          </div>
+          <div className="floor-dock">
             {machines.map((machine) => (
-              <Link
-                key={machine.href}
-                href={machine.href}
-                className={cn(
-                  "panel panel-hover group flex min-w-0 flex-col p-5 sm:p-6",
-                  machine.accent === "sats" && "hover:border-sats/60",
-                  machine.accent === "magenta" && "hover:border-magenta/60",
-                  machine.accent === "cyan" && "hover:border-cyan/60",
-                )}
-              >
-                <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em]">
-                  <span
-                    className={
-                      machine.accent === "magenta"
-                        ? "text-magenta"
-                        : machine.accent === "cyan"
-                          ? "text-cyan"
-                          : "text-sats"
-                    }
-                  >
-                    {machine.code}
-                  </span>
-                  <span className="text-muted">machine</span>
-                </div>
-                <h3 className="mt-4 break-words font-display text-2xl font-bold uppercase tracking-tight sm:text-3xl">
-                  {machine.name}
-                </h3>
-                <p
-                  className={cn(
-                    "mt-2 font-mono text-xs uppercase tracking-[0.12em]",
-                    machine.accent === "magenta"
-                      ? "text-magenta"
-                      : machine.accent === "cyan"
-                        ? "text-cyan"
-                        : "text-sats",
-                  )}
-                >
-                  {machine.hook}
-                </p>
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">
-                  {machine.body}
-                </p>
-                <span className="mt-6 font-mono text-xs uppercase tracking-[0.16em] text-sats group-hover:text-cyan">
-                  {machine.cta} -&gt;
-                </span>
-              </Link>
+              <FloorObject key={machine.href} machine={machine} />
             ))}
           </div>
         </Container>
@@ -169,7 +132,7 @@ export function FeaturedTools() {
       </section>
 
       <section>
-        <Container className="py-14 sm:py-16">
+        <Container className="py-12 sm:py-14">
           <SectionHeading
             eyebrow="readouts"
             title="The signal"
@@ -204,5 +167,51 @@ export function FeaturedTools() {
         </Container>
       </section>
     </>
+  );
+}
+
+function FloorObject({
+  machine,
+}: {
+  machine: (typeof machines)[number];
+}) {
+  const wall = "fallback" in machine && machine.fallback === "wall";
+  const src = "src" in machine ? machine.src : undefined;
+  const position = "position" in machine ? machine.position : undefined;
+
+  return (
+    <Link
+      href={machine.href}
+      className={cn(
+        "floor-object group",
+        machine.accent === "sats" && "floor-object-sats",
+        machine.accent === "magenta" && "floor-object-magenta",
+        machine.accent === "cyan" && "floor-object-cyan",
+      )}
+    >
+      <div
+        className={cn("floor-object-art", wall && "floor-wall")}
+        style={
+          src
+            ? { backgroundImage: `url(${src})`, backgroundPosition: position }
+            : undefined
+        }
+        aria-hidden="true"
+      >
+        {wall ? (
+          <p className="floor-wall-piece">
+            <span>Bitcoin Is</span>
+            <span>Hope</span>
+          </p>
+        ) : null}
+      </div>
+      <div className="floor-object-copy">
+        <h3>{machine.name}</h3>
+        <p>{machine.hook}</p>
+        <span>
+          {machine.cta} -&gt;
+        </span>
+      </div>
+    </Link>
   );
 }
