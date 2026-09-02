@@ -103,6 +103,14 @@ export function focusPreset(id: FocusDoor): CamPresetId {
   return "bar";
 }
 
+export function doorCam(id: string): CamPresetId {
+  if (id === "fire") return "floor";
+  if ((FOCUS_DOORS as readonly string[]).includes(id)) {
+    return focusPreset(id as FocusDoor);
+  }
+  return "floor";
+}
+
 export function cloneCam(cam: OrbitCam): OrbitCam {
   return {
     yaw: cam.yaw,

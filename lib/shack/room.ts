@@ -88,7 +88,7 @@ export const SHACK_DOORS: Record<ShackDoorId, ShackDoor> = {
     id: "fire",
     href: "/",
     tooltip: "the lot · front door is that way",
-    look: vec3(FIRE_POS.x, 0.55, FIRE_POS.z),
+    look: vec3(FIRE_POS.x, 0.72, FIRE_POS.z),
     tapSpeech: "you found the side door",
     tapKey: "shack.tapped",
   },
@@ -96,7 +96,7 @@ export const SHACK_DOORS: Record<ShackDoorId, ShackDoor> = {
     id: "tab",
     href: "/tab",
     tooltip: "the tab · sit down",
-    look: vec3(-7.1, 0.85, -0.6),
+    look: vec3(-7.1, 1.2, -0.6),
     hoverSpeech: "one stool. that's the bit.",
     hoverKey: "shack.hover.tab",
   },
@@ -120,7 +120,7 @@ export const SHACK_DOORS: Record<ShackDoorId, ShackDoor> = {
     id: "arcade",
     href: "/arcade",
     tooltip: "arcade · smash a cabinet",
-    look: vec3(7.4, 0.9, 1.4),
+    look: vec3(7.4, 1.35, 1.4),
     hoverSpeech: "insert stays on the glass",
     hoverKey: "shack.hover.arcade",
   },
@@ -128,7 +128,7 @@ export const SHACK_DOORS: Record<ShackDoorId, ShackDoor> = {
     id: "music",
     href: "/music",
     tooltip: "surf radio · tap to tune in",
-    look: vec3(7.6, 0.7, 3.1),
+    look: vec3(7.6, 1.05, 3.1),
     hoverSpeech: "21 sats. not a record deal.",
     hoverKey: "shack.hover.music",
   },
@@ -136,7 +136,7 @@ export const SHACK_DOORS: Record<ShackDoorId, ShackDoor> = {
     id: "story",
     href: "/story",
     tooltip: "story · write a line",
-    look: vec3(5.3, 0.4, 3.4),
+    look: vec3(5.3, 0.55, 3.4),
     hoverSpeech: "write a line or don't",
     hoverKey: "shack.hover.story",
   },
@@ -152,7 +152,7 @@ export const SHACK_DOORS: Record<ShackDoorId, ShackDoor> = {
     id: "signal",
     href: "/signal",
     tooltip: "signal · hand picked",
-    look: vec3(4.7, 2.3, -5.8),
+    look: vec3(5.15, 2.3, -5.8),
     hoverSpeech: "hand picked. no feed.",
     hoverKey: "shack.hover.signal",
   },
@@ -160,7 +160,7 @@ export const SHACK_DOORS: Record<ShackDoorId, ShackDoor> = {
     id: "articles",
     href: "/articles",
     tooltip: "articles · ours, on paper",
-    look: vec3(-3.6, 0.4, -5.6),
+    look: vec3(-3.6, 0.52, -5.6),
     hoverSpeech: "print for people who still touch paper",
     hoverKey: "shack.hover.articles",
   },
@@ -168,7 +168,7 @@ export const SHACK_DOORS: Record<ShackDoorId, ShackDoor> = {
     id: "tools",
     href: "/tools",
     tooltip: "tools · no affiliates",
-    look: vec3(6.2, 0.7, -3.2),
+    look: vec3(6.2, 1.05, -3.2),
     hoverSpeech: "no affiliates",
     hoverKey: "shack.hover.tools",
   },
@@ -184,7 +184,7 @@ export const SHACK_DOORS: Record<ShackDoorId, ShackDoor> = {
     id: "lineup",
     href: "/lineup",
     tooltip: "lineup · who's out",
-    look: vec3(4.6, 0.9, -5.8),
+    look: vec3(4.6, 1.15, -5.8),
     hoverSpeech: "swell doesn't care if you posted",
     hoverKey: "shack.hover.lineup",
   },
@@ -196,7 +196,21 @@ export function isShackDoor(id: string | null | undefined): id is ShackDoorId {
 
 const WALL_T = 0.16;
 
-export function addBox(
+function growDoor(node: ShackNode, s: number, originY?: number): void {
+  node.local.scale = vec3(s, s, s);
+  if (originY !== undefined) node.local.pos.y = originY * s;
+  if (!node.pick) return;
+  node.pick.radius = Math.max(1.25, node.pick.radius * s);
+  if (node.pick.offset) {
+    node.pick.offset = vec3(
+      node.pick.offset.x * s,
+      node.pick.offset.y * s,
+      node.pick.offset.z * s,
+    );
+  }
+}
+
+function addBox(
   parent: ShackNode,
   id: string,
   pos: Vec3,
@@ -388,6 +402,7 @@ function buildTab(root: ShackNode): void {
   addBox(lantern, "tab-lantern-rod", vec3(0, 0.22, 0), vec3(0.014, 0.32, 0.014), PALETTE.brass, {
     group: TAB_ID,
   });
+  growDoor(tab, 1.65);
 }
 
 function buildFiat(root: ShackNode): void {
@@ -419,6 +434,7 @@ function buildFiat(root: ShackNode): void {
   );
   addText(fiat, "fiat-dirty", "dirty", vec3(0.03, 0.38, 0.34), 0.038, PALETTE.cream, FIAT_ID);
   addText(fiat, "fiat-fiat", "fiat", vec3(0.03, 0.02, 0.26), 0.048, PALETTE.cream, FIAT_ID);
+  growDoor(fiat, 1.7);
 }
 
 function buildAbout(root: ShackNode): void {
@@ -464,6 +480,7 @@ function buildAbout(root: ShackNode): void {
     PALETTE.plaqueInk,
     ABOUT_ID,
   );
+  growDoor(about, 1.9);
 }
 
 function buildArcade(root: ShackNode): void {
@@ -554,6 +571,7 @@ function buildArcade(root: ShackNode): void {
     PALETTE.pewter,
     { emissive: vec3(0.08, 0.08, 0.07), group: ARCADE_ID },
   );
+  growDoor(arcade, 1.75);
 }
 
 function buildMusic(root: ShackNode): void {
@@ -608,6 +626,7 @@ function buildMusic(root: ShackNode): void {
       { group: MUSIC_ID },
     );
   }
+  growDoor(music, 1.8);
 }
 
 function buildStory(root: ShackNode): void {
@@ -674,6 +693,7 @@ function buildStory(root: ShackNode): void {
     PALETTE.brass,
     { rot: vec3(0, 0.4, 0.08), group: STORY_ID },
   );
+  growDoor(story, 1.8);
 }
 
 function buildGraffiti(root: ShackNode): void {
@@ -721,33 +741,34 @@ function buildGraffiti(root: ShackNode): void {
   addBox(
     graffiti,
     "g-can-body",
-    vec3(0.92, -0.38, 0.28),
-    vec3(0.055, 0.14, 0.055),
+    vec3(0.92, -0.32, 0.28),
+    vec3(0.11, 0.28, 0.11),
     PALETTE.pewter,
     { group: GRAFFITI_ID },
   );
   addBox(
     graffiti,
     "g-can-shoulder",
-    vec3(0.92, -0.29, 0.28),
-    vec3(0.04, 0.03, 0.04),
+    vec3(0.92, -0.14, 0.28),
+    vec3(0.08, 0.06, 0.08),
     PALETTE.iron,
     { group: GRAFFITI_ID },
   );
   addBox(
     graffiti,
     "g-can-cap",
-    vec3(0.92, -0.25, 0.28),
-    vec3(0.048, 0.04, 0.048),
+    vec3(0.92, -0.06, 0.28),
+    vec3(0.09, 0.08, 0.09),
     PALETTE.fire,
     { group: GRAFFITI_ID },
   );
+  growDoor(graffiti, 1.55);
 }
 
 function buildSignal(root: ShackNode): void {
   // Right of the night window (glass x=0.6–3.8). Spec 1.6 would sit on the glass.
   const signal = createNode(SIGNAL_ID);
-  signal.local.pos = vec3(4.7, 2.3, -6.85);
+  signal.local.pos = vec3(5.15, 2.3, -6.85);
   signal.pick = { radius: 0.9 };
   signal.group = SIGNAL_ID;
   signal.href = "/signal";
@@ -793,6 +814,7 @@ function buildSignal(root: ShackNode): void {
       { group: SIGNAL_ID },
     );
   }
+  growDoor(signal, 1.55);
 }
 
 function buildArticles(root: ShackNode): void {
@@ -855,6 +877,7 @@ function buildArticles(root: ShackNode): void {
     PALETTE.fire,
     { rot: vec3(0, 0.08, 0), group: ARTICLES_ID },
   );
+  growDoor(articles, 1.75);
 }
 
 function buildTools(root: ShackNode): void {
@@ -933,6 +956,7 @@ function buildTools(root: ShackNode): void {
       { group: TOOLS_ID },
     );
   }
+  growDoor(tools, 1.55);
 }
 
 function buildTidechain(root: ShackNode): void {
@@ -980,6 +1004,7 @@ function buildTidechain(root: ShackNode): void {
     PALETTE.accent,
     { emissive: vec3(0.4, 0.15, 0.02), group: TIDECHAIN_ID },
   );
+  growDoor(clock, 2.15);
 }
 
 function buildLineup(root: ShackNode): void {
@@ -1065,6 +1090,7 @@ function buildLineup(root: ShackNode): void {
       { rot: vec3(0.05, b.yaw, 0.04), group: LINEUP_ID },
     );
   }
+  growDoor(lineup, 1.5);
 }
 
 function buildMuteBoards(root: ShackNode): void {
@@ -1143,6 +1169,7 @@ function buildFire(root: ShackNode): ShackNode {
     };
   }
 
+  growDoor(fire, 1.65, 0.35);
   return fire;
 }
 

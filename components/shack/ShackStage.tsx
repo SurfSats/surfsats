@@ -13,6 +13,7 @@ import {
   CAM_PRESET_IDS,
   CAM_PRESETS,
   cloneCam,
+  doorCam,
   parseCam,
   focusPreset,
   parseFocus,
@@ -176,7 +177,12 @@ export function ShackStage({
       runtime.exiting = true;
       focusPulseDone = true;
       setGroupHighlight(root, id);
-      const leave = () => routerRef.current.push(door.href);
+      const camId = doorCam(id);
+      const leave = () => {
+        const r = routerRef.current;
+        r.replace(`/lot?cam=${camId}`);
+        r.push(door.href);
+      };
       if (reducedMotion()) {
         leave();
         return;
@@ -185,8 +191,8 @@ export function ShackStage({
         cam,
         {
           yaw: cam.yaw,
-          pitch: 0.2,
-          dist: 3.35,
+          pitch: 0.14,
+          dist: 2.55,
           target: {
             x: door.look.x,
             y: door.look.y,

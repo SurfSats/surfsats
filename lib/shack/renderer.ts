@@ -67,8 +67,9 @@ void main() {
   vec3 ambient = uAmbient * (0.55 + 0.45 * max(N.y, 0.0));
   vec3 lit = albedo * (ambient + uLightColor * ndotl * atten);
   float rim = pow(1.0 - max(dot(N, V), 0.0), 2.0);
-  vec3 hi = vec3(1.0, 0.48, 0.09) * uHighlight * (0.18 + 0.55 * rim);
-  vec3 c = lit + uEmissive + hi;
+  vec3 hi = vec3(1.0, 0.55, 0.12) * uHighlight * (0.55 + 0.9 * rim);
+  vec3 em = uEmissive * (1.0 + uHighlight * 1.15);
+  vec3 c = lit + em + hi;
   c = c / (vec3(1.0) + c * 0.28);
   fragColor = vec4(c, 1.0);
 }
