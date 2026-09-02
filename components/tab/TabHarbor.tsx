@@ -449,12 +449,25 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                     onChoose={choose}
                   />
                 ) : (
-                  <p className="tab-invite">
-                    One credit. One stool. Talk until the ash falls.
-                  </p>
+                  <p className="tab-invite">One credit. One stool.</p>
                 )}
 
                 <div className="tab-coin">
+                  <label className="tab-alias">
+                    <span>CALLSIGN · 2–16</span>
+                    <input
+                      value={alias}
+                      maxLength={16}
+                      onChange={(event) => setAlias(event.target.value)}
+                      placeholder="YOUR ALIAS"
+                      autoCapitalize="characters"
+                      autoComplete="off"
+                      spellCheck={false}
+                      disabled={
+                        (mode === "sitting" && !actClosed) || mode === "invoice"
+                      }
+                    />
+                  </label>
                   <div className="tab-coin-row">
                     {credits > 0 && aliasOk && (mode !== "sitting" || actClosed) ? (
                       <button
@@ -490,21 +503,6 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                       <p>{formatTabCredits(credits)}</p>
                     </div>
                   </div>
-                  <label className="tab-alias">
-                    <span>CALLSIGN · 2–16</span>
-                    <input
-                      value={alias}
-                      maxLength={16}
-                      onChange={(event) => setAlias(event.target.value)}
-                      placeholder="YOUR ALIAS"
-                      autoCapitalize="characters"
-                      autoComplete="off"
-                      spellCheck={false}
-                      disabled={
-                        (mode === "sitting" && !actClosed) || mode === "invoice"
-                      }
-                    />
-                  </label>
                   {error ? <p className="tab-error">{error}</p> : null}
                 </div>
               </>

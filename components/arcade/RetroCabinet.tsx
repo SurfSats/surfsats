@@ -6,7 +6,6 @@ import { RetroScreen } from "@/components/arcade/RetroScreen";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import type { RetroPad } from "@/components/arcade/retroGames";
 import {
-  ARCADE_ALIAS_MAX,
   RETRO_GAMES,
   formatCredits,
   sanitizeAlias,
@@ -83,6 +82,9 @@ export function RetroCabinet({
               scoreCopied={scoreCopied}
               padRef={padRef}
               armed={armed}
+              alias={alias}
+              onAlias={onAlias}
+              aliasLocked={paying || pending}
               onPlay={onPlay}
               onInsert={onInsert}
               onGameOver={onGameOver}
@@ -119,20 +121,6 @@ export function RetroCabinet({
             </div>
           </div>
 
-          <label className="cab-alias">
-            <span>CALLSIGN · REQUIRED</span>
-            <input
-              value={alias}
-              maxLength={ARCADE_ALIAS_MAX}
-              onChange={(event) => onAlias(event.target.value)}
-              placeholder="YOUR ALIAS"
-              autoCapitalize="characters"
-              autoComplete="off"
-              spellCheck={false}
-              disabled={paying || pending}
-            />
-          </label>
-
           {playing ? (
             <div className="cab-pad" aria-label="Retro controls">
               <div className="cab-pad-dirs">
@@ -151,8 +139,8 @@ export function RetroCabinet({
           ) : !aliasOk && !canPlay ? (
             <p className="cab-hint">
               {game
-                ? "ENTER CALLSIGN (2–16) THEN INSERT ON THE GLASS"
-                : "PICK A GAME, THEN CALLSIGN, THEN INSERT ON THE GLASS"}
+                ? "CALLSIGN ON THE GLASS · THEN INSERT"
+                : "PICK A GAME, THEN CALLSIGN ON THE GLASS"}
             </p>
           ) : null}
 

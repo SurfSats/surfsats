@@ -2,7 +2,10 @@
 
 import { RetroGame } from "@/components/arcade/RetroGame";
 import type { RetroPad } from "@/components/arcade/retroGames";
-import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
+import {
+  CrtCallsign,
+  type ArcadeScreenMode,
+} from "@/components/arcade/ArcadeScreen";
 import {
   ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
@@ -21,6 +24,9 @@ export function RetroScreen({
   scoreCopied,
   padRef,
   armed = true,
+  alias,
+  onAlias,
+  aliasLocked = false,
   onPlay,
   onInsert,
   onGameOver,
@@ -34,6 +40,9 @@ export function RetroScreen({
   scoreCopied: boolean;
   padRef: MutableRefObject<RetroPad>;
   armed?: boolean;
+  alias: string;
+  onAlias: (value: string) => void;
+  aliasLocked?: boolean;
   onPlay: () => void;
   onInsert: () => void;
   onGameOver: (score: number) => void;
@@ -105,20 +114,27 @@ export function RetroScreen({
       ) : null}
 
       {mode === "attract" ? (
-        <button
-          type="button"
-          className="cab-crt-attract cab-crt-hit"
-          onClick={game ? onInsert : undefined}
-        >
-          <p className="cab-crt-insert cab-crt-blink">
-            {game ? `INSERT ${ARCADE_PRICE_SATS} SATS` : "PICK A GAME"}
-          </p>
-          <p className="cab-crt-sub">
-            {game
-              ? `${ARCADE_CREDITS_PER_PAY} CREDITS · ${label.toUpperCase()}`
-              : "PONG · TETRIS · SNAKE · BREAKOUT · INVADERS"}
-          </p>
-        </button>
+        <div className="cab-crt-attract">
+          <button
+            type="button"
+            className="cab-crt-verb"
+            onClick={game ? onInsert : undefined}
+          >
+            <p className="cab-crt-insert cab-crt-blink">
+              {game ? `INSERT ${ARCADE_PRICE_SATS} SATS` : "PICK A GAME"}
+            </p>
+            <p className="cab-crt-sub">
+              {game
+                ? `${ARCADE_CREDITS_PER_PAY} CREDITS · ${label.toUpperCase()}`
+                : "PONG · TETRIS · SNAKE · BREAKOUT · INVADERS"}
+            </p>
+          </button>
+          <CrtCallsign
+            alias={alias}
+            onAlias={onAlias}
+            disabled={aliasLocked}
+          />
+        </div>
       ) : null}
     </div>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ButtonLink } from "@/components/ui/ButtonLink";
 import { TerminalLabel } from "@/components/ui/TerminalLabel";
 import { cn } from "@/lib/cn";
 import {
@@ -189,7 +188,7 @@ export function LiveStream() {
       const target = event.target;
       if (
         target instanceof Element &&
-        target.closest(".ship-rx-play, .ship-rx-vol")
+        target.closest(".ship-rx-play, .ship-rx-vol, .ship-rx-links")
       ) {
         return;
       }
@@ -260,7 +259,7 @@ export function LiveStream() {
               )}
               aria-label={
                 blocked
-                  ? "Tap to tune in / play"
+                  ? "Tap to tune in"
                   : playing
                     ? "Pause stream"
                     : "Play stream"
@@ -268,7 +267,7 @@ export function LiveStream() {
               onClick={() => void togglePlay()}
             >
               {blocked ? (
-                <span>TAP TO TUNE IN / PLAY</span>
+                <span>TAP TO TUNE IN</span>
               ) : playing ? (
                 <PauseGlyph />
               ) : (
@@ -334,33 +333,16 @@ export function LiveStream() {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <ButtonLink
-          href={STREAM_LIVE_URL}
-          external
-          className="w-full px-5 py-3 sm:w-auto"
-        >
-          Open Noderunners Radio ↗
-        </ButtonLink>
-        <ButtonLink
-          href={FUNDING_URL}
-          external
-          variant="ghost"
-          className="w-full px-5 py-3 sm:w-auto"
-        >
-          Support the ship ↗
-        </ButtonLink>
-        <ButtonLink
-          href={STREAM_AUDIO_URL}
-          external
-          variant="ghost"
-          className="w-full px-5 py-3 sm:w-auto"
-        >
-          Open in player ↗
-        </ButtonLink>
-      </div>
-      <p className="mt-3 max-w-xl text-sm text-muted">
-        Support the ship if you just want to keep the transmitter warm.
+      <p className="ship-rx-links">
+        <a href={STREAM_LIVE_URL} target="_blank" rel="noreferrer">
+          noderunners radio
+        </a>
+        <a href={FUNDING_URL} target="_blank" rel="noreferrer">
+          support the ship
+        </a>
+        <a href={STREAM_AUDIO_URL} target="_blank" rel="noreferrer">
+          open in player
+        </a>
       </p>
     </section>
   );

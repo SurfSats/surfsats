@@ -6,6 +6,7 @@ import {
   type WaveRunnerHandle,
 } from "@/components/arcade/WaveRunner";
 import {
+  ARCADE_ALIAS_MAX,
   ARCADE_CREDITS_PER_PAY,
   ARCADE_GAME_LABEL,
   ARCADE_PRICE_SATS,
@@ -29,6 +30,9 @@ export function ArcadeScreen({
   scoreRank,
   scoreCopied,
   gameRef,
+  alias,
+  onAlias,
+  aliasLocked = false,
   onPlay,
   onInsert,
   onWipeout,
@@ -44,6 +48,9 @@ export function ArcadeScreen({
   scoreRank: number | null;
   scoreCopied: boolean;
   gameRef: RefObject<WaveRunnerHandle | null>;
+  alias: string;
+  onAlias: (value: string) => void;
+  aliasLocked?: boolean;
   onPlay: () => void;
   onInsert: () => void;
   onWipeout: (score: number) => void;
@@ -122,17 +129,48 @@ export function ArcadeScreen({
       ) : null}
 
       {mode === "attract" ? (
-        <button
-          type="button"
-          className="cab-crt-attract cab-crt-hit"
-          onClick={onInsert}
-        >
-          <p className="cab-crt-insert cab-crt-blink">INSERT {ARCADE_PRICE_SATS} SATS</p>
-          <p className="cab-crt-sub">
-            {ARCADE_CREDITS_PER_PAY} CREDITS · {ARCADE_GAME_LABEL}
-          </p>
-        </button>
+        <div className="cab-crt-attract">
+          <button type="button" className="cab-crt-verb" onClick={onInsert}>
+            <p className="cab-crt-insert cab-crt-blink">
+              INSERT {ARCADE_PRICE_SATS} SATS
+            </p>
+            <p className="cab-crt-sub">
+              {ARCADE_CREDITS_PER_PAY} CREDITS · {ARCADE_GAME_LABEL}
+            </p>
+          </button>
+          <CrtCallsign
+            alias={alias}
+            onAlias={onAlias}
+            disabled={aliasLocked}
+          />
+        </div>
       ) : null}
     </div>
+  );
+}
+
+export function CrtCallsign({
+  alias,
+  onAlias,
+  disabled = false,
+}: {
+  alias: string;
+  onAlias: (value: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <label className="cab-crt-alias">
+      <span>CALLSIGN · REQUIRED</span>
+      <input
+        value={alias}
+        maxLength={ARCADE_ALIAS_MAX}
+        onChange={(event) => onAlias(event.target.value)}
+        placeholder="YOUR ALIAS"
+        autoCapitalize="characters"
+        autoComplete="off"
+        spellCheck={false}
+        disabled={disabled}
+      />
+    </label>
   );
 }

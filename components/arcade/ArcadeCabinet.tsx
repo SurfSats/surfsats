@@ -1,11 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import {
-  ARCADE_ALIAS_MAX,
-  formatCredits,
-  sanitizeAlias,
-} from "@/lib/arcade";
+import { formatCredits, sanitizeAlias } from "@/lib/arcade";
 import type { RefObject } from "react";
 import {
   ArcadeScreen,
@@ -79,6 +75,9 @@ export function ArcadeCabinet({
               scoreRank={scoreRank}
               scoreCopied={scoreCopied}
               gameRef={gameRef}
+              alias={alias}
+              onAlias={onAlias}
+              aliasLocked={paying || pending}
               onPlay={onPlay}
               onInsert={onInsert}
               onWipeout={onWipeout}
@@ -119,22 +118,8 @@ export function ArcadeCabinet({
             </div>
           </div>
 
-          <label className="cab-alias">
-            <span>CALLSIGN · REQUIRED</span>
-            <input
-              value={alias}
-              maxLength={ARCADE_ALIAS_MAX}
-              onChange={(event) => onAlias(event.target.value)}
-              placeholder="YOUR ALIAS"
-              autoCapitalize="characters"
-              autoComplete="off"
-              spellCheck={false}
-              disabled={paying || pending}
-            />
-          </label>
-
           {!aliasOk && !canPlay ? (
-            <p className="cab-hint">ENTER CALLSIGN (2–16) THEN INSERT ON THE GLASS</p>
+            <p className="cab-hint">CALLSIGN ON THE GLASS · THEN INSERT</p>
           ) : null}
 
           {error ? <p className="cab-error">{error}</p> : null}

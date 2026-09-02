@@ -614,6 +614,26 @@ body {
   filter: brightness(1.08);
 }
 
+.ship-rx-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.ship-rx-links a {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ship-rx-links a:hover,
+.ship-rx-links a:focus-visible {
+  color: var(--cyan);
+}
+
 .ship-rx-air {
   flex-shrink: 0;
   font-family: var(--font-mono), ui-monospace, monospace;
@@ -4200,6 +4220,53 @@ body:has(.graffiti-page) .site-watermark {
   cursor: pointer;
 }
 
+.cab-crt-verb {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.cab-crt-alias {
+  display: flex;
+  width: min(100%, 14.5rem);
+  flex-direction: column;
+  gap: 0.22rem;
+  margin-top: 0.45rem;
+  pointer-events: auto;
+  text-align: left;
+}
+
+.cab-crt-alias span {
+  font-family: var(--font-arcade-pixel), monospace;
+  font-size: 0.42rem;
+  letter-spacing: 0.12em;
+  color: #7ad0e0;
+}
+
+.cab-crt-alias input {
+  width: 100%;
+  border: 1px solid #3a6a72;
+  background: #080808;
+  color: #ffb14a;
+  font-family: var(--font-arcade-pixel), monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  padding: 0.4rem 0.45rem;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.cab-crt-alias input:focus {
+  border-color: #ff7a18;
+}
+
+.cab-crt-alias input:disabled {
+  opacity: 0.6;
+}
+
 .cab-crt-result {
   display: flex;
   flex-direction: column;
@@ -4273,7 +4340,7 @@ body:has(.graffiti-page) .site-watermark {
 .cab-crt-play,
 .cab-crt-pay {
   position: relative;
-  z-index: 1;
+  z-index: 4;
   display: flex;
   height: 100%;
   flex-direction: column;
@@ -6816,7 +6883,7 @@ body:has(.tab-page) .site-watermark {
 
 .tab-alias {
   display: block;
-  margin-top: 0.55rem;
+  margin: 0 0 0.55rem;
 }
 
 .tab-alias input {
@@ -6902,6 +6969,20 @@ body:has(.tab-page) .site-watermark {
 
   .tab-boards {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 639px) {
+  .tab-page .console-deck {
+    order: -1;
+  }
+
+  .tab-page .console-stage {
+    min-height: min(28dvh, 14rem);
+  }
+
+  .tab-keep-img {
+    height: min(28vh, 12rem);
   }
 }
 
