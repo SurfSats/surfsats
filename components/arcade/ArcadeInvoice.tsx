@@ -1,5 +1,6 @@
 "use client";
 
+import { SettleRitual } from "@/components/pay/SettleRitual";
 import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
 
 export function ArcadeInvoice({
@@ -13,6 +14,8 @@ export function ArcadeInvoice({
   invoiceError,
   memo = `${ARCADE_CREDITS_PER_PAY} credits · WAVE RUNNER · SurfSats Arcade`,
   titleId = "arcade-pay-title",
+  settling = false,
+  onSettled,
   onCopy,
   onRetry,
   onCancel,
@@ -27,6 +30,8 @@ export function ArcadeInvoice({
   invoiceError: string | null;
   memo?: string;
   titleId?: string;
+  settling?: boolean;
+  onSettled?: () => void;
   onCopy: () => void;
   onRetry: () => void;
   onCancel: () => void;
@@ -36,8 +41,17 @@ export function ArcadeInvoice({
 
   return (
     <div className="arcade-pay" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-      <button type="button" className="arcade-pay-scrim" onClick={onCancel} aria-label="Close invoice" />
+      <button
+        type="button"
+        className="arcade-pay-scrim"
+        onClick={settling ? undefined : onCancel}
+        aria-label="Close invoice"
+      />
       <div className="arcade-pay-panel">
+        {settling && onSettled ? (
+          <SettleRitual subtitle={memo} titleId={titleId} onComplete={onSettled} />
+        ) : (
+          <>
         <p className="arcade-pay-kicker">lightning invoice</p>
         <h2 id={titleId} className="arcade-pay-title">
           INSERT {ARCADE_PRICE_SATS} SATS
@@ -105,6 +119,8 @@ export function ArcadeInvoice({
             BACK
           </button>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

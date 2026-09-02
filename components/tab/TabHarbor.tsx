@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { TabTalk } from "@/components/tab/TabTalk";
 import {
@@ -33,6 +34,7 @@ const FACE_SRC: Record<NonNullable<BarNode["face"]>, string> = {
 };
 
 export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
+  const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
@@ -172,7 +174,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
   }, [expiresAt, mode, nowTick]);
 
   useEffect(() => {
-    if (mode !== "invoice" || !paymentHash || expired) return;
+    if (mode !== "invoice" || !paymentHash || expired || settling) return;
     let cancelled = false;
     setWaiting(true);
 
@@ -190,13 +192,16 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
         };
         if (cancelled) return;
         if (data.paid && data.ok) {
-          setCredits(data.credits ?? 0);
+          const creditsNext = data.credits ?? 0;
           setInvoiceError(null);
           setWaiting(false);
-          setMode("idle");
-          setPaymentHash("");
-          setPaymentRequest("");
-          void loadBoards();
+          beginSettle(() => {
+            setCredits(creditsNext);
+            setMode("idle");
+            setPaymentHash("");
+            setPaymentRequest("");
+            void loadBoards();
+          });
           return;
         }
         if (data.paid && !data.ok) {
@@ -218,7 +223,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [expired, loadBoards, mode, paymentHash]);
+  }, [beginSettle, expired, loadBoards, mode, paymentHash, settling]);
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
@@ -377,7 +382,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
     setPending(false);
   }
 
-  const showInvoice = mode === "invoice" || pending;
+  const showInvoice = mode === "invoice" || pending || settling;
 
   return (
     <div className="tab-page">
@@ -572,8 +577,10 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
           remainLabel={remainLabel}
           copied={copied}
           invoiceError={invoiceError}
-          memo={`${TAB_CREDITS_PER_PAY} credits · THE TAB · SurfSats`}
+          memo={`${TAB_CREDITS_PER_PAY} credits · isolated pool · THE TAB`}
           titleId="tab-pay-title"
+          settling={settling}
+          onSettled={finishSettle}
           onCopy={() => void copyInvoice()}
           onRetry={() => void requestInvoice()}
           onCancel={cancelPay}

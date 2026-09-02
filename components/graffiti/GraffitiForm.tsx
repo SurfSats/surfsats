@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
+import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
 import { cn } from "@/lib/cn";
 import {
   GRAFFITI_MAX_CHARS,
@@ -52,6 +53,7 @@ export function GraffitiForm({
   onPaid: (mark: GraffitiMark) => void;
   onResetDraft: () => void;
 }) {
+  const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const [step, setStep] = useState<Step>("compose");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -113,7 +115,7 @@ export function GraffitiForm({
   }, [step, expiresAt, nowTick]);
 
   useEffect(() => {
-    if (step !== "invoice" || !paymentHash || expired) return;
+    if (step !== "invoice" || !paymentHash || expired || settling) return;
 
     let cancelled = false;
     setWaiting(true);
@@ -131,10 +133,13 @@ export function GraffitiForm({
         };
         if (cancelled) return;
         if (data.paid && data.mark) {
+          const mark = data.mark;
           setInvoiceError(null);
           setWaiting(false);
-          onPaid(data.mark);
-          reset();
+          beginSettle(() => {
+            onPaid(mark);
+            reset();
+          });
           return;
         }
         if (data.paid && !data.mark) {
@@ -158,7 +163,7 @@ export function GraffitiForm({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [step, paymentHash, onPaid, expired]);
+  }, [beginSettle, expired, onPaid, paymentHash, settling, step]);
 
   async function requestInvoice() {
     const next = sanitizeGraffiti(text);
@@ -372,6 +377,13 @@ export function GraffitiForm({
 
       {step === "invoice" ? (
         <div id="graf-invoice" className="graf-invoice-pane mt-5 border border-stone-600 bg-black/70 p-4">
+          {settling ? (
+            <SettleRitual
+              subtitle={`spray · ${GRAFFITI_PRICE_SATS} sats · ${GRAFFITI_TTL_HOURS}h`}
+              onComplete={finishSettle}
+            />
+          ) : (
+          <>
           <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
             invoice · {GRAFFITI_PRICE_SATS} sats ·{" "}
             {expired ? "expired" : "unpaid"}
@@ -482,6 +494,8 @@ export function GraffitiForm({
               edit mark
             </button>
           ) : null}
+          </>
+          )}
         </div>
       ) : null}
 

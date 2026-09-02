@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
 import {
   STORY_ALIAS_MAX,
   STORY_MAX_CHARS,
@@ -17,6 +18,7 @@ export function StoryComposer({
 }: {
   onPaid: (line: StoryLine) => void;
 }) {
+  const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const [text, setText] = useState("");
   const [alias, setAlias] = useState("");
   const [step, setStep] = useState<Step>("compose");
@@ -62,7 +64,7 @@ export function StoryComposer({
     const id = window.setInterval(() => setNowTick(Date.now()), 1000);
     document.body.style.overflow = "hidden";
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") cancelPay();
+      if (event.key === "Escape" && !settling) cancelPay();
     }
     window.addEventListener("keydown", onKey);
     return () => {
@@ -70,7 +72,7 @@ export function StoryComposer({
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
     };
-  }, [step]);
+  }, [settling, step]);
 
   useEffect(() => {
     if (step !== "invoice" || !expiresAt) return;
@@ -81,7 +83,7 @@ export function StoryComposer({
   }, [step, expiresAt, nowTick]);
 
   useEffect(() => {
-    if (step !== "invoice" || !paymentHash || expired) return;
+    if (step !== "invoice" || !paymentHash || expired || settling) return;
     let cancelled = false;
     setWaiting(true);
 
@@ -98,10 +100,13 @@ export function StoryComposer({
         };
         if (cancelled) return;
         if (data.paid && data.line) {
+          const line = data.line;
           setInvoiceError(null);
           setWaiting(false);
-          onPaid(data.line);
-          setStep("done");
+          beginSettle(() => {
+            onPaid(line);
+            setStep("done");
+          });
           return;
         }
         if (data.paid && !data.line) {
@@ -125,7 +130,7 @@ export function StoryComposer({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [step, paymentHash, onPaid, expired]);
+  }, [beginSettle, expired, onPaid, paymentHash, settling, step]);
 
   async function requestInvoice() {
     const nextLine = sanitizeStoryLine(text);
@@ -281,10 +286,17 @@ export function StoryComposer({
           <button
             type="button"
             className="story-pay-scrim"
-            onClick={cancelPay}
+            onClick={settling ? undefined : cancelPay}
             aria-label="Close invoice"
           />
           <div className="story-pay-panel">
+            {settling ? (
+              <SettleRitual
+                subtitle={`one sentence · ${STORY_PRICE_SATS} sats`}
+                onComplete={finishSettle}
+              />
+            ) : (
+            <>
             <p className="story-pay-kicker">lightning seal</p>
             <h3 id="story-pay-title" className="story-pay-title">
               Inscribe · {STORY_PRICE_SATS} sats
@@ -357,6 +369,8 @@ export function StoryComposer({
                 Back
               </button>
             </div>
+            </>
+            )}
           </div>
         </div>
       ) : null}

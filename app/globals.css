@@ -5368,6 +5368,135 @@ body:has(.graffiti-page) .site-watermark {
   color: #1a0e08;
 }
 
+.settle-ritual {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  text-align: center;
+}
+
+.settle-kicker {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.settle-title {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.35rem, 4vw, 1.7rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--sats);
+}
+
+.settle-ritual[data-phase="settled"] .settle-title {
+  color: var(--cyan);
+}
+
+.settle-sub {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.settle-well {
+  position: relative;
+  width: 100%;
+  height: 9.5rem;
+  overflow: hidden;
+  border: 1px solid rgb(61 255 243 / 0.28);
+  background: #07090c;
+}
+
+.settle-wave {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.settle-meter {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.55rem;
+  left: 0.6rem;
+  height: 2px;
+  background: rgb(255 255 255 / 0.12);
+}
+
+.settle-meter b {
+  display: block;
+  height: 100%;
+  background: var(--sats);
+  box-shadow: 0 0 8px var(--sats);
+}
+
+.settle-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  transform: translate(-50%, -50%);
+}
+
+.settle-mark svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.arcade-pay-panel .settle-kicker {
+  color: #0b6e6a;
+}
+
+.arcade-pay-panel .settle-title {
+  color: #ff7a18;
+}
+
+.arcade-pay-panel .settle-ritual[data-phase="settled"] .settle-title {
+  color: #0b6e6a;
+}
+
+.arcade-pay-panel .settle-sub {
+  color: #5a4030;
+}
+
+.story-pay-panel .settle-kicker {
+  color: #6a4a22;
+}
+
+.story-pay-panel .settle-title {
+  color: #ff7a18;
+}
+
+.story-pay-panel .settle-ritual[data-phase="settled"] .settle-title {
+  color: #0b6e6a;
+}
+
+.story-pay-panel .settle-sub {
+  color: #6a4a22;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settle-wave {
+    display: none;
+  }
+}
+
 .arcade-rail {
   position: relative;
   z-index: 1;

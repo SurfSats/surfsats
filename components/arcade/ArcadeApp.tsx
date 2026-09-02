@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArcadeCabinet } from "@/components/arcade/ArcadeCabinet";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import type { WaveRunnerHandle } from "@/components/arcade/WaveRunner";
 import {
@@ -28,6 +29,7 @@ export function ArcadeApp({
   front?: boolean;
   onBringForward?: () => void;
 }) {
+  const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
@@ -149,7 +151,7 @@ export function ArcadeApp({
   }, [mode, expiresAt, nowTick]);
 
   useEffect(() => {
-    if (mode !== "invoice" || !paymentHash || expired) return;
+    if (mode !== "invoice" || !paymentHash || expired || settling) return;
     let cancelled = false;
     setWaiting(true);
 
@@ -167,13 +169,16 @@ export function ArcadeApp({
         };
         if (cancelled) return;
         if (data.paid && data.ok) {
-          setCredits(data.credits ?? 0);
+          const creditsNext = data.credits ?? 0;
           setInvoiceError(null);
           setWaiting(false);
-          setMode((data.credits ?? 0) > 0 ? "ready" : "attract");
-          setPaymentHash("");
-          setPaymentRequest("");
-          void loadBoards();
+          beginSettle(() => {
+            setCredits(creditsNext);
+            setMode(creditsNext > 0 ? "ready" : "attract");
+            setPaymentHash("");
+            setPaymentRequest("");
+            void loadBoards();
+          });
           return;
         }
         if (data.paid && !data.ok) {
@@ -195,7 +200,7 @@ export function ArcadeApp({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [mode, paymentHash, expired, loadBoards]);
+  }, [beginSettle, expired, loadBoards, mode, paymentHash, settling]);
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
@@ -405,12 +410,12 @@ export function ArcadeApp({
     setPending(false);
   }
 
-  const showInvoice = screenMode === "invoice" || pending;
+  const showInvoice = screenMode === "invoice" || pending || settling;
 
   useEffect(() => {
     if (!showInvoice) return;
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") cancelPay();
+      if (event.key === "Escape" && !settling) cancelPay();
     }
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -418,7 +423,7 @@ export function ArcadeApp({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [showInvoice]);
+  }, [settling, showInvoice]);
 
   return (
     <div className={`arcade-bay arcade-bay-wave ${front ? "is-front" : "is-back"}`}>
@@ -459,6 +464,8 @@ export function ArcadeApp({
           remainLabel={remainLabel}
           copied={copied}
           invoiceError={invoiceError}
+          settling={settling}
+          onSettled={finishSettle}
           onCopy={() => void copyInvoice()}
           onRetry={() => void requestInvoice()}
           onCancel={cancelPay}

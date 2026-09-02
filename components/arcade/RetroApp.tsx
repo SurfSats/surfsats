@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { RetroCabinet } from "@/components/arcade/RetroCabinet";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import { emptyPad, type RetroPad } from "@/components/arcade/retroGames";
@@ -32,6 +33,7 @@ export function RetroApp({
   front?: boolean;
   onBringForward?: () => void;
 }) {
+  const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
@@ -171,7 +173,7 @@ export function RetroApp({
   }, [mode, expiresAt, nowTick]);
 
   useEffect(() => {
-    if (mode !== "invoice" || !paymentHash || expired) return;
+    if (mode !== "invoice" || !paymentHash || expired || settling) return;
     let cancelled = false;
     setWaiting(true);
 
@@ -189,13 +191,16 @@ export function RetroApp({
         };
         if (cancelled) return;
         if (data.paid && data.ok) {
-          setCredits(data.credits ?? 0);
+          const creditsNext = data.credits ?? 0;
           setInvoiceError(null);
           setWaiting(false);
-          setMode((data.credits ?? 0) > 0 ? "ready" : "attract");
-          setPaymentHash("");
-          setPaymentRequest("");
-          void loadBoards();
+          beginSettle(() => {
+            setCredits(creditsNext);
+            setMode(creditsNext > 0 && game ? "ready" : "attract");
+            setPaymentHash("");
+            setPaymentRequest("");
+            void loadBoards();
+          });
           return;
         }
         if (data.paid && !data.ok) {
@@ -217,7 +222,7 @@ export function RetroApp({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [mode, paymentHash, expired, loadBoards]);
+  }, [beginSettle, expired, game, loadBoards, mode, paymentHash, settling]);
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
@@ -440,12 +445,12 @@ export function RetroApp({
     setPending(false);
   }
 
-  const showInvoice = screenMode === "invoice" || pending;
+  const showInvoice = screenMode === "invoice" || pending || settling;
 
   useEffect(() => {
     if (!showInvoice) return;
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") cancelPay();
+      if (event.key === "Escape" && !settling) cancelPay();
     }
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -453,7 +458,7 @@ export function RetroApp({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [showInvoice]);
+  }, [settling, showInvoice]);
 
   function onPad(key: keyof RetroPad, down: boolean) {
     padRef.current[key] = down;
@@ -507,6 +512,8 @@ export function RetroApp({
           invoiceError={invoiceError}
           memo={gameMemo}
           titleId="arcade-pay-title-retro"
+          settling={settling}
+          onSettled={finishSettle}
           onCopy={() => void copyInvoice()}
           onRetry={() => void requestInvoice()}
           onCancel={cancelPay}
