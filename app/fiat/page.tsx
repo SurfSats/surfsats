@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import { FiatApp } from "@/components/fiat/FiatApp";
 import { ReadoutShell } from "@/components/layout/ReadoutShell";
 import { getFiatDebt } from "@/lib/fiat";
+import { pageMeta } from "@/lib/seo";
 import { getTimechainSnapshot } from "@/lib/timechain";
 
 export const revalidate = 600;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "DIRTY FIAT",
   description: "The printer does not sleep. Bitcoin does not print.",
-};
+  path: "/fiat",
+});
 
 export default async function FiatPage() {
   const [debt, chain] = await Promise.all([

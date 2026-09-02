@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 
-export const metadata: Metadata = {
+import { pageMeta } from "@/lib/seo";
+
+export const metadata: Metadata = pageMeta({
   title: "About",
   description:
     "SurfSats exists to show fun, fast, cheap Lightning in action. 21 sats. Feel the speed. Sats in, sats out.",
-};
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (

@@ -3,12 +3,14 @@ import path from "node:path";
 import type { Metadata } from "next";
 import { TabHarbor } from "@/components/tab/TabHarbor";
 import { parseBarTree } from "@/lib/bar-tree";
+import { pageMeta } from "@/lib/seo";
 import { TAB_CREDITS_PER_PAY, TAB_PRICE_SATS } from "@/lib/tab";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "THE TAB",
   description: `${TAB_PRICE_SATS} sats. ${TAB_CREDITS_PER_PAY} credits. One sitting. No KYC. We don't HODL.`,
-};
+  path: "/tab",
+});
 
 async function readTree() {
   try {

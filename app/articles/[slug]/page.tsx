@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { getArticle, getArticles } from "@/lib/articles";
 import { formatDate } from "@/lib/format";
+import { pageMeta } from "@/lib/seo";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
@@ -20,13 +21,19 @@ export async function generateMetadata({
   const article = getArticle(slug);
 
   if (!article) {
-    return { title: "Article" };
+    return pageMeta({
+      title: "Article",
+      description: "Dispatch missing. The swell already passed.",
+      path: `/articles/${slug}`,
+    });
   }
 
-  return {
+  return pageMeta({
     title: article.title,
     description: article.excerpt,
-  };
+    path: `/articles/${article.slug}`,
+    type: "article",
+  });
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {

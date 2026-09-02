@@ -4,11 +4,14 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { getToolDirectory } from "@/lib/tools";
 
-export const metadata: Metadata = {
+import { pageMeta } from "@/lib/seo";
+
+export const metadata: Metadata = pageMeta({
   title: "Toolbox",
   description:
     "A Bitcoin playground: music, Nostr, maps, games, and spend rails. Tools for ocean time and Bitcoin time.",
-};
+  path: "/tools",
+});
 
 export default function ToolsPage() {
   const directory = getToolDirectory();

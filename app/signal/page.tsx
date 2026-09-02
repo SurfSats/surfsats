@@ -11,14 +11,16 @@ import {
   getLatestHandpicked,
   getStandingHandpicked,
 } from "@/lib/handpicked";
+import { pageMeta } from "@/lib/seo";
 
 export const revalidate = 1800;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Signal",
   description:
     "Hand-picked Bitcoin + surf culture signal, SurfSats articles, and underground pleb feeds.",
-};
+  path: "/signal",
+});
 
 export default async function SignalPage() {
   const latest = getLatestHandpicked();

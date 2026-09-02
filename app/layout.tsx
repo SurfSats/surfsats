@@ -5,6 +5,7 @@ import { LiveSignalBar } from "@/components/layout/LiveSignalBar";
 import { Navbar } from "@/components/layout/Navbar";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { Watermark } from "@/components/layout/Watermark";
+import { OG_HOME, SITE_ORIGIN, pageMeta } from "@/lib/seo";
 import { getTimechainSnapshot } from "@/lib/timechain";
 import "./globals.css";
 
@@ -20,34 +21,23 @@ const oxanium = Oxanium({
   weight: ["500", "600", "700", "800"],
 });
 
-const ogImage = "https://www.surfsats.com/og-home.png";
-const ogDescription = "No banks. No bosses. No closed beach signs.";
-
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_ORIGIN),
+  ...pageMeta({
+    title: "SurfSats · no banks, no bosses",
+    description:
+      "Lightning sandbox. Five machines on the floor. 21 sats. No accounts.",
+    path: "/",
+    absoluteTitle: true,
+    image: OG_HOME,
+  }),
   title: {
-    default: "SurfSats",
+    default: "SurfSats · no banks, no bosses",
     template: "%s · SurfSats",
   },
-  description:
-    "Bitcoin + surf lifestyle. Stories from the lineup and a global jukebox you can feed with 21 sats.",
   icons: {
     icon: "/brand/mark-circle-512.png",
     apple: "/brand/mark-circle-512.png",
-  },
-  openGraph: {
-    title: "SurfSats",
-    description: ogDescription,
-    images: [
-      {
-        url: ogImage,
-        width: 1200,
-        height: 630,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    images: [ogImage],
   },
 };
 
