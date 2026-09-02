@@ -181,10 +181,24 @@ export function LineupCanvas({
           const hit = restHit(tile, tiles, i);
           if (tile.y + tile.size >= floor) {
             tile.y = floor - tile.size;
-            tiles[i] = { ...tile, kind: "rest" };
+            tiles[i] = {
+              kind: "rest",
+              txid: tile.txid,
+              value: tile.value,
+              size: tile.size,
+              x: tile.x,
+              y: tile.y,
+            };
           } else if (hit) {
             tile.y = hit.y - tile.size;
-            tiles[i] = { ...tile, kind: "rest" };
+            tiles[i] = {
+              kind: "rest",
+              txid: tile.txid,
+              value: tile.value,
+              size: tile.size,
+              x: tile.x,
+              y: tile.y,
+            };
           }
         } else if (tile.kind === "pack") {
           if (reducedMotion) {
@@ -256,7 +270,7 @@ function spawnTile(tx: LiveTx, canvas: HTMLCanvasElement, reduced: boolean): Til
   const x = 6 + Math.random() * Math.max(4, box.width - size - 12);
   if (reduced) {
     return land(
-      { kind: "fall", txid: tx.txid, value: tx.value, size, x, y: 0, vy: 0 },
+      { txid: tx.txid, value: tx.value, size, x },
       [],
       box.width,
       box.height - 8,
