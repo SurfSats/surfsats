@@ -303,7 +303,7 @@ export function makeView(eye: Vec3, target: Vec3, out: Mat4): Mat4 {
 export function makeProj(
   aspect: number,
   out: Mat4,
-  fovy = (50 * Math.PI) / 180,
+  fovy = (58 * Math.PI) / 180,
 ): Mat4 {
   return mat4Perspective(fovy, aspect, 0.12, 48, out);
 }

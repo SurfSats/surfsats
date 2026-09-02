@@ -7,13 +7,13 @@ export const ROOM_X = ROOM_W / 2;
 export const ROOM_Z = ROOM_D / 2;
 
 export const FIRE_POS = vec3(0, 0, 0.8);
-export const DEFAULT_TARGET = vec3(0, 1.05, 0.2);
+export const DEFAULT_TARGET = vec3(0.15, 0.92, 0.55);
 
 export const ORBIT = {
-  distMin: 3.2,
-  distMax: 6.8,
-  pitchMin: 0.08,
-  pitchMax: 0.7,
+  distMin: 2.35,
+  distMax: 5.8,
+  pitchMin: 0.04,
+  pitchMax: 0.55,
 } as const;
 
 export const CAM_PRESET_IDS = ["floor", "wall", "bar", "pit", "bench"] as const;
@@ -28,34 +28,34 @@ export type OrbitCam = {
 
 export const CAM_PRESETS: Record<CamPresetId, OrbitCam> = {
   floor: {
-    yaw: -0.42,
-    pitch: 0.32,
-    dist: 5.8,
-    target: vec3(0, 1.05, 0.2),
+    yaw: -0.38,
+    pitch: 0.16,
+    dist: 3.65,
+    target: vec3(0.15, 0.92, 0.55),
   },
   wall: {
-    yaw: 0.08,
-    pitch: 0.24,
-    dist: 6.0,
-    target: vec3(-1.2, 1.8, -4.4),
+    yaw: 0.06,
+    pitch: 0.1,
+    dist: 3.45,
+    target: vec3(-1.8, 1.38, -4.9),
   },
   bar: {
-    yaw: 1.45,
-    pitch: 0.28,
-    dist: 5.4,
-    target: vec3(-5.4, 1.1, -0.2),
+    yaw: 1.58,
+    pitch: 0.12,
+    dist: 3.35,
+    target: vec3(-6.4, 1.12, -0.5),
   },
   pit: {
-    yaw: -1.35,
-    pitch: 0.28,
-    dist: 5.4,
-    target: vec3(5.2, 1.2, 0.6),
+    yaw: -1.57,
+    pitch: 0.1,
+    dist: 3.3,
+    target: vec3(6.15, 1.15, 1.35),
   },
   bench: {
-    yaw: -0.85,
-    pitch: 0.38,
-    dist: 5.2,
-    target: vec3(4.6, 1.0, -3.2),
+    yaw: -0.95,
+    pitch: 0.16,
+    dist: 3.4,
+    target: vec3(5.5, 0.9, -3.15),
   },
 };
 

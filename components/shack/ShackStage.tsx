@@ -39,8 +39,6 @@ import {
 } from "@/lib/shack/scene";
 
 const HINT = "drag to orbit · scroll to zoom · tap a thing to go there";
-const TOAST = "the shack · tap a thing to go there · this is not the menu";
-const SEEN_KEY = "shack.seen";
 
 function readFlag(key: string): boolean {
   try {
@@ -95,21 +93,12 @@ export function ShackStage({
   const [glOk, setGlOk] = useState<boolean | null>(null);
   const [aa, setAa] = useState(false);
   const [hint, setHint] = useState(true);
-  const [toast, setToast] = useState(false);
   const [speech, setSpeech] = useState<string | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(
     null,
   );
   const [dragging, setDragging] = useState(false);
   const [hovering, setHovering] = useState(false);
-
-  useEffect(() => {
-    if (readFlag(SEEN_KEY)) return;
-    setToast(true);
-    writeFlag(SEEN_KEY);
-    const id = window.setTimeout(() => setToast(false), 6400);
-    return () => window.clearTimeout(id);
-  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -312,8 +301,10 @@ export function ShackStage({
       <div className="shack-hud">
         <div className="shack-hud-top">
           <div className="shack-brand">
-            <h1 className="shack-title">The Shack</h1>
-            <p className="shack-kicker">side door · not the front door</p>
+            <h1 className="shack-title">
+              The Shack{" "}
+              <span>/ side door · not the front door</span>
+            </h1>
           </div>
           <div className="shack-pills" role="group" aria-label="Camera">
             {CAM_PRESET_IDS.map((id) => (
@@ -331,8 +322,6 @@ export function ShackStage({
         </div>
 
         {hint ? <p className="shack-hint">{HINT}</p> : null}
-
-        {toast ? <p className="shack-toast">{TOAST}</p> : null}
 
         {speech ? <p className="shack-speech">{speech}</p> : null}
 
