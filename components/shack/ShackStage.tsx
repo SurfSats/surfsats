@@ -156,7 +156,7 @@ export function ShackStage({
         canvas.clientWidth / Math.max(canvas.clientHeight, 1) || 1;
       makeProj(aspect, proj);
       makeView(eye, cam.target, view);
-      renderer.draw(root, view, proj, eye);
+      renderer.draw(root, view, proj, eye, last / 1000);
     };
 
     const runtime: Runtime = {

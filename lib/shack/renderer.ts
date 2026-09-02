@@ -18,21 +18,26 @@ const VERT = `#version 300 es
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aNormal;
 layout(location = 2) in vec3 aColor;
+layout(location = 3) in vec2 aUv;
 
 uniform mat4 uProj;
 uniform mat4 uView;
 uniform mat4 uModel;
 uniform mat3 uN;
+uniform vec2 uUvOff;
+uniform vec2 uUvScl;
 
 out vec3 vWorldPos;
 out vec3 vNormal;
 out vec3 vColor;
+out vec2 vUv;
 
 void main() {
   vec4 world = uModel * vec4(aPos, 1.0);
   vWorldPos = world.xyz;
   vNormal = uN * aNormal;
   vColor = aColor;
+  vUv = uUvOff + aUv * uUvScl;
   gl_Position = uProj * uView * world;
 }
 `;
@@ -43,6 +48,7 @@ precision highp float;
 in vec3 vWorldPos;
 in vec3 vNormal;
 in vec3 vColor;
+in vec2 vUv;
 
 uniform vec3 uColor;
 uniform vec3 uEmissive;
@@ -52,6 +58,10 @@ uniform float uLightIntensity;
 uniform vec3 uAmbient;
 uniform vec3 uCamPos;
 uniform float uHighlight;
+uniform sampler2D uTex;
+uniform float uUseTex;
+uniform float uTime;
+uniform float uSpark;
 
 out vec4 fragColor;
 
@@ -64,11 +74,21 @@ void main() {
   float atten = uLightIntensity / (1.0 + 0.09 * dist * dist);
   float ndotl = max(dot(N, L), 0.0);
   vec3 albedo = vColor * uColor;
+  if (uUseTex > 0.5) {
+    albedo *= texture(uTex, vUv).rgb;
+  }
+  float flicker = 1.0;
+  if (uSpark > 0.5) {
+    float hash = fract(sin(floor(uTime * 18.0) * 12.9898) * 43758.5453);
+    flicker = 0.78 + 0.22 * step(0.12, hash);
+    flicker *= 0.9 + 0.1 * sin(vUv.y * 72.0 + uTime * 7.0);
+  }
+  albedo *= flicker;
   vec3 ambient = uAmbient * (0.55 + 0.45 * max(N.y, 0.0));
   vec3 lit = albedo * (ambient + uLightColor * ndotl * atten);
   float rim = pow(1.0 - max(dot(N, V), 0.0), 2.0);
   vec3 hi = vec3(1.0, 0.55, 0.12) * uHighlight * (0.55 + 0.9 * rim);
-  vec3 em = uEmissive * (1.0 + uHighlight * 1.15);
+  vec3 em = uEmissive * (1.0 + uHighlight * 1.15) * flicker;
   vec3 c = lit + em + hi;
   c = c / (vec3(1.0) + c * 0.28);
   fragColor = vec4(c, 1.0);
@@ -94,6 +114,12 @@ type Program = {
   uAmbient: WebGLUniformLocation;
   uCamPos: WebGLUniformLocation;
   uHighlight: WebGLUniformLocation;
+  uTex: WebGLUniformLocation;
+  uUseTex: WebGLUniformLocation;
+  uUvOff: WebGLUniformLocation;
+  uUvScl: WebGLUniformLocation;
+  uTime: WebGLUniformLocation;
+  uSpark: WebGLUniformLocation;
 };
 
 export type ShackRenderer = {
@@ -102,7 +128,7 @@ export type ShackRenderer = {
   ok: boolean;
   aa: boolean;
   resize: () => void;
-  draw: (root: ShackNode, view: Mat4, proj: Mat4, eye: Vec3) => void;
+  draw: (root: ShackNode, view: Mat4, proj: Mat4, eye: Vec3, time: number) => void;
   viewProjInv: () => Mat4;
   dispose: () => void;
 };
@@ -158,6 +184,12 @@ function link(gl: WebGL2RenderingContext, vert: string, frag: string): Program {
     uAmbient: uni("uAmbient"),
     uCamPos: uni("uCamPos"),
     uHighlight: uni("uHighlight"),
+    uTex: uni("uTex"),
+    uUseTex: uni("uUseTex"),
+    uUvOff: uni("uUvOff"),
+    uUvScl: uni("uUvScl"),
+    uTime: uni("uTime"),
+    uSpark: uni("uSpark"),
   };
 }
 
@@ -183,6 +215,12 @@ function upload(gl: WebGL2RenderingContext, geom: Geometry): GpuMesh {
   gl.bufferData(gl.ARRAY_BUFFER, geom.colors, gl.STATIC_DRAW);
   gl.enableVertexAttribArray(2);
   gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
+
+  const uv = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, uv);
+  gl.bufferData(gl.ARRAY_BUFFER, geom.uvs, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(3);
+  gl.vertexAttribPointer(3, 2, gl.FLOAT, false, 0, 0);
 
   const idx = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idx);
@@ -231,6 +269,48 @@ export function createRenderer(
   const inv = mat4();
   const normal = new Float32Array(9);
   const lightPos = vec3(FIRE_POS.x, 0.85, FIRE_POS.z);
+  const texCache = new Map<string, WebGLTexture | null>();
+  const texPending = new Set<string>();
+  const white = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, white);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    1,
+    1,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    new Uint8Array([255, 255, 255, 255]),
+  );
+
+  const loadTex = (url: string) => {
+    if (texCache.has(url) || texPending.has(url)) return;
+    texPending.add(url);
+    const img = new Image();
+    img.onload = () => {
+      const t = gl.createTexture();
+      if (!t) {
+        texCache.set(url, null);
+        return;
+      }
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      texCache.set(url, t);
+    };
+    img.onerror = () => {
+      texCache.set(url, null);
+    };
+    img.src = url;
+  };
 
   const resize = () => {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -243,7 +323,7 @@ export function createRenderer(
     gl.viewport(0, 0, canvas.width, canvas.height);
   };
 
-  const draw = (root: ShackNode, v: Mat4, p: Mat4, eye: Vec3) => {
+  const draw = (root: ShackNode, v: Mat4, p: Mat4, eye: Vec3, time: number) => {
     view.set(v);
     proj.set(p);
     mat4Mul(proj, view, viewProj);
@@ -258,6 +338,10 @@ export function createRenderer(
     gl.uniform1f(program.uLightIntensity, 16);
     gl.uniform3f(program.uAmbient, AMBIENT.x, AMBIENT.y, AMBIENT.z);
     gl.uniform3f(program.uCamPos, eye.x, eye.y, eye.z);
+    gl.uniform1i(program.uTex, 0);
+    gl.uniform1f(program.uTime, time);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, white);
 
     walk(root, (node) => {
       const mesh = node.mesh;
@@ -275,6 +359,28 @@ export function createRenderer(
         mesh.emissive.z,
       );
       gl.uniform1f(program.uHighlight, node.highlight ? 1 : 0);
+      gl.uniform2f(
+        program.uUvOff,
+        mesh.uvOff ? mesh.uvOff[0] : 0,
+        mesh.uvOff ? mesh.uvOff[1] : 0,
+      );
+      gl.uniform2f(
+        program.uUvScl,
+        mesh.uvScl ? mesh.uvScl[0] : 1,
+        mesh.uvScl ? mesh.uvScl[1] : 1,
+      );
+      gl.uniform1f(program.uSpark, mesh.spark === "crt" ? 1 : 0);
+      let useTex = 0;
+      if (mesh.tex) {
+        loadTex(mesh.tex);
+        const gpuTex = texCache.get(mesh.tex);
+        if (gpuTex) {
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, gpuTex);
+          useTex = 1;
+        }
+      }
+      gl.uniform1f(program.uUseTex, useTex);
       gl.bindVertexArray(gpu.vao);
       gl.drawElements(gl.TRIANGLES, gpu.count, gl.UNSIGNED_SHORT, 0);
     });
@@ -292,6 +398,11 @@ export function createRenderer(
     draw,
     viewProjInv: () => inv,
     dispose: () => {
+      for (const t of texCache.values()) {
+        if (t) gl.deleteTexture(t);
+      }
+      texCache.clear();
+      if (white) gl.deleteTexture(white);
       gl.deleteProgram(program.id);
     },
   };

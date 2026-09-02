@@ -10,8 +10,16 @@ import {
 } from "./presets";
 import { addChild, createNode, type ShackNode } from "./scene";
 
+export const SHACK_TEX = {
+  cabinet: "/arcade-cabinet-front.jpg",
+  tab: "/tab/art/tab-night.jpg",
+  ship: "/jukebox-ship.png",
+  story: "/story-writer-quarters.jpg",
+  fiat: "/dirty-fiat-bg.jpg",
+} as const;
+
 export const PALETTE = {
-  wood: hexRgb("#3d342a"),
+  wood: hexRgb("#32281f"),
   trim: hexRgb("#534536"),
   floorA: hexRgb("#2c241c"),
   floorB: hexRgb("#3a2e24"),
@@ -221,6 +229,10 @@ function addBox(
     rot?: Vec3;
     group?: string;
     href?: string;
+    tex?: string;
+    uvOff?: readonly [number, number];
+    uvScl?: readonly [number, number];
+    spark?: "crt";
   },
 ): ShackNode {
   const n = createNode(id);
@@ -231,6 +243,10 @@ function addBox(
     kind: "box",
     color,
     emissive: opts?.emissive ?? vec3(),
+    tex: opts?.tex,
+    uvOff: opts?.uvOff,
+    uvScl: opts?.uvScl,
+    spark: opts?.spark,
   };
   if (opts?.group) n.group = opts.group;
   if (opts?.href) n.href = opts.href;
@@ -335,9 +351,11 @@ function buildTab(root: ShackNode): void {
 
   addBox(tab, "tab-carcass", vec3(0, 0.525, 0), vec3(0.9, 1.05, 3.6), PALETTE.wood, {
     group: TAB_ID,
+    tex: SHACK_TEX.tab,
   });
   addBox(tab, "tab-top", vec3(0.04, 1.07, 0), vec3(1.02, 0.06, 3.72), PALETTE.trim, {
     group: TAB_ID,
+    tex: SHACK_TEX.tab,
   });
   addBox(tab, "tab-rail", vec3(0.5, 0.16, 0), vec3(0.05, 0.04, 3.35), PALETTE.iron, {
     group: TAB_ID,
@@ -349,6 +367,7 @@ function buildTab(root: ShackNode): void {
   addChild(tab, stool);
   addBox(stool, "tab-seat", vec3(0, 0.48, 0), vec3(0.34, 0.05, 0.34), PALETTE.trim, {
     group: TAB_ID,
+    tex: SHACK_TEX.tab,
   });
   addBox(stool, "tab-post", vec3(0, 0.24, 0), vec3(0.055, 0.44, 0.055), PALETTE.wood, {
     group: TAB_ID,
@@ -415,6 +434,7 @@ function buildFiat(root: ShackNode): void {
 
   addBox(fiat, "fiat-sheet", vec3(0, 0, 0), vec3(0.03, 1.25, 0.95), PALETTE.fiat, {
     group: FIAT_ID,
+    tex: SHACK_TEX.fiat,
   });
   addBox(
     fiat,
@@ -497,7 +517,7 @@ function buildArcade(root: ShackNode): void {
     vec3(0, 0.86, 0),
     vec3(0.72, 1.72, 0.78),
     PALETTE.cabIron,
-    { group: ARCADE_ID },
+    { group: ARCADE_ID, tex: SHACK_TEX.cabinet },
   );
   addBox(
     arcade,
@@ -513,7 +533,14 @@ function buildArcade(root: ShackNode): void {
     vec3(-0.38, 1.18, 0),
     vec3(0.02, 0.46, 0.5),
     PALETTE.crt,
-    { emissive: vec3(0.22, 0.48, 0.58), group: ARCADE_ID },
+    {
+      emissive: vec3(0.22, 0.48, 0.58),
+      group: ARCADE_ID,
+      tex: SHACK_TEX.cabinet,
+      uvOff: [0.22, 0.46],
+      uvScl: [0.56, 0.24],
+      spark: "crt",
+    },
   );
   addBox(
     arcade,
@@ -581,6 +608,7 @@ function buildMusic(root: ShackNode): void {
   music.group = MUSIC_ID;
   music.href = "/music";
   addChild(root, music);
+  // Icecast live stream stays on /music. Do not play it in the shack this pass.
 
   addBox(
     music,
@@ -588,7 +616,7 @@ function buildMusic(root: ShackNode): void {
     vec3(0, 0.5, 0),
     vec3(0.55, 1.0, 0.7),
     PALETTE.violet,
-    { group: MUSIC_ID },
+    { group: MUSIC_ID, tex: SHACK_TEX.ship },
   );
   addBox(
     music,
@@ -643,7 +671,7 @@ function buildStory(root: ShackNode): void {
     vec3(0, 0.19, 0),
     vec3(0.7, 0.38, 0.55),
     PALETTE.wood,
-    { group: STORY_ID },
+    { group: STORY_ID, tex: SHACK_TEX.story },
   );
   addBox(
     story,
@@ -675,7 +703,7 @@ function buildStory(root: ShackNode): void {
     vec3(0.04, 0.42, 0.02),
     vec3(0.42, 0.07, 0.3),
     PALETTE.book,
-    { group: STORY_ID },
+    { group: STORY_ID, tex: SHACK_TEX.story },
   );
   addBox(
     story,
@@ -704,6 +732,7 @@ function buildGraffiti(root: ShackNode): void {
   graffiti.href = "/graffiti";
   addChild(root, graffiti);
 
+  // no wall photo in public; stains stay vertex color (graffiti room treatment)
   const wet = vec3(0.55, 0.28, 0.04);
   const stains: Array<{
     id: string;

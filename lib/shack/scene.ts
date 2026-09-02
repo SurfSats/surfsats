@@ -24,6 +24,10 @@ export type MeshStyle = {
   color: Vec3;
   emissive: Vec3;
   geometry?: Geometry;
+  tex?: string;
+  uvOff?: readonly [number, number];
+  uvScl?: readonly [number, number];
+  spark?: "crt";
 };
 
 export type Pulse = {

@@ -4,6 +4,7 @@ export type Geometry = {
   positions: Float32Array;
   normals: Float32Array;
   colors: Float32Array;
+  uvs: Float32Array;
   indices: Uint16Array;
 };
 
@@ -11,12 +12,14 @@ function pack(
   positions: number[],
   normals: number[],
   colors: number[],
+  uvs: number[],
   indices: number[],
 ): Geometry {
   return {
     positions: new Float32Array(positions),
     normals: new Float32Array(normals),
     colors: new Float32Array(colors),
+    uvs: new Float32Array(uvs),
     indices: new Uint16Array(indices),
   };
 }
@@ -83,19 +86,27 @@ export function createBox(): Geometry {
   const positions: number[] = [];
   const normals: number[] = [];
   const colors: number[] = [];
+  const uvs: number[] = [];
   const indices: number[] = [];
+  const faceUv: Array<[number, number]> = [
+    [0, 0],
+    [1, 0],
+    [1, 1],
+    [0, 1],
+  ];
 
   for (const face of faces) {
     const base = positions.length / 3;
-    for (const p of face.q) {
+    face.q.forEach((p, i) => {
       positions.push(p.x, p.y, p.z);
       normals.push(face.n.x, face.n.y, face.n.z);
       colors.push(1, 1, 1);
-    }
+      uvs.push(faceUv[i][0], faceUv[i][1]);
+    });
     indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
   }
 
-  return pack(positions, normals, colors, indices);
+  return pack(positions, normals, colors, uvs, indices);
 }
 
 /** Unit XZ panel, origin at center, +Y normal. */
@@ -105,8 +116,9 @@ export function createPanel(): Geometry {
   ];
   const normals = [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0];
   const colors = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+  const uvs = [0, 0, 1, 0, 1, 1, 0, 1];
   const indices = [0, 1, 2, 0, 2, 3];
-  return pack(positions, normals, colors, indices);
+  return pack(positions, normals, colors, uvs, indices);
 }
 
 /** Checker floor in meters, centered on origin, y = 0, +Y. */
@@ -120,6 +132,7 @@ export function createTiledFloor(
   const positions: number[] = [];
   const normals: number[] = [];
   const colors: number[] = [];
+  const uvs: number[] = [];
   const indices: number[] = [];
   const nx = Math.max(1, Math.round(width / tile));
   const nz = Math.max(1, Math.round(depth / tile));
@@ -137,6 +150,7 @@ export function createTiledFloor(
       const c = (ix + iz) % 2 === 0 ? colorA : colorB;
       const base = positions.length / 3;
       positions.push(x1, 0, z2, x2, 0, z2, x2, 0, z1, x1, 0, z1);
+      uvs.push(0, 0, 1, 0, 1, 1, 0, 1);
       for (let i = 0; i < 4; i++) {
         normals.push(0, 1, 0);
         colors.push(c.x, c.y, c.z);
@@ -145,5 +159,5 @@ export function createTiledFloor(
     }
   }
 
-  return pack(positions, normals, colors, indices);
+  return pack(positions, normals, colors, uvs, indices);
 }
