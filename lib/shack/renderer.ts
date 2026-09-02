@@ -1,0 +1,309 @@
+import {
+  mat3NormalFromMat4,
+  mat4,
+  mat4Invert,
+  mat4LookAt,
+  mat4Mul,
+  mat4Perspective,
+  vec3,
+  type Mat4,
+  type Vec3,
+} from "./math";
+import { createBox, createPanel, type Geometry } from "./models";
+import { FIRE_POS } from "./presets";
+import { PALETTE } from "./room";
+import { walk, type ShackNode } from "./scene";
+
+const VERT = `#version 300 es
+layout(location = 0) in vec3 aPos;
+layout(location = 1) in vec3 aNormal;
+layout(location = 2) in vec3 aColor;
+
+uniform mat4 uProj;
+uniform mat4 uView;
+uniform mat4 uModel;
+uniform mat3 uN;
+
+out vec3 vWorldPos;
+out vec3 vNormal;
+out vec3 vColor;
+
+void main() {
+  vec4 world = uModel * vec4(aPos, 1.0);
+  vWorldPos = world.xyz;
+  vNormal = uN * aNormal;
+  vColor = aColor;
+  gl_Position = uProj * uView * world;
+}
+`;
+
+const FRAG = `#version 300 es
+precision highp float;
+
+in vec3 vWorldPos;
+in vec3 vNormal;
+in vec3 vColor;
+
+uniform vec3 uColor;
+uniform vec3 uEmissive;
+uniform vec3 uLightPos;
+uniform vec3 uLightColor;
+uniform float uLightIntensity;
+uniform vec3 uAmbient;
+uniform vec3 uCamPos;
+uniform float uHighlight;
+
+out vec4 fragColor;
+
+void main() {
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(uCamPos - vWorldPos);
+  vec3 L = uLightPos - vWorldPos;
+  float dist = length(L);
+  L /= max(dist, 1e-4);
+  float atten = uLightIntensity / (1.0 + 0.09 * dist * dist);
+  float ndotl = max(dot(N, L), 0.0);
+  vec3 albedo = vColor * uColor;
+  vec3 ambient = uAmbient * (0.55 + 0.45 * max(N.y, 0.0));
+  vec3 lit = albedo * (ambient + uLightColor * ndotl * atten);
+  float rim = pow(1.0 - max(dot(N, V), 0.0), 2.0);
+  vec3 hi = vec3(1.0, 0.48, 0.09) * uHighlight * (0.18 + 0.55 * rim);
+  vec3 c = lit + uEmissive + hi;
+  c = c / (vec3(1.0) + c * 0.28);
+  fragColor = vec4(c, 1.0);
+}
+`;
+
+type GpuMesh = {
+  vao: WebGLVertexArrayObject;
+  count: number;
+};
+
+type Program = {
+  id: WebGLProgram;
+  uProj: WebGLUniformLocation;
+  uView: WebGLUniformLocation;
+  uModel: WebGLUniformLocation;
+  uN: WebGLUniformLocation;
+  uColor: WebGLUniformLocation;
+  uEmissive: WebGLUniformLocation;
+  uLightPos: WebGLUniformLocation;
+  uLightColor: WebGLUniformLocation;
+  uLightIntensity: WebGLUniformLocation;
+  uAmbient: WebGLUniformLocation;
+  uCamPos: WebGLUniformLocation;
+  uHighlight: WebGLUniformLocation;
+};
+
+export type ShackRenderer = {
+  gl: WebGL2RenderingContext;
+  canvas: HTMLCanvasElement;
+  ok: boolean;
+  aa: boolean;
+  resize: () => void;
+  draw: (root: ShackNode, view: Mat4, proj: Mat4, eye: Vec3) => void;
+  viewProjInv: () => Mat4;
+  dispose: () => void;
+};
+
+function compile(
+  gl: WebGL2RenderingContext,
+  type: number,
+  src: string,
+): WebGLShader {
+  const shader = gl.createShader(type);
+  if (!shader) throw new Error("shader alloc");
+  gl.shaderSource(shader, src);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    const log = gl.getShaderInfoLog(shader) ?? "compile";
+    gl.deleteShader(shader);
+    throw new Error(log);
+  }
+  return shader;
+}
+
+function link(gl: WebGL2RenderingContext, vert: string, frag: string): Program {
+  const vs = compile(gl, gl.VERTEX_SHADER, vert);
+  const fs = compile(gl, gl.FRAGMENT_SHADER, frag);
+  const id = gl.createProgram();
+  if (!id) throw new Error("program alloc");
+  gl.attachShader(id, vs);
+  gl.attachShader(id, fs);
+  gl.linkProgram(id);
+  gl.deleteShader(vs);
+  gl.deleteShader(fs);
+  if (!gl.getProgramParameter(id, gl.LINK_STATUS)) {
+    const log = gl.getProgramInfoLog(id) ?? "link";
+    gl.deleteProgram(id);
+    throw new Error(log);
+  }
+  const uni = (name: string) => {
+    const loc = gl.getUniformLocation(id, name);
+    if (!loc) throw new Error(name);
+    return loc;
+  };
+  return {
+    id,
+    uProj: uni("uProj"),
+    uView: uni("uView"),
+    uModel: uni("uModel"),
+    uN: uni("uN"),
+    uColor: uni("uColor"),
+    uEmissive: uni("uEmissive"),
+    uLightPos: uni("uLightPos"),
+    uLightColor: uni("uLightColor"),
+    uLightIntensity: uni("uLightIntensity"),
+    uAmbient: uni("uAmbient"),
+    uCamPos: uni("uCamPos"),
+    uHighlight: uni("uHighlight"),
+  };
+}
+
+function upload(gl: WebGL2RenderingContext, geom: Geometry): GpuMesh {
+  const vao = gl.createVertexArray();
+  if (!vao) throw new Error("vao");
+  gl.bindVertexArray(vao);
+
+  const pos = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, pos);
+  gl.bufferData(gl.ARRAY_BUFFER, geom.positions, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+  const nrm = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, nrm);
+  gl.bufferData(gl.ARRAY_BUFFER, geom.normals, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+
+  const col = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, col);
+  gl.bufferData(gl.ARRAY_BUFFER, geom.colors, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
+
+  const idx = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idx);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geom.indices, gl.STATIC_DRAW);
+
+  gl.bindVertexArray(null);
+  return { vao, count: geom.indices.length };
+}
+
+const UP = vec3(0, 1, 0);
+const LIGHT_COLOR = vec3(1.0, 0.55, 0.18);
+const AMBIENT = vec3(0.055, 0.048, 0.042);
+
+export function createRenderer(
+  canvas: HTMLCanvasElement,
+  floorGeom: Geometry,
+): ShackRenderer | null {
+  const gl = canvas.getContext("webgl2", {
+    antialias: true,
+    alpha: false,
+    depth: true,
+    powerPreference: "high-performance",
+  });
+  if (!gl) return null;
+
+  let program: Program;
+  let box: GpuMesh;
+  let panel: GpuMesh;
+  let floor: GpuMesh;
+  try {
+    program = link(gl, VERT, FRAG);
+    box = upload(gl, createBox());
+    panel = upload(gl, createPanel());
+    floor = upload(gl, floorGeom);
+  } catch {
+    return null;
+  }
+
+  gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.CULL_FACE);
+  gl.clearColor(PALETTE.night.x, PALETTE.night.y, PALETTE.night.z, 1);
+
+  const view = mat4();
+  const proj = mat4();
+  const viewProj = mat4();
+  const inv = mat4();
+  const normal = new Float32Array(9);
+  const lightPos = vec3(FIRE_POS.x, 0.85, FIRE_POS.z);
+
+  const resize = () => {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
+    const h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  };
+
+  const draw = (root: ShackNode, v: Mat4, p: Mat4, eye: Vec3) => {
+    view.set(v);
+    proj.set(p);
+    mat4Mul(proj, view, viewProj);
+    mat4Invert(viewProj, inv);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(program.id);
+    gl.uniformMatrix4fv(program.uProj, false, proj);
+    gl.uniformMatrix4fv(program.uView, false, view);
+    gl.uniform3f(program.uLightPos, lightPos.x, lightPos.y, lightPos.z);
+    gl.uniform3f(program.uLightColor, LIGHT_COLOR.x, LIGHT_COLOR.y, LIGHT_COLOR.z);
+    gl.uniform1f(program.uLightIntensity, 16);
+    gl.uniform3f(program.uAmbient, AMBIENT.x, AMBIENT.y, AMBIENT.z);
+    gl.uniform3f(program.uCamPos, eye.x, eye.y, eye.z);
+
+    walk(root, (node) => {
+      const mesh = node.mesh;
+      if (!mesh) return;
+      const gpu =
+        mesh.kind === "floor" ? floor : mesh.kind === "panel" ? panel : box;
+      mat3NormalFromMat4(node.world, normal);
+      gl.uniformMatrix4fv(program.uModel, false, node.world);
+      gl.uniformMatrix3fv(program.uN, false, normal);
+      gl.uniform3f(program.uColor, mesh.color.x, mesh.color.y, mesh.color.z);
+      gl.uniform3f(
+        program.uEmissive,
+        mesh.emissive.x,
+        mesh.emissive.y,
+        mesh.emissive.z,
+      );
+      gl.uniform1f(program.uHighlight, node.highlight ? 1 : 0);
+      gl.bindVertexArray(gpu.vao);
+      gl.drawElements(gl.TRIANGLES, gpu.count, gl.UNSIGNED_SHORT, 0);
+    });
+    gl.bindVertexArray(null);
+  };
+
+  const attrs = gl.getContextAttributes();
+
+  return {
+    gl,
+    canvas,
+    ok: true,
+    aa: !!attrs?.antialias,
+    resize,
+    draw,
+    viewProjInv: () => inv,
+    dispose: () => {
+      gl.deleteProgram(program.id);
+    },
+  };
+}
+
+export function makeView(eye: Vec3, target: Vec3, out: Mat4): Mat4 {
+  return mat4LookAt(eye, target, UP, out);
+}
+
+export function makeProj(
+  aspect: number,
+  out: Mat4,
+  fovy = (50 * Math.PI) / 180,
+): Mat4 {
+  return mat4Perspective(fovy, aspect, 0.12, 48, out);
+}

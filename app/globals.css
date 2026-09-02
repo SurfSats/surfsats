@@ -6273,6 +6273,10 @@ body:has(.story-page) .site-watermark {
   gap: 1rem;
 }
 
+.footer-strip-links a[href="/lot"] {
+  text-transform: none;
+}
+
 .footer-mark {
   display: inline-flex;
   align-items: center;
@@ -6863,5 +6867,215 @@ body:has(.tab-page) .site-watermark {
   .fiat-hero.is-brrr {
     animation: none;
     transform: none;
+  }
+}
+
+/* The Shack — full-bleed WebGL under the two header bands */
+.shack-stage {
+  position: relative;
+  isolation: isolate;
+  height: calc(100dvh - var(--site-chrome-h));
+  min-height: 22rem;
+  overflow: hidden;
+  background: #070605;
+  user-select: none;
+}
+
+body:has(.shack-stage) .site-watermark {
+  display: none;
+}
+
+.shack-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+
+.shack-stage canvas.is-drag {
+  cursor: grabbing;
+}
+
+.shack-stage canvas.is-hot {
+  cursor: pointer;
+}
+
+.shack-hud {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 0.85rem 1rem 1.1rem;
+  color: var(--foreground);
+}
+
+.shack-hud-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+}
+
+.shack-brand {
+  min-width: 0;
+}
+
+.shack-kicker {
+  margin: 0.28rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgb(139 141 153 / 0.85);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
+}
+
+.shack-title {
+  margin: 0;
+  font-family: var(--font-display), var(--font-mono), sans-serif;
+  font-size: clamp(1.6rem, 3.4vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+}
+
+.shack-pills {
+  pointer-events: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.shack-pills button {
+  margin: 0;
+  border: 1px solid rgb(61 255 243 / 0.22);
+  background: rgb(8 8 11 / 0.55);
+  color: rgb(236 234 228 / 0.78);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.38rem 0.62rem;
+  cursor: pointer;
+}
+
+.shack-pills button:hover,
+.shack-pills button:focus-visible {
+  border-color: var(--sats);
+  color: var(--foreground);
+}
+
+.shack-pills button.is-on {
+  border-color: rgb(255 122 24 / 0.8);
+  color: var(--sats);
+  box-shadow: 0 0 10px rgb(255 122 24 / 0.18);
+}
+
+.shack-hint,
+.shack-toast,
+.shack-speech,
+.shack-debug,
+.shack-fallback {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+}
+
+.shack-hint {
+  position: absolute;
+  left: 1rem;
+  bottom: 1.1rem;
+  max-width: min(28rem, calc(100% - 2rem));
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: rgb(139 141 153 / 0.8);
+}
+
+.shack-toast {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  bottom: 2.8rem;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(34rem, calc(100% - 2rem));
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgb(255 122 24 / 0.28);
+  background: rgb(8 8 11 / 0.72);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: rgb(236 234 228 / 0.88);
+  text-align: center;
+}
+
+.shack-speech {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display), var(--font-mono), sans-serif;
+  font-size: clamp(1.05rem, 2.6vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--sats);
+  text-align: center;
+}
+
+.shack-tip {
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+  transform: translate(12px, 14px);
+  margin: 0;
+  padding: 0.32rem 0.5rem;
+  border: 1px solid rgb(255 122 24 / 0.35);
+  background: rgb(8 8 11 / 0.82);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--foreground);
+  white-space: nowrap;
+}
+
+.shack-debug {
+  position: absolute;
+  right: 1rem;
+  bottom: 1.1rem;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(61 255 243 / 0.7);
+}
+
+.shack-fallback {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+@media (max-width: 700px) {
+  .shack-hud {
+    padding: 0.7rem 0.7rem 0.9rem;
+  }
+
+  .shack-pills button {
+    padding: 0.32rem 0.48rem;
+    font-size: 9px;
+  }
+
+  .shack-hint {
+    left: 0.7rem;
+    bottom: 0.8rem;
+  }
+
+  .shack-toast {
+    bottom: 2.4rem;
   }
 }

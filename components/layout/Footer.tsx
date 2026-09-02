@@ -69,6 +69,12 @@ export function Footer() {
             >
               drop 21
             </Link>
+            <Link
+              href="/lot"
+              className="normal-case tracking-[0.12em] text-muted/40 glitch-hover hover:text-sats"
+            >
+              the shack · side door
+            </Link>
           </div>
         </Container>
       </div>

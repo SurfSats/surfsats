@@ -18,6 +18,12 @@ export function HomeClose() {
         >
           about -&gt;
         </Link>
+        <Link
+          href="/lot"
+          className="mt-8 block font-mono text-[10px] tracking-[0.16em] text-muted/35 glitch-hover hover:text-sats/80"
+        >
+          the shack · side door
+        </Link>
       </Container>
     </section>
   );
