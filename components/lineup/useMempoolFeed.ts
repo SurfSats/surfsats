@@ -4,13 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import {
   BLOCK_TILE_CAP,
   BLOCK_TX_PAGES,
+  DETAIL_BUDGET,
+  DETAIL_CONCURRENCY,
   LIVE_CAP,
+  MEMPOOL_RECENT_PATH,
   MEMPOOL_REST,
+  MEMPOOL_TX_PATH,
   MEMPOOL_WS,
-  finiteNumber,
-  isRecord,
-  parseBlockHint,
+  extractFeedBatch,
+  parseLiveTx,
   parseLiveTxList,
+  type BlockHint,
   type LiveTx,
   type SealedBlock,
 } from "@/lib/lineup-field";
@@ -26,7 +30,8 @@ export function useMempoolFeed(snapshot: LineupSnapshot) {
   );
   const [status, setStatus] = useState<FeedStatus>("loading");
   const seen = useRef(new Set<string>());
-  const packed = useRef(new Set<string>());
+  const packedTx = useRef(new Set<string>());
+  const sealed = useRef(new Set<string>());
   const liveRef = useRef<LiveTx[]>([]);
   const recentRef = useRef(snapshot.recent);
   recentRef.current = snapshot.recent;
@@ -37,9 +42,13 @@ export function useMempoolFeed(snapshot: LineupSnapshot) {
     let pollId = 0;
     let pingId = 0;
     let retryMs = 1500;
+    let detailsLeft = DETAIL_BUDGET;
+    let detailsInFlight = 0;
+    const detailQueue: string[] = [];
+    const queued = new Set<string>();
 
     function setLiveCapped(next: LiveTx[]) {
-      const trimmed = next.slice(-LIVE_CAP);
+      const trimmed = next.length > LIVE_CAP ? next.slice(-LIVE_CAP) : next;
       liveRef.current = trimmed;
       setLive(trimmed);
     }
@@ -48,18 +57,83 @@ export function useMempoolFeed(snapshot: LineupSnapshot) {
       if (cancelled || txs.length === 0) return;
       const extra: LiveTx[] = [];
       for (const tx of txs) {
-        if (seen.current.has(tx.txid) || packed.current.has(tx.txid)) continue;
+        if (seen.current.has(tx.txid) || packedTx.current.has(tx.txid)) continue;
         seen.current.add(tx.txid);
         extra.push(tx);
       }
       if (extra.length === 0) return;
-      setLiveCapped([...liveRef.current, ...extra]);
+      if (extra.length > LIVE_CAP) {
+        extra.sort((a, b) => b.value - a.value);
+        setLiveCapped(extra.slice(0, LIVE_CAP));
+      } else {
+        setLiveCapped([...liveRef.current, ...extra]);
+      }
       setStatus("live");
+    }
+
+    function dropMined(ids: string[]) {
+      if (ids.length === 0) return;
+      const gone = new Set(ids);
+      for (const id of gone) {
+        packedTx.current.add(id);
+        seen.current.delete(id);
+      }
+      const next = liveRef.current.filter((tx) => !gone.has(tx.txid));
+      if (next.length !== liveRef.current.length) setLiveCapped(next);
+    }
+
+    function queueDetails(ids: string[]) {
+      for (const id of ids) {
+        if (
+          seen.current.has(id) ||
+          packedTx.current.has(id) ||
+          queued.has(id) ||
+          detailsLeft <= 0
+        ) {
+          continue;
+        }
+        queued.add(id);
+        detailQueue.push(id);
+      }
+      pumpDetails();
+    }
+
+    function pumpDetails() {
+      while (
+        !cancelled &&
+        detailsInFlight < DETAIL_CONCURRENCY &&
+        detailQueue.length > 0 &&
+        detailsLeft > 0
+      ) {
+        const id = detailQueue.shift();
+        if (!id) break;
+        detailsLeft -= 1;
+        detailsInFlight += 1;
+        void fetchTxDetail(id).finally(() => {
+          detailsInFlight -= 1;
+          pumpDetails();
+        });
+      }
+    }
+
+    async function fetchTxDetail(txid: string) {
+      try {
+        const response = await fetch(`${MEMPOOL_TX_PATH}/${txid}`, {
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+        const body: unknown = await response.json();
+        if (cancelled) return;
+        const tx = parseLiveTx(body);
+        if (tx) ingest([tx]);
+      } catch {
+        /* skip */
+      }
     }
 
     async function pullRecent() {
       try {
-        const response = await fetch(`${MEMPOOL_REST}/mempool/recent`, {
+        const response = await fetch(MEMPOOL_RECENT_PATH, {
           cache: "no-store",
         });
         if (!response.ok) throw new Error("recent");
@@ -67,34 +141,37 @@ export function useMempoolFeed(snapshot: LineupSnapshot) {
         if (cancelled) return;
         ingest(parseLiveTxList(body));
         retryMs = 1500;
+        if (liveRef.current.length === 0) setStatus("down");
       } catch {
         if (!cancelled && liveRef.current.length === 0) setStatus("down");
       }
     }
 
-    async function loadSealed(
-      hint: {
-        hash: string;
-        height: number;
-        timestamp: number;
-        txCount: number;
-      },
-      pages: number,
-    ) {
-      if (packed.current.has(hint.hash)) return;
-      packed.current.add(hint.hash);
+    async function loadSealed(hint: BlockHint, pages: number) {
+      if (sealed.current.has(hint.hash)) return;
+      sealed.current.add(hint.hash);
       const tiles = await fetchBlockTiles(hint.hash, pages);
       if (cancelled) return;
-      const gone = new Set(tiles.map((tx) => tx.txid));
-      for (const txid of gone) seen.current.delete(txid);
-      setLiveCapped(liveRef.current.filter((tx) => !gone.has(tx.txid)));
+      dropMined(tiles.map((tx) => tx.txid));
       setBlocks((current) => {
         if (current.some((block) => block.hash === hint.hash)) return current;
-        return [
-          { ...hint, tiles },
-          ...current.filter((block) => block.hash !== hint.hash),
-        ].slice(0, 8);
+        return [{ ...hint, tiles }, ...current].slice(0, 8);
       });
+      if (pages >= BLOCK_TX_PAGES) void pullRecent();
+    }
+
+    function applyBatch(raw: unknown) {
+      const batch = extractFeedBatch(raw);
+      if (batch.unconfirmed !== null) setUnconfirmed(batch.unconfirmed);
+      ingest(batch.txs);
+      queueDetails(batch.pending);
+      dropMined(batch.mined);
+      if (batch.block) void loadSealed(batch.block, BLOCK_TX_PAGES);
+      else {
+        for (const hint of batch.blocks.slice(0, 4)) {
+          void loadSealed(hint, 1);
+        }
+      }
     }
 
     function openWs() {
@@ -113,6 +190,7 @@ export function useMempoolFeed(snapshot: LineupSnapshot) {
           JSON.stringify({ action: "want", data: ["blocks", "stats"] }),
         );
         ws?.send(JSON.stringify({ "track-mempool": true }));
+        ws?.send(JSON.stringify({ "track-mempool-block": 0 }));
         pingId = window.setInterval(() => {
           if (ws?.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ action: "ping" }));
@@ -127,28 +205,7 @@ export function useMempoolFeed(snapshot: LineupSnapshot) {
         } catch {
           return;
         }
-        if (!isRecord(raw)) return;
-
-        const count = mempoolSize(raw);
-        if (count !== null) setUnconfirmed(count);
-
-        if (Array.isArray(raw.transactions)) {
-          ingest(parseLiveTxList(raw.transactions));
-        }
-        if (isRecord(raw["mempool-transactions"])) {
-          ingest(parseLiveTxList(raw["mempool-transactions"].added));
-        }
-
-        if (Array.isArray(raw.blocks) && !raw.block) {
-          for (const item of raw.blocks.slice(0, 6)) {
-            const hint = parseBlockHint(item);
-            if (hint) void loadSealed(hint, 1);
-          }
-        }
-        if (raw.block) {
-          const hint = parseBlockHint(raw.block);
-          if (hint) void loadSealed(hint, BLOCK_TX_PAGES);
-        }
+        applyBatch(raw);
       });
 
       ws.addEventListener("close", () => {
@@ -163,23 +220,25 @@ export function useMempoolFeed(snapshot: LineupSnapshot) {
       });
     }
 
-    void pullRecent();
+    void (async () => {
+      await pullRecent();
+      if (cancelled) return;
+      for (const block of recentRef.current.slice(0, 3)) {
+        void loadSealed(
+          {
+            hash: block.hash,
+            height: block.height,
+            timestamp: block.timestamp,
+            txCount: block.txCount,
+          },
+          1,
+        );
+      }
+    })();
     openWs();
     pollId = window.setInterval(() => {
       void pullRecent();
-    }, 3000);
-
-    for (const block of recentRef.current.slice(0, 6)) {
-      void loadSealed(
-        {
-          hash: block.hash,
-          height: block.height,
-          timestamp: block.timestamp,
-          txCount: block.txCount,
-        },
-        1,
-      );
-    }
+    }, 4000);
 
     return () => {
       cancelled = true;
@@ -196,16 +255,6 @@ export function useMempoolFeed(snapshot: LineupSnapshot) {
   }, [snapshot.mempoolCount, unconfirmed]);
 
   return { live, blocks, unconfirmed, status };
-}
-
-function mempoolSize(raw: Record<string, unknown>) {
-  const info = isRecord(raw.mempoolInfo)
-    ? raw.mempoolInfo
-    : isRecord(raw.mempool)
-      ? raw.mempool
-      : null;
-  if (!info) return null;
-  return finiteNumber(info.size) ?? finiteNumber(info.count);
 }
 
 async function fetchBlockTiles(

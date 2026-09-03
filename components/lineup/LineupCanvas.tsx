@@ -70,14 +70,12 @@ export function LineupCanvas({
       tiles.push(spawnTile(tx, canvas, reducedRef.current));
     }
 
-    if (known.size > incoming.size + 40) {
-      for (let i = tiles.length - 1; i >= 0; i -= 1) {
-        const tile = tiles[i];
-        if (tile.kind === "pack") continue;
-        if (incoming.has(tile.txid)) continue;
-        tiles.splice(i, 1);
-        known.delete(tile.txid);
-      }
+    for (let i = tiles.length - 1; i >= 0; i -= 1) {
+      const tile = tiles[i];
+      if (tile.kind === "pack") continue;
+      if (incoming.has(tile.txid)) continue;
+      tiles.splice(i, 1);
+      known.delete(tile.txid);
     }
   }, [txs]);
 

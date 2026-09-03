@@ -96,7 +96,7 @@ export function FieldApp({ initial }: { initial: LineupSnapshot }) {
           <span>
             {count !== null ? formatInteger(count) : "—"} unconfirmed
           </span>
-          <span>showing {formatInteger(showing)}</span>
+          <span>SHOWING {formatInteger(showing)}</span>
           <span>
             {last ? formatInteger(last.height) : "—"} · {ago}
           </span>
@@ -141,10 +141,7 @@ export function FieldApp({ initial }: { initial: LineupSnapshot }) {
         />
         {down ? (
           <p className="lineup-miss">
-            readout via mempool.space — live feed down.{" "}
-            <a href={MEMPOOL_SITE} target="_blank" rel="noreferrer">
-              mempool.space
-            </a>
+            readout via mempool.space — live feed down
           </p>
         ) : null}
         {hover ? (
