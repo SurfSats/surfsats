@@ -1,5 +1,5 @@
 import type { FeedItem, FeedSourceStatus } from "@/lib/types";
-import { formatDate } from "@/lib/format";
+import { formatAge } from "@/lib/format";
 
 export function FeedWire({
   items,
@@ -8,63 +8,41 @@ export function FeedWire({
   items: FeedItem[];
   sources: FeedSourceStatus[];
 }) {
-  const live = sources.filter((source) => source.ok).map((source) => source.name);
-  const silent = sources.filter((source) => !source.ok).map((source) => source.name);
+  const silent = sources.filter((source) => !source.ok);
+  const empty = items.length === 0;
 
   return (
-    <section>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
-            {"//"} underground_signal
-          </p>
-          <h2 className="mt-1 font-display text-2xl font-bold uppercase tracking-tight sm:text-3xl">
-            Pleb feeds
-          </h2>
-        </div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
-          cypherpunk · independent · no desks
+    <section className="signal-wire" aria-label="Pleb feeds">
+      <p className="signal-band-label">pleb feeds</p>
+      {empty ? (
+        <p className="signal-quiet">
+          wire silent. curated signal above still stands.
         </p>
-      </div>
-
-      {items.length > 0 ? (
-        <ol className="panel mt-5 divide-y divide-cyan/15 overflow-hidden">
+      ) : (
+        <ol className="signal-wire-list">
           {items.map((item) => (
             <li key={item.id}>
               <a
                 href={item.url}
                 target="_blank"
                 rel="noreferrer"
-                className="flex flex-col gap-1 px-4 py-3 hover:bg-cyan/5 sm:flex-row sm:items-baseline sm:gap-4"
+                className="signal-wire-row"
               >
-                <span className="shrink-0 font-mono text-[11px] uppercase tracking-[0.12em] text-sats">
-                  [{item.source}]
-                </span>
-                <span className="min-w-0 flex-1 text-sm text-foreground glitch-hover">
-                  {item.title}
-                </span>
-                {item.date ? (
-                  <time
-                    dateTime={item.date}
-                    className="shrink-0 font-mono text-[11px] uppercase text-muted"
-                  >
-                    {formatDate(item.date)}
-                  </time>
-                ) : null}
+                <span className="signal-wire-source">{item.source}</span>
+                <span className="signal-wire-title">{item.title}</span>
+                <time className="signal-wire-age" dateTime={item.date || undefined}>
+                  {item.date ? formatAge(item.date) : "—"}
+                </time>
               </a>
             </li>
           ))}
         </ol>
-      ) : (
-        <div className="panel mt-5 px-4 py-6 font-mono text-sm text-muted">
-          wire silent · no headlines came back. the curated signal above still stands.
-        </div>
       )}
-
-      <p className="mt-3 font-mono text-[11px] leading-relaxed text-muted">
-        {live.length > 0 ? `tuned: ${live.join(" · ")}` : "no live sources"}
-        {silent.length > 0 ? ` · silent: ${silent.join(" · ")}` : ""}
-      </p>
+      {silent.length > 0 ? (
+        <p className="signal-quiet">
+          silent · {silent.map((source) => source.name).join(" · ")}
+        </p>
+      ) : null}
     </section>
   );
 }

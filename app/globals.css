@@ -1945,6 +1945,10 @@ body {
   color: var(--sats);
 }
 
+.readout-page--signal .readout-sibs a.is-on {
+  color: var(--sats);
+}
+
 .readout-body {
   display: flex;
   min-height: 0;
@@ -1965,6 +1969,262 @@ body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+.signal-room {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 0.5rem 1rem 1.4rem;
+}
+
+.signal-hud {
+  flex-shrink: 0;
+  padding: 0.1rem 0 0.55rem;
+}
+
+.signal-hero {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sats);
+}
+
+.signal-band {
+  min-width: 0;
+  margin-top: 0.85rem;
+}
+
+.signal-band + .signal-band {
+  padding-top: 0.85rem;
+  border-top: 1px solid rgb(255 255 255 / 0.06);
+}
+
+.signal-band-label {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.signal-latest,
+.signal-standing-grid,
+.signal-writing {
+  display: grid;
+  min-width: 0;
+  gap: 0.55rem;
+}
+
+.signal-standing {
+  min-width: 0;
+  margin-top: 0.95rem;
+}
+
+.signal-card,
+.signal-write {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.7rem 0.8rem 0.65rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.signal-write {
+  border-bottom: 1px solid rgb(255 255 255 / 0.06);
+  padding: 0.55rem 0 0.6rem;
+}
+
+.signal-write:last-child {
+  border-bottom: 0;
+}
+
+.signal-card.is-latest {
+  border-color: rgb(255 122 24 / 0.38);
+}
+
+.signal-card.is-standing {
+  border-bottom: 1px solid rgb(255 255 255 / 0.06);
+  padding: 0.5rem 0 0.55rem;
+}
+
+.signal-card-meta {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.4rem;
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.signal-card-title {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), ui-sans-serif, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: 0.01em;
+}
+
+.signal-card.is-latest .signal-card-title {
+  font-size: 1.12rem;
+}
+
+.signal-card.is-standing .signal-card-title,
+.signal-write .signal-card-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.signal-card-blurb {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.signal-card-verb {
+  margin-top: 0.15rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sats);
+}
+
+.signal-card:hover .signal-card-title,
+.signal-card:focus-visible .signal-card-title,
+.signal-write:hover .signal-card-title,
+.signal-write:focus-visible .signal-card-title {
+  color: var(--sats);
+}
+
+.signal-quiet {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(139 141 153 / 0.72);
+}
+
+.signal-wire-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgb(255 255 255 / 0.06);
+}
+
+.signal-wire-row {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 0.65rem;
+  row-gap: 0.15rem;
+  padding: 0.55rem 0 0.5rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.06);
+  text-decoration: none;
+  color: inherit;
+}
+
+.signal-wire-source {
+  grid-column: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sats);
+}
+
+.signal-wire-age {
+  grid-column: 2;
+  grid-row: 1;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.signal-wire-title {
+  grid-column: 1 / -1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--foreground);
+}
+
+.signal-wire-row:hover .signal-wire-title,
+.signal-wire-row:focus-visible .signal-wire-title {
+  color: var(--cyan);
+}
+
+@media (min-width: 720px) {
+  .signal-writing {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.25rem;
+  }
+
+  .signal-write {
+    border-bottom-color: rgb(255 255 255 / 0.06);
+  }
+}
+
+@media (min-width: 1440px) {
+  .signal-room {
+    padding: 0.55rem 1.25rem 1.6rem;
+  }
+
+  .signal-standing-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .signal-wire-row {
+    grid-template-columns: 11.5rem minmax(0, 1fr) 4.2rem;
+    align-items: baseline;
+  }
+
+  .signal-wire-source {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .signal-wire-title {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .signal-wire-age {
+    grid-column: 3;
+    grid-row: 1;
+    text-align: right;
+  }
+}
+
+@media (max-width: 639px) {
+  .signal-room {
+    padding: 0.45rem 0.75rem 1.2rem;
+  }
 }
 
 .graffiti-page {

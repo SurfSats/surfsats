@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
-import { ArticleCard } from "@/components/articles/ArticleCard";
 import { ReadoutShell } from "@/components/layout/ReadoutShell";
 import { FeedWire } from "@/components/news/FeedWire";
 import { HandpickedCard } from "@/components/news/HandpickedCard";
-import { Container } from "@/components/ui/Container";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { SignalWriting } from "@/components/news/SignalWriting";
 import { getArticles } from "@/lib/articles";
 import { getLiveFeeds } from "@/lib/feeds";
 import {
@@ -33,77 +31,52 @@ export default async function SignalPage() {
       name="signal"
       strip={<p>signal · hand picked · no algorithm</p>}
     >
-      <div className="signal-page">
-        <Container className="relative py-8 sm:py-10">
-          <p className="signal-kicker">
-            Hand-picked first. Our writing second. The wire last.
-          </p>
+      <div className="signal-room">
+        <header className="signal-hud">
+          <h1 className="signal-hero">HAND-PICKED / no algorithm</h1>
+        </header>
 
-          <section id="curated" className="mt-10 scroll-mt-28">
-            <SectionHeading
-              eyebrow="hand_picked"
-              title="Curated"
-              description="Latest signal first. The standing stack stays below."
-            />
-
-            {latest.length > 0 ? (
-              <div className="mt-8">
-                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
-                  {"//"} latest
-                </p>
-                <h3 className="mt-1 font-display text-xl font-bold uppercase tracking-tight text-sats sm:text-2xl">
-                  Latest
-                </h3>
-                <div className="mt-4 grid gap-4">
-                  {latest.map((item) => (
-                    <HandpickedCard key={item.id} item={item} variant="latest" />
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {standing.length > 0 ? (
-              <div className="mt-10">
-                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
-                  {"//"} standing
-                </p>
-                <h3 className="mt-1 font-display text-lg font-bold uppercase tracking-tight text-muted sm:text-xl">
-                  Standing
-                </h3>
-                <div className="mt-3 grid gap-3">
-                  {standing.map((item) => (
-                    <HandpickedCard
-                      key={item.id}
-                      item={item}
-                      variant="standing"
-                    />
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </section>
-
-          <section id="articles" className="mt-16 scroll-mt-28">
-            <SectionHeading
-              eyebrow="from_the_coast"
-              title="Articles"
-              description="Writing published on SurfSats. Ours. Unfiltered."
-            />
-            <div className="mt-8 grid gap-4 md:grid-cols-2">
-              {articles.map((article, index) => (
-                <ArticleCard
-                  key={article.slug}
-                  article={article}
-                  featured={index === 0}
-                />
+        <section id="curated" className="signal-band">
+          {latest.length > 0 ? (
+            <div className="signal-latest">
+              {latest.map((item) => (
+                <HandpickedCard key={item.id} item={item} variant="latest" />
               ))}
             </div>
-          </section>
+          ) : null}
 
-          <section id="wire" className="mt-16 scroll-mt-28">
-            <FeedWire items={feedItems} sources={sources} />
-          </section>
-        </Container>
+          {standing.length > 0 ? (
+            <div className="signal-standing">
+              <p className="signal-band-label">standing</p>
+              <div className="signal-standing-grid">
+                {standing.map((item) => (
+                  <HandpickedCard
+                    key={item.id}
+                    item={item}
+                    variant="standing"
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </section>
+
+        <section id="articles" className="signal-band">
+          <p className="signal-band-label">our writing</p>
+          {articles.length > 0 ? (
+            <div className="signal-writing">
+              {articles.map((article) => (
+                <SignalWriting key={article.slug} article={article} />
+              ))}
+            </div>
+          ) : (
+            <p className="signal-quiet">no dispatches on the desk.</p>
+          )}
+        </section>
+
+        <section id="wire" className="signal-band">
+          <FeedWire items={feedItems} sources={sources} />
+        </section>
       </div>
     </ReadoutShell>
   );
