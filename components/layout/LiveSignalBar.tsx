@@ -40,7 +40,7 @@ export function LiveSignalBar({
         id: el.dataset.ticker ?? "",
         width: el.offsetWidth,
       }));
-      const FADE = 18;
+      const FADE = Math.min(28, Math.max(18, Math.round(node.clientWidth * 0.06)));
       const firstPass = hiddenTickerIds({
         available: node.clientWidth,
         gap,
@@ -194,16 +194,19 @@ export function LiveSignalBar({
 }
 
 function visualTickerTokens(tape: HTMLElement) {
-  return [...tape.querySelectorAll<HTMLElement>("[data-ticker]")].sort(
-    (a, b) => {
+  return [...tape.querySelectorAll<HTMLElement>("[data-ticker]")]
+    .filter((el) => {
+      const style = getComputedStyle(el);
+      return style.display !== "none" && style.visibility !== "hidden";
+    })
+    .sort((a, b) => {
       const orderA = Number.parseFloat(getComputedStyle(a).order) || 0;
       const orderB = Number.parseFloat(getComputedStyle(b).order) || 0;
       if (orderA !== orderB) return orderA - orderB;
       return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING
         ? -1
         : 1;
-    },
-  );
+    });
 }
 
 function SwellTicker({ pct }: { pct: number | null }) {

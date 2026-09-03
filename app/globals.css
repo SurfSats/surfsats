@@ -127,12 +127,20 @@ body {
 }
 
 @media (max-width: 639px) {
+  .live-tape {
+    gap: 0.28rem;
+  }
+
   .live-tape .live-status {
     display: none;
   }
 
   .live-tape [data-ticker="live_signal"] {
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
+  }
+
+  .live-tape .ticker-val {
+    font-size: 0.7rem;
   }
 }
 
@@ -589,8 +597,10 @@ body {
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
   border: 1px solid var(--cyan);
   background: var(--sats);
   color: #08080b;
@@ -602,12 +612,14 @@ body {
 
 .ship-rx-play.is-blocked {
   width: auto;
-  padding: 0 0.7rem;
+  min-width: 2.75rem;
+  padding: 0 0.85rem;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .ship-rx-play:hover {
@@ -951,8 +963,11 @@ body {
 }
 
 .home-walk {
-  display: inline-block;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
   margin-top: 1.75rem;
+  padding: 0.35rem 0.1rem;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.22em;
@@ -1135,12 +1150,25 @@ body {
     margin-top: 0.2rem;
   }
 
+  .swell-stack-compact {
+    min-height: 7.1rem;
+  }
+
   .swell-stack-compact .swell-card {
     min-height: 7.1rem;
   }
 
   .swell-stack-compact .swell-card-sub {
     display: none;
+  }
+
+  .floor-dock {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .floor-object-art {
+    min-height: 9.5rem;
   }
 }
 
@@ -2347,7 +2375,7 @@ body:has(.graffiti-page) .site-watermark {
 
 .console-deck-tabs button,
 .graffiti-deck-tabs button {
-  min-height: 2.7rem;
+  min-height: 2.75rem;
   background: transparent;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 11px;
@@ -2480,15 +2508,15 @@ body:has(.graffiti-page) .site-watermark {
 }
 
 .music-page .console-deck-tabs button {
-  min-height: 2.35rem;
-  overflow: hidden;
+  min-height: 2.75rem;
+  overflow: visible;
   border-right: 1px solid rgb(61 255 243 / 0.14);
-  padding: 0 0.15rem;
+  padding: 0.35rem 0.12rem;
   color: var(--muted);
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  white-space: normal;
 }
 
 .music-page .console-deck-tabs button.is-on {
@@ -4119,6 +4147,7 @@ body:has(.graffiti-page) .site-watermark {
   overflow: hidden;
   background: #000;
   border-radius: 4.2% / 6.8%;
+  container-type: size;
 }
 
 .cab-crt-slot .cab-crt {
@@ -4586,6 +4615,12 @@ body:has(.graffiti-page) .site-watermark {
 
 .cab-crt-verb {
   appearance: none;
+  display: flex;
+  min-height: 2.75rem;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   border: 0;
   background: transparent;
   color: inherit;
@@ -4612,13 +4647,14 @@ body:has(.graffiti-page) .site-watermark {
 
 .cab-crt-alias input {
   width: 100%;
+  min-height: 2.75rem;
   border: 1px solid #3a6a72;
   background: #080808;
   color: #ffb14a;
   font-family: var(--font-arcade-pixel), monospace;
-  font-size: 0.58rem;
+  font-size: clamp(0.7rem, 6.5cqi, 0.95rem);
   letter-spacing: 0.08em;
-  padding: 0.4rem 0.45rem;
+  padding: 0.55rem 0.5rem;
   text-transform: uppercase;
   outline: none;
 }
@@ -4707,10 +4743,11 @@ body:has(.graffiti-page) .site-watermark {
   z-index: 4;
   display: flex;
   height: 100%;
+  min-width: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.4rem 0.8rem 0.8rem;
+  padding: 0.45rem 0.4rem 0.4rem;
   text-align: center;
 }
 
@@ -4725,18 +4762,20 @@ body:has(.graffiti-page) .site-watermark {
 
 .cab-crt-insert {
   margin-top: 0.35rem;
+  overflow-wrap: anywhere;
   font-family: var(--font-arcade-pixel), monospace;
-  font-size: clamp(0.55rem, 2.1vw, 0.78rem);
-  letter-spacing: 0.08em;
+  font-size: clamp(0.72rem, 9cqi, 1rem);
+  letter-spacing: 0.06em;
   color: #d7f4ff;
   text-shadow: 0 0 10px #3dfff3;
 }
 
 .cab-crt-sub {
   margin-top: 0.35rem;
+  overflow-wrap: anywhere;
   font-family: var(--font-arcade-pixel), monospace;
-  font-size: 0.42rem;
-  letter-spacing: 0.08em;
+  font-size: clamp(0.48rem, 4.8cqi, 0.62rem);
+  letter-spacing: 0.06em;
   color: #7ad0e0;
 }
 
@@ -5963,7 +6002,7 @@ body:has(.graffiti-page) .site-watermark {
 
 @media (max-width: 639px) {
   .arcade-page {
-    padding: 0.75rem 0.65rem 1rem;
+    padding: 0.35rem 0.4rem 0.75rem;
   }
 
   .cab-invoice-qr {
@@ -6374,7 +6413,7 @@ body:has(.story-page) .site-watermark {
 
 .story-pay-btn {
   display: inline-flex;
-  min-height: 2.7rem;
+  min-height: 2.75rem;
   width: 100%;
   align-items: center;
   justify-content: center;
@@ -7337,6 +7376,8 @@ body:has(.tab-page) .site-watermark {
 .tab-sit,
 .tab-insert {
   flex: 1;
+  min-height: 2.75rem;
+  min-width: 0;
   border: 1px solid var(--sats);
   background: var(--sats);
   color: #140804;
@@ -7474,8 +7515,37 @@ body:has(.tab-page) .site-watermark {
     min-height: min(28dvh, 14rem);
   }
 
+  .tab-page .console-stage .tab-keep {
+    max-height: min(28vh, 12rem);
+  }
+
   .tab-keep-img {
     height: min(28vh, 12rem);
+  }
+
+  .graffiti-page .graffiti-deck,
+  .story-page .console-deck {
+    order: -1;
+  }
+
+  .graffiti-page .graffiti-stage {
+    min-height: min(42dvh, 18rem);
+  }
+
+  .graf-preview-wall--compact,
+  .graf-preview-wall--compact .graf-preview-tag {
+    min-height: 5.5rem;
+  }
+
+  .story-page .console-stage {
+    min-height: min(38dvh, 16rem);
+  }
+
+  .music-page .console-deck-footer .btn {
+    min-height: 2.75rem;
+    background: transparent;
+    color: var(--sats);
+    box-shadow: none;
   }
 }
 
