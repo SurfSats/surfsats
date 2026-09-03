@@ -4,6 +4,7 @@ const EPOCH_LENGTH = 2016;
 const SATS_PER_BTC = 100_000_000;
 
 export type PriceDirection = "up" | "down" | "flat";
+export type FeeTone = "floor" | "calm" | "building" | "heavy";
 
 export type TimechainSnapshot = {
   fetchedAt: number;
@@ -305,13 +306,16 @@ function directionFrom(pct: number | null): PriceDirection | null {
   return "flat";
 }
 
-function feeEnvironment(fastest: number | null) {
-  if (fastest === null) return null;
-  if (fastest <= 2) return "flat · cheap";
+export function feeTone(fastest: number | null): FeeTone {
+  if (fastest === null || fastest <= 1) return "floor";
   if (fastest <= 8) return "calm";
   if (fastest <= 25) return "building";
-  if (fastest <= 60) return "heavy";
-  return "storm";
+  return "heavy";
+}
+
+function feeEnvironment(fastest: number | null) {
+  if (fastest === null) return null;
+  return feeTone(fastest);
 }
 
 function subsidyAt(height: number) {

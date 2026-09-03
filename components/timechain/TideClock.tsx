@@ -354,7 +354,7 @@ function OuterLabel({
   const dx = top || bottom ? 0 : right ? 6 : -6;
 
   return (
-    <g>
+    <g className="tide-clock-callout">
       <line
         x1={start.x}
         y1={start.y}
