@@ -13,6 +13,11 @@ const BLOCK_SRC = "/arcade/bitties/block.png";
 const FIN_SRC = "/arcade/bitties/fin.png";
 const SAT_SRC = "/arcade/bitties/sat.png";
 
+const MAX_HAZARDS = 20;
+const MAX_PICKUPS = 6;
+const GATE_HAZARDS = 4;
+const SPAWN_SKIP_MS = 50;
+
 type BounceOpts = {
   onWipeout: (score: number) => void;
 };
@@ -65,10 +70,12 @@ class BounceScene extends Phaser.Scene {
     this.hazards = this.physics.add.group({
       allowGravity: false,
       immovable: true,
+      maxSize: MAX_HAZARDS,
     });
     this.pickups = this.physics.add.group({
       allowGravity: false,
       immovable: true,
+      maxSize: MAX_PICKUPS,
     });
 
     const px = Math.max(72, w * 0.2);
@@ -89,7 +96,7 @@ class BounceScene extends Phaser.Scene {
       const sprite = sat as Phaser.Physics.Arcade.Image;
       if (!sprite.active) return;
       this.score += 50;
-      sprite.destroy();
+      sprite.destroy(true);
     });
 
     this.hint = this.add
@@ -155,24 +162,20 @@ class BounceScene extends Phaser.Scene {
     this.hazards.add(sprite);
   }
 
-  private fillColumn(x: number, y0: number, y1: number) {
-    const colW = 46;
-    const pieceH = 40;
-    let y = y0;
-    while (y < y1 - 4) {
-      const h = Math.min(pieceH, y1 - y);
-      const block = this.physics.add.image(x, y + h / 2, "block");
-      block.setDisplaySize(colW, Math.max(18, h));
-      block.setDepth(2);
-      const body = block.body as Phaser.Physics.Arcade.Body;
-      body.setSize(block.width * 0.82, block.height * 0.86);
-      body.setOffset(block.width * 0.09, block.height * 0.07);
-      this.armHazard(block);
-      y += h - 6;
-    }
+  private placeColumn(x: number, y0: number, y1: number) {
+    const h = Math.max(12, y1 - y0);
+    const block = this.physics.add.image(x, y0 + h / 2, "block");
+    block.setDisplaySize(46, h);
+    block.setDepth(2);
+    const body = block.body as Phaser.Physics.Arcade.Body;
+    body.setSize(block.width * 0.84, block.height * 0.92);
+    body.setOffset(block.width * 0.08, block.height * 0.04);
+    this.armHazard(block);
   }
 
   private spawnPipe() {
+    if (this.hazards.countActive(true) + GATE_HAZARDS > MAX_HAZARDS) return false;
+
     const w = this.scale.width;
     const h = this.scale.height;
     const gap = this.gap();
@@ -184,8 +187,8 @@ class BounceScene extends Phaser.Scene {
     const botY = topH + gap;
     const x = w + 48;
 
-    this.fillColumn(x, 0, topH);
-    this.fillColumn(x, botY, h);
+    this.placeColumn(x, 0, topH);
+    this.placeColumn(x, botY, h);
 
     const topFin = this.physics.add.image(x, topH + 2, "fin");
     topFin.setDisplaySize(38, 34);
@@ -206,16 +209,30 @@ class BounceScene extends Phaser.Scene {
     botBody.setOffset(botFin.width * 0.19, botFin.height * 0.18);
     this.armHazard(botFin);
 
-    const sat = this.physics.add.image(x, topH + gap / 2, "sat");
-    sat.setDisplaySize(22, 22);
-    sat.setDepth(3);
-    const satBody = sat.body as Phaser.Physics.Arcade.Body;
-    satBody.setAllowGravity(false);
-    satBody.setImmovable(true);
-    satBody.setVelocityX(-this.speed());
-    const sr = sat.width * 0.36;
-    satBody.setCircle(sr, (sat.width - sr * 2) / 2, (sat.height - sr * 2) / 2);
-    this.pickups.add(sat);
+    if (this.pickups.countActive(true) < MAX_PICKUPS) {
+      const sat = this.physics.add.image(x, topH + gap / 2, "sat");
+      sat.setDisplaySize(22, 22);
+      sat.setDepth(3);
+      const satBody = sat.body as Phaser.Physics.Arcade.Body;
+      satBody.setAllowGravity(false);
+      satBody.setImmovable(true);
+      satBody.setVelocityX(-this.speed());
+      const sr = sat.width * 0.36;
+      satBody.setCircle(sr, (sat.width - sr * 2) / 2, (sat.height - sr * 2) / 2);
+      this.pickups.add(sat);
+    }
+    return true;
+  }
+
+  private sweepOffscreen() {
+    const killLeft = (child: Phaser.GameObjects.GameObject) => {
+      const img = child as Phaser.Physics.Arcade.Image;
+      if (img.x < -80) img.destroy(true);
+    };
+    const hazards = this.hazards.getChildren();
+    for (let i = hazards.length - 1; i >= 0; i--) killLeft(hazards[i]);
+    const pickups = this.pickups.getChildren();
+    for (let i = pickups.length - 1; i >= 0; i--) killLeft(pickups[i]);
   }
 
   wipeout() {
@@ -224,18 +241,14 @@ class BounceScene extends Phaser.Scene {
     const body = this.player.body as Phaser.Physics.Arcade.Body;
     body.setVelocity(-40, -160);
     this.player.setTint(MAGENTA);
-    this.hazards.getChildren().forEach((child) => {
+    const stop = (child: Phaser.GameObjects.GameObject) => {
       const body = (child as Phaser.Physics.Arcade.Image).body as
         | Phaser.Physics.Arcade.Body
         | null;
       body?.setVelocityX(0);
-    });
-    this.pickups.getChildren().forEach((child) => {
-      const body = (child as Phaser.Physics.Arcade.Image).body as
-        | Phaser.Physics.Arcade.Body
-        | null;
-      body?.setVelocityX(0);
-    });
+    };
+    this.hazards.getChildren().forEach(stop);
+    this.pickups.getChildren().forEach(stop);
     this.time.delayedCall(850, () => {
       if (this.ended) return;
       this.ended = true;
@@ -272,19 +285,18 @@ class BounceScene extends Phaser.Scene {
     this.hazards.getChildren().forEach(push);
     this.pickups.getChildren().forEach(push);
 
+    this.sweepOffscreen();
+
     this.nextSpawn -= dt;
     if (this.nextSpawn <= 0) {
-      this.spawnPipe();
-      const spacing = this.gap() / speed + 0.55 + Math.random() * 0.35;
-      this.nextSpawn = Math.max(0.72, spacing);
+      if (delta > SPAWN_SKIP_MS) {
+        this.nextSpawn = 0.35;
+      } else {
+        this.spawnPipe();
+        const spacing = this.gap() / speed + 0.55 + Math.random() * 0.35;
+        this.nextSpawn = Math.max(0.72, spacing);
+      }
     }
-
-    const sweep = (child: Phaser.GameObjects.GameObject) => {
-      const img = child as Phaser.Physics.Arcade.Image;
-      if (img.x < -70) img.destroy();
-    };
-    this.hazards.getChildren().forEach(sweep);
-    this.pickups.getChildren().forEach(sweep);
 
     const py = this.player.y;
     if (py < 12 || py > h - 12) this.wipeout();
@@ -298,20 +310,27 @@ export function BouncingBitties({
 }) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef(onWipeout);
+  const gameRef = useRef<Phaser.Game | null>(null);
   endRef.current = onWipeout;
 
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
+    if (gameRef.current) {
+      gameRef.current.destroy(true);
+      gameRef.current = null;
+    }
     const coarse =
       typeof window !== "undefined" &&
       window.matchMedia("(pointer: coarse)").matches;
     const hint = coarse ? "TAP TO BOUNCE" : "TAP OR SPACE";
+    let alive = true;
 
     const game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: host,
       backgroundColor: "#041018",
+      fps: { target: 60, min: 30, smoothStep: true },
       physics: {
         default: "arcade",
         arcade: {
@@ -329,13 +348,19 @@ export function BouncingBitties({
       scene: [],
       audio: { noAudio: true },
     });
+    gameRef.current = game;
 
     game.scene.add("bounce", BounceScene, true, {
-      onWipeout: (score: number) => endRef.current(score),
+      onWipeout: (score: number) => {
+        if (!alive) return;
+        endRef.current(score);
+      },
       hint,
     });
 
     return () => {
+      alive = false;
+      gameRef.current = null;
       game.destroy(true);
     };
   }, []);
