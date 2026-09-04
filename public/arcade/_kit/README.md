@@ -1,15 +1,11 @@
 # Arcade art kit
 
-Drop files here for later Phaser machine swaps.
+Kenney packs live in `kenney/` (zips + extracted). Do not hotlink CDNs at runtime.
+Do not copy a whole pack into a machine folder — copy only the frames and wavs that machine loads.
 
-This folder is empty on purpose this pass — no Kenney pack, no Sonniss wavs, no ChipTone ticks.
-Do not invent a pack name. Keep original licenses with the files. Do not hotlink CDNs at runtime.
+Bouncing Bitties (`public/arcade/bitties/`) uses:
 
-Bouncing Bitties uses original sprites in `public/arcade/bitties/`
-(bitty.png, block.png, fin.png, sat.png). Magenta-keyed, not Kenney, not Phaser labs.
+- New Platformer Pack 1.1 — yellow character, stone block, spikes, gold coin, hills/clouds strips
+- Digital Audio — hop / pickup / wipeout oggs (the pack ships ogg, not wav)
 
-When a sheet or wavs land here:
-
-- Kenney sheet — a CC0 sprite sheet when we pick one.
-- Sonniss wavs — hop / wipeout hits.
-- ChipTone ticks — UI ticks exported from ChipTone.
+See `CREDITS.md`.

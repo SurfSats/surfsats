@@ -3,20 +3,27 @@
 import { useEffect, useRef } from "react";
 import Phaser from "phaser";
 
-const DARK = 0x041018;
-const BAND = 0x0a2430;
-const MID = 0x12384a;
+const SKY = 0xb4dcf0;
 const MAGENTA = 0xff2ec4;
 
-const BITTY_SRC = "/arcade/bitties/bitty.png";
+const PLAYER_IDLE = "/arcade/bitties/player-idle.png";
+const PLAYER_JUMP = "/arcade/bitties/player-jump.png";
+const PLAYER_HIT = "/arcade/bitties/player-hit.png";
 const BLOCK_SRC = "/arcade/bitties/block.png";
-const FIN_SRC = "/arcade/bitties/fin.png";
-const SAT_SRC = "/arcade/bitties/sat.png";
+const SPIKE_SRC = "/arcade/bitties/spike.png";
+const COIN_SRC = "/arcade/bitties/coin.png";
+const HILLS_SRC = "/arcade/bitties/bg-hills.png";
+const CLOUDS_SRC = "/arcade/bitties/bg-clouds.png";
+const SFX_HOP = "/arcade/bitties/sfx/hop.ogg";
+const SFX_PICKUP = "/arcade/bitties/sfx/pickup.ogg";
+const SFX_HIT = "/arcade/bitties/sfx/hit.ogg";
 
 const MAX_HAZARDS = 20;
 const MAX_PICKUPS = 6;
 const GATE_HAZARDS = 4;
 const SPAWN_SKIP_MS = 50;
+const CLOUDS_H = 148;
+const HILLS_H = 138;
 
 type BounceOpts = {
   onWipeout: (score: number) => void;
@@ -27,7 +34,8 @@ class BounceScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
   private hazards!: Phaser.Physics.Arcade.Group;
   private pickups!: Phaser.Physics.Arcade.Group;
-  private bands: Phaser.GameObjects.Rectangle[] = [];
+  private hills!: Phaser.GameObjects.TileSprite;
+  private clouds!: Phaser.GameObjects.TileSprite;
   private hint!: Phaser.GameObjects.Text;
   private scoreText!: Phaser.GameObjects.Text;
   private started = false;
@@ -49,23 +57,31 @@ class BounceScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("bitty", BITTY_SRC);
+    this.load.image("player-idle", PLAYER_IDLE);
+    this.load.image("player-jump", PLAYER_JUMP);
+    this.load.image("player-hit", PLAYER_HIT);
     this.load.image("block", BLOCK_SRC);
-    this.load.image("fin", FIN_SRC);
-    this.load.image("sat", SAT_SRC);
+    this.load.image("spike", SPIKE_SRC);
+    this.load.image("coin", COIN_SRC);
+    this.load.image("hills", HILLS_SRC);
+    this.load.image("clouds", CLOUDS_SRC);
+    this.load.audio("hop", SFX_HOP);
+    this.load.audio("pickup", SFX_PICKUP);
+    this.load.audio("hit", SFX_HIT);
   }
 
   create() {
     const w = this.scale.width;
     const h = this.scale.height;
-    this.cameras.main.setBackgroundColor(DARK);
+    this.cameras.main.setBackgroundColor(SKY);
     this.physics.world.setBounds(0, 0, w, h);
 
-    this.bands = [
-      this.add.rectangle(w / 2, h * 0.28, w * 2, 48, BAND).setAlpha(0.85),
-      this.add.rectangle(w / 2, h * 0.52, w * 2, 36, MID).setAlpha(0.7),
-      this.add.rectangle(w / 2, h * 0.78, w * 2, 64, BAND).setAlpha(0.9),
-    ];
+    this.clouds = this.add
+      .tileSprite(w / 2, Math.max(CLOUDS_H / 2, h * 0.26), w, CLOUDS_H, "clouds")
+      .setDepth(0);
+    this.hills = this.add
+      .tileSprite(w / 2, h - HILLS_H / 2, w, HILLS_H, "hills")
+      .setDepth(1);
 
     this.hazards = this.physics.add.group({
       allowGravity: false,
@@ -79,23 +95,24 @@ class BounceScene extends Phaser.Scene {
     });
 
     const px = Math.max(72, w * 0.2);
-    const bitty = Math.round(Math.max(52, Math.min(64, w * 0.145)));
-    this.player = this.physics.add.sprite(px, h * 0.45, "bitty");
+    const bitty = Math.round(Math.max(56, Math.min(72, w * 0.16)));
+    this.player = this.physics.add.sprite(px, h * 0.45, "player-idle");
     this.player.setDisplaySize(bitty, bitty);
     this.player.setDepth(4);
     const body = this.player.body as Phaser.Physics.Arcade.Body;
-    const r = this.player.width * 0.38;
-    body.setCircle(r, (this.player.width - r * 2) / 2, (this.player.height - r * 2) / 2);
+    body.setSize(this.player.width * 0.46, this.player.height * 0.52);
+    body.setOffset(this.player.width * 0.27, this.player.height * 0.3);
     body.setCollideWorldBounds(true);
     body.setBounce(0, 0);
     body.setAllowGravity(false);
     body.setMaxVelocity(0, 820);
 
     this.physics.add.overlap(this.player, this.hazards, () => this.wipeout());
-    this.physics.add.overlap(this.player, this.pickups, (_player, sat) => {
-      const sprite = sat as Phaser.Physics.Arcade.Image;
+    this.physics.add.overlap(this.player, this.pickups, (_player, coin) => {
+      const sprite = coin as Phaser.Physics.Arcade.Image;
       if (!sprite.active) return;
       this.score += 50;
+      this.beep("pickup");
       sprite.destroy(true);
     });
 
@@ -103,7 +120,7 @@ class BounceScene extends Phaser.Scene {
       .text(w / 2, h * 0.38, this.hopHint, {
         fontFamily: "monospace",
         fontSize: "18px",
-        color: "#efe6d4",
+        color: "#142028",
       })
       .setOrigin(0.5)
       .setDepth(8);
@@ -112,7 +129,7 @@ class BounceScene extends Phaser.Scene {
       .text(16, 14, "000000", {
         fontFamily: "monospace",
         fontSize: "16px",
-        color: "#efe6d4",
+        color: "#142028",
       })
       .setOrigin(0, 0)
       .setDepth(8);
@@ -128,6 +145,13 @@ class BounceScene extends Phaser.Scene {
       this.physics.world.setBounds(0, 0, gameSize.width, gameSize.height);
       this.cameras.main.setSize(gameSize.width, gameSize.height);
       this.hint.setPosition(gameSize.width / 2, gameSize.height * 0.38);
+      this.clouds.setPosition(
+        gameSize.width / 2,
+        Math.max(CLOUDS_H / 2, gameSize.height * 0.26),
+      );
+      this.clouds.setSize(gameSize.width, CLOUDS_H);
+      this.hills.setPosition(gameSize.width / 2, gameSize.height - HILLS_H / 2);
+      this.hills.setSize(gameSize.width, HILLS_H);
     });
 
     this.nextSpawn = 2.8;
@@ -142,6 +166,17 @@ class BounceScene extends Phaser.Scene {
       this.hint.setVisible(false);
     }
     body.setVelocityY(-430);
+    this.player.setTexture("player-jump");
+    this.beep("hop");
+  }
+
+  private beep(key: "hop" | "pickup" | "hit") {
+    if (this.sound.locked) this.sound.unlock();
+    try {
+      this.sound.play(key, { volume: 0.42 });
+    } catch {
+      // autoplay lock — next tap unlocks
+    }
   }
 
   private speed() {
@@ -190,36 +225,36 @@ class BounceScene extends Phaser.Scene {
     this.placeColumn(x, 0, topH);
     this.placeColumn(x, botY, h);
 
-    const topFin = this.physics.add.image(x, topH + 2, "fin");
-    topFin.setDisplaySize(38, 34);
-    topFin.setFlipY(true);
-    topFin.setOrigin(0.5, 0);
-    topFin.setDepth(3);
-    const topBody = topFin.body as Phaser.Physics.Arcade.Body;
-    topBody.setSize(topFin.width * 0.62, topFin.height * 0.7);
-    topBody.setOffset(topFin.width * 0.19, topFin.height * 0.12);
-    this.armHazard(topFin);
+    const topSpike = this.physics.add.image(x, topH + 2, "spike");
+    topSpike.setDisplaySize(38, 28);
+    topSpike.setFlipY(true);
+    topSpike.setOrigin(0.5, 0);
+    topSpike.setDepth(3);
+    const topBody = topSpike.body as Phaser.Physics.Arcade.Body;
+    topBody.setSize(topSpike.width * 0.7, topSpike.height * 0.62);
+    topBody.setOffset(topSpike.width * 0.15, topSpike.height * 0.2);
+    this.armHazard(topSpike);
 
-    const botFin = this.physics.add.image(x, botY - 2, "fin");
-    botFin.setDisplaySize(38, 34);
-    botFin.setOrigin(0.5, 1);
-    botFin.setDepth(3);
-    const botBody = botFin.body as Phaser.Physics.Arcade.Body;
-    botBody.setSize(botFin.width * 0.62, botFin.height * 0.7);
-    botBody.setOffset(botFin.width * 0.19, botFin.height * 0.18);
-    this.armHazard(botFin);
+    const botSpike = this.physics.add.image(x, botY - 2, "spike");
+    botSpike.setDisplaySize(38, 28);
+    botSpike.setOrigin(0.5, 1);
+    botSpike.setDepth(3);
+    const botBody = botSpike.body as Phaser.Physics.Arcade.Body;
+    botBody.setSize(botSpike.width * 0.7, botSpike.height * 0.62);
+    botBody.setOffset(botSpike.width * 0.15, botSpike.height * 0.18);
+    this.armHazard(botSpike);
 
     if (this.pickups.countActive(true) < MAX_PICKUPS) {
-      const sat = this.physics.add.image(x, topH + gap / 2, "sat");
-      sat.setDisplaySize(22, 22);
-      sat.setDepth(3);
-      const satBody = sat.body as Phaser.Physics.Arcade.Body;
-      satBody.setAllowGravity(false);
-      satBody.setImmovable(true);
-      satBody.setVelocityX(-this.speed());
-      const sr = sat.width * 0.36;
-      satBody.setCircle(sr, (sat.width - sr * 2) / 2, (sat.height - sr * 2) / 2);
-      this.pickups.add(sat);
+      const coin = this.physics.add.image(x, topH + gap / 2, "coin");
+      coin.setDisplaySize(22, 22);
+      coin.setDepth(3);
+      const coinBody = coin.body as Phaser.Physics.Arcade.Body;
+      coinBody.setAllowGravity(false);
+      coinBody.setImmovable(true);
+      coinBody.setVelocityX(-this.speed());
+      const sr = coin.width * 0.36;
+      coinBody.setCircle(sr, (coin.width - sr * 2) / 2, (coin.height - sr * 2) / 2);
+      this.pickups.add(coin);
     }
     return true;
   }
@@ -240,7 +275,9 @@ class BounceScene extends Phaser.Scene {
     this.dead = true;
     const body = this.player.body as Phaser.Physics.Arcade.Body;
     body.setVelocity(-40, -160);
+    this.player.setTexture("player-hit");
     this.player.setTint(MAGENTA);
+    this.beep("hit");
     const stop = (child: Phaser.GameObjects.GameObject) => {
       const body = (child as Phaser.Physics.Arcade.Image).body as
         | Phaser.Physics.Arcade.Body
@@ -258,16 +295,15 @@ class BounceScene extends Phaser.Scene {
 
   update(_time: number, delta: number) {
     const dt = Math.min(0.033, delta / 1000);
-    const w = this.scale.width;
     const h = this.scale.height;
     this.scroll += (this.started && !this.dead ? this.speed() : 28) * dt;
-    this.bands[0]?.setX((w / 2 + this.scroll * 0.15) % (w * 0.4) + w * 0.3);
-    this.bands[1]?.setX((w / 2 - this.scroll * 0.28) % (w * 0.5) + w * 0.25);
-    this.bands[2]?.setX((w / 2 + this.scroll * 0.45) % (w * 0.35) + w * 0.32);
+    this.clouds.tilePositionX = this.scroll * 0.12;
+    this.hills.tilePositionX = this.scroll * 0.32;
 
-    if (this.player?.body) {
+    if (this.player?.body && !this.dead) {
       const vy = (this.player.body as Phaser.Physics.Arcade.Body).velocity.y;
-      this.player.setRotation(Phaser.Math.Clamp(vy / 1400, -0.38, 0.55));
+      this.player.setRotation(Phaser.Math.Clamp(vy / 2200, -0.18, 0.28));
+      if (this.started && vy > 80) this.player.setTexture("player-idle");
     }
 
     if (!this.started || this.dead) return;
@@ -329,7 +365,7 @@ export function BouncingBitties({
     const game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: host,
-      backgroundColor: "#041018",
+      backgroundColor: "#b4dcf0",
       fps: { target: 60, min: 30, smoothStep: true },
       physics: {
         default: "arcade",
@@ -346,7 +382,6 @@ export function BouncingBitties({
       },
       input: { keyboard: true },
       scene: [],
-      audio: { noAudio: true },
     });
     gameRef.current = game;
 
