@@ -3770,7 +3770,7 @@ body:has(.graffiti-page) .site-watermark {
 
 .arcade-floor-play {
   display: inline-flex;
-  min-height: 2.75rem;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
   margin-top: 0.35rem;
@@ -3920,7 +3920,9 @@ body:has(.graffiti-page) .site-watermark {
 }
 
 .swell-playfield,
-.swell-hop-root {
+.swell-hop-root,
+.bitties-playfield,
+.bitties-root {
   width: 100%;
   height: 100%;
   touch-action: none;
@@ -3928,7 +3930,8 @@ body:has(.graffiti-page) .site-watermark {
   cursor: pointer;
 }
 
-.swell-hop-root canvas {
+.swell-hop-root canvas,
+.bitties-root canvas {
   display: block;
   touch-action: none;
 }

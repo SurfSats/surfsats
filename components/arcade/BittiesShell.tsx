@@ -10,14 +10,17 @@ import {
   ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
   ARCADE_STORAGE_KEY,
-  SWELL_HOP_GAME_ID,
+  BITTIES_GAME_ID,
   formatCredits,
   isPlayerId,
   sanitizeAlias,
 } from "@/lib/arcade";
 
-const SwellHop = dynamic(
-  () => import("@/components/arcade/SwellHop").then((mod) => mod.SwellHop),
+const BouncingBitties = dynamic(
+  () =>
+    import("@/components/arcade/BouncingBitties").then(
+      (mod) => mod.BouncingBitties,
+    ),
   { ssr: false },
 );
 
@@ -28,7 +31,7 @@ type SessionCache = {
 
 type Mode = "attract" | "invoice" | "ready" | "playing";
 
-export function SwellShell() {
+export function BittiesShell() {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
@@ -270,7 +273,7 @@ export function SwellShell() {
       const response = await fetch("/api/arcade/play", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, game: SWELL_HOP_GAME_ID }),
+        body: JSON.stringify({ playerId, game: BITTIES_GAME_ID }),
       });
       const data = (await response.json()) as {
         error?: string;
@@ -338,31 +341,32 @@ export function SwellShell() {
   }, [mode, credits]);
 
   return (
-    <div className={`anarch-shell swell-shell${playing ? " is-playing" : ""}`}>
+    <div className={`anarch-shell bitties-shell${playing ? " is-playing" : ""}`}>
       {playing ? (
         <div className="anarch-run">
           <div className="anarch-run-bar">
             <p>
-              SWELL HOP · {formatCredits(credits)} CR · no scores this pass
+              BOUNCING BITTIES · {formatCredits(credits)} CR · no scores this
+              pass
             </p>
             <Link className="anarch-exit" href="/arcade#floor">
               EXIT
             </Link>
           </div>
-          <div className="anarch-playfield swell-playfield">
-            <SwellHop onWipeout={handleWipeout} />
+          <div className="anarch-playfield bitties-playfield">
+            <BouncingBitties onWipeout={handleWipeout} />
           </div>
         </div>
       ) : (
         <>
           <div className="anarch-stage">
-            <p className="anarch-kicker">SWELL HOP</p>
+            <p className="anarch-kicker">BOUNCING BITTIES</p>
             <p className="anarch-copy">
-              {ARCADE_PRICE_SATS} sats · tap to hop
+              {ARCADE_PRICE_SATS} sats · tap to bounce
             </p>
             <p className="anarch-copy anarch-copy-pool">
               Shares the Wave Runner credit pool. {ARCADE_CREDITS_PER_PAY}{" "}
-              credits per insert. No Swell Hop scores on HIGH SCORES.
+              credits per insert. No Bouncing Bitties scores on HIGH SCORES.
             </p>
           </div>
           <div className="anarch-till">
@@ -425,8 +429,8 @@ export function SwellShell() {
           remainLabel={remainLabel}
           copied={copied}
           invoiceError={invoiceError}
-          memo={`${ARCADE_CREDITS_PER_PAY} credits · SWELL HOP · SurfSats Arcade`}
-          titleId="arcade-pay-title-swell"
+          memo={`${ARCADE_CREDITS_PER_PAY} credits · BOUNCING BITTIES · SurfSats Arcade`}
+          titleId="arcade-pay-title-bitties"
           settling={settling}
           onSettled={finishSettle}
           onCopy={() => void copyInvoice()}

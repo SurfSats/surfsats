@@ -9,7 +9,7 @@ const routes = [
   "/music",
   "/arcade",
   "/arcade/anarch",
-  "/arcade/swell",
+  "/arcade/bitties",
   "/tab",
   "/graffiti",
   "/tidechain",

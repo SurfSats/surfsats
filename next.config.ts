@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         destination: "/music?tab=jukebox",
         permanent: true,
       },
+      {
+        source: "/arcade/swell",
+        destination: "/arcade/bitties",
+        permanent: true,
+      },
     ];
   },
   turbopack: {
