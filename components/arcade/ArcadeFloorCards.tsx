@@ -20,9 +20,12 @@ export function ArcadeFloorCards() {
             PLAY
           </Link>
         </li>
-        <li className="arcade-floor-card is-soon">
-          <h2>SOON</h2>
-          <p>Empty slot.</p>
+        <li className="arcade-floor-card">
+          <h2>SWELL HOP</h2>
+          <p>{ARCADE_PRICE_SATS} sats · tap to hop.</p>
+          <Link className="arcade-floor-play" href="/arcade/swell">
+            PLAY
+          </Link>
         </li>
       </ul>
     </section>

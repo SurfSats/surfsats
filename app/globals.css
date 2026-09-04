@@ -3919,6 +3919,20 @@ body:has(.graffiti-page) .site-watermark {
   touch-action: none;
 }
 
+.swell-playfield,
+.swell-hop-root {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  cursor: pointer;
+}
+
+.swell-hop-root canvas {
+  display: block;
+  touch-action: none;
+}
+
 .anarch-missing {
   display: grid;
   flex: 1;
@@ -4920,8 +4934,11 @@ html[data-arcade-play="wave"] .arcade-page .console-stage {
   overflow: hidden;
 }
 
+html[data-arcade-play="wave"] .arcade-cabinet-anchor,
 html[data-arcade-play="wave"] .arcade-pit {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   width: 100%;
   max-width: none;
   height: 100%;

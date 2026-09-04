@@ -7,6 +7,8 @@ export const ANARCH_GAME_LABEL = "ANARCH";
 export const ANARCH_BUILD_HTML = "/arcade/anarch/anarch.html";
 export const ANARCH_BUILD_JS = "/arcade/anarch/anarch.js";
 export const ANARCH_BUILD_WASM = "/arcade/anarch/anarch.wasm";
+export const SWELL_HOP_GAME_ID = "swell-hop";
+export const SWELL_HOP_GAME_LABEL = "SWELL HOP";
 export const ARCADE_STORAGE_KEY = "surfsats.arcade.v1";
 export const RETRO_STORAGE_KEY = "surfsats.arcade.retro.v1";
 export const TAB_STORAGE_KEY = "surfsats.arcade.tab.v1";
@@ -150,6 +152,7 @@ export function normalizePlayGame(raw: string): string | null {
   const id = raw.trim().toLowerCase();
   if (!id || id === "wave" || id === ARCADE_GAME_ID) return ARCADE_GAME_ID;
   if (id === ANARCH_GAME_ID) return ANARCH_GAME_ID;
+  if (id === SWELL_HOP_GAME_ID) return SWELL_HOP_GAME_ID;
   if (isRetroGameId(id)) return id;
   if (id === TAB_GAME_ID) return TAB_GAME_ID;
   if (isTabEndingGame(id)) return id;
