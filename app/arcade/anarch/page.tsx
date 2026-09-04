@@ -5,7 +5,7 @@ import { pageMeta } from "@/lib/seo";
 
 export const metadata: Metadata = pageMeta({
   title: "ANARCH",
-  description: `ANARCH · CC0 · drummyfish · ${ARCADE_PRICE_SATS} sats to boot. Insert lands next pass.`,
+  description: `ANARCH · CC0 · drummyfish · ${ARCADE_PRICE_SATS} sats to boot.`,
   path: "/arcade/anarch",
 });
 

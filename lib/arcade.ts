@@ -2,6 +2,11 @@ export const ARCADE_PRICE_SATS = 21;
 export const ARCADE_CREDITS_PER_PAY = 3;
 export const ARCADE_GAME_ID = "wave-runner";
 export const ARCADE_GAME_LABEL = "WAVE RUNNER";
+export const ANARCH_GAME_ID = "anarch";
+export const ANARCH_GAME_LABEL = "ANARCH";
+export const ANARCH_BUILD_HTML = "/arcade/anarch/anarch.html";
+export const ANARCH_BUILD_JS = "/arcade/anarch/anarch.js";
+export const ANARCH_BUILD_WASM = "/arcade/anarch/anarch.wasm";
 export const ARCADE_STORAGE_KEY = "surfsats.arcade.v1";
 export const RETRO_STORAGE_KEY = "surfsats.arcade.retro.v1";
 export const TAB_STORAGE_KEY = "surfsats.arcade.tab.v1";
@@ -144,6 +149,7 @@ export function retroGameLabel(id: string) {
 export function normalizePlayGame(raw: string): string | null {
   const id = raw.trim().toLowerCase();
   if (!id || id === "wave" || id === ARCADE_GAME_ID) return ARCADE_GAME_ID;
+  if (id === ANARCH_GAME_ID) return ANARCH_GAME_ID;
   if (isRetroGameId(id)) return id;
   if (id === TAB_GAME_ID) return TAB_GAME_ID;
   if (isTabEndingGame(id)) return id;
