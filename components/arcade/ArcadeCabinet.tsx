@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { formatCredits, sanitizeAlias } from "@/lib/arcade";
+import {
+  ARCADE_ALIAS_MAX,
+  ARCADE_CREDITS_PER_PAY,
+  ARCADE_PRICE_SATS,
+  formatCredits,
+  sanitizeAlias,
+} from "@/lib/arcade";
 import type { RefObject } from "react";
 import {
   ArcadeScreen,
@@ -111,6 +117,22 @@ export function ArcadeCabinet({
                 PLAY
                 <span>1 CREDIT</span>
               </button>
+            ) : mode !== "playing" ? (
+              <button
+                type="button"
+                className="cab-insert cab-insert-primary cab-till-insert"
+                disabled={!aliasOk || pending || paying}
+                onClick={onInsert}
+              >
+                {pending
+                  ? "BUILDING INVOICE…"
+                  : `INSERT ${ARCADE_PRICE_SATS} SATS`}
+                <span>
+                  {pending
+                    ? "LIGHTNING"
+                    : `GET INVOICE · ${ARCADE_CREDITS_PER_PAY} CREDITS`}
+                </span>
+              </button>
             ) : null}
             <div className="cab-led">
               <p>CREDITS</p>
@@ -118,8 +140,31 @@ export function ArcadeCabinet({
             </div>
           </div>
 
+          {mode !== "playing" && !canPlay ? (
+            <label className="cab-alias cab-till-alias">
+              <span>CALLSIGN · REQUIRED</span>
+              <input
+                value={alias}
+                maxLength={ARCADE_ALIAS_MAX}
+                onChange={(event) => onAlias(event.target.value)}
+                placeholder="YOUR ALIAS"
+                autoCapitalize="characters"
+                autoComplete="off"
+                spellCheck={false}
+                disabled={paying || pending}
+              />
+            </label>
+          ) : null}
+
           {!aliasOk && !canPlay ? (
-            <p className="cab-hint">CALLSIGN ON THE GLASS · THEN INSERT</p>
+            <p className="cab-hint">
+              <span className="cab-hint-glass">
+                CALLSIGN ON THE GLASS · THEN INSERT
+              </span>
+              <span className="cab-hint-till">
+                ENTER CALLSIGN (2–16) THEN INSERT
+              </span>
+            </p>
           ) : null}
 
           {error ? <p className="cab-error">{error}</p> : null}

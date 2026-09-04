@@ -4278,6 +4278,39 @@ body:has(.graffiti-page) .site-watermark {
   box-shadow: none;
 }
 
+.cab-hint-till {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .arcade-bay-wave .cab-till-insert,
+  .arcade-bay-wave .cab-till-alias {
+    display: none;
+  }
+}
+
+@media (max-width: 899px) {
+  .arcade-bay-wave .cab-crt-attract {
+    display: none;
+  }
+
+  .arcade-bay-wave .cab-hint-glass {
+    display: none;
+  }
+
+  .arcade-bay-wave .cab-hint-till {
+    display: inline;
+  }
+
+  .arcade-bay-wave .cab-coin-plate {
+    background: rgb(8 8 11 / 0.92);
+  }
+
+  .arcade-bay-wave .cab-till-alias input {
+    min-height: 2.75rem;
+  }
+}
+
 .cab-coin-note {
   margin: 0;
   font-size: 0.52rem;
