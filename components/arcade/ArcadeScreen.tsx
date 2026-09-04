@@ -72,7 +72,7 @@ export function ArcadeScreen({
     >
       <div className="cab-crt-well">
         {mode === "playing" ? (
-          <WaveRunner ref={gameRef} onWipeout={onWipeout} />
+          <WaveRunner ref={gameRef} credits={credits} onWipeout={onWipeout} />
         ) : null}
       </div>
       <div className="cab-crt-glass" aria-hidden="true" />

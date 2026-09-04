@@ -410,6 +410,16 @@ export function ArcadeApp({
     setPending(false);
   }
 
+  useEffect(() => {
+    if (screenMode !== "playing" || !front) return;
+    document.documentElement.dataset.arcadePlay = "wave";
+    return () => {
+      if (document.documentElement.dataset.arcadePlay === "wave") {
+        delete document.documentElement.dataset.arcadePlay;
+      }
+    };
+  }, [front, screenMode]);
+
   const showInvoice = screenMode === "invoice" || pending || settling;
 
   useEffect(() => {
@@ -426,7 +436,9 @@ export function ArcadeApp({
   }, [settling, showInvoice]);
 
   return (
-    <div className={`arcade-bay arcade-bay-wave ${front ? "is-front" : "is-back"}`}>
+    <div
+      className={`arcade-bay arcade-bay-wave ${front ? "is-front" : "is-back"} ${screenMode === "playing" ? "is-playing" : ""}`}
+    >
       {!front ? (
         <button
           type="button"

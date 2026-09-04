@@ -104,6 +104,10 @@ export function ArcadeFloor() {
             WAVE RUNNER and RETRO are separate cabinets. Each keeps its own
             credits and legends.
           </p>
+          <p>
+            WAVE RUNNER: tap the screen to hop. The swell gets meaner the longer
+            you ride.
+          </p>
           <p>Insert coin on the glass. The CRT is the till.</p>
         </div>
       ) : null}

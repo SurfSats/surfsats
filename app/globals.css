@@ -4595,8 +4595,136 @@ body:has(.graffiti-page) .site-watermark {
   object-fit: contain;
   object-position: center;
   touch-action: none;
+  overscroll-behavior: none;
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
+}
+
+.arcade-bay-wave .cab-crt-slot {
+  transition:
+    top 300ms ease,
+    left 300ms ease,
+    width 300ms ease,
+    height 300ms ease,
+    border-radius 300ms ease;
+}
+
+html[data-arcade-play="wave"] {
+  overflow: hidden;
+}
+
+html[data-arcade-play="wave"] .site-watermark {
+  display: none;
+}
+
+html[data-arcade-play="wave"] body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html[data-arcade-play="wave"] .arcade-page .console-strip,
+html[data-arcade-play="wave"] .arcade-toggle,
+html[data-arcade-play="wave"] .arcade-haze,
+html[data-arcade-play="wave"] .arcade-bay-retro,
+html[data-arcade-play="wave"] .arcade-bay-wave .cab-art,
+html[data-arcade-play="wave"] .arcade-bay-wave .cab-plate,
+html[data-arcade-play="wave"] .arcade-bay-wave .cab-coin,
+html[data-arcade-play="wave"] .arcade-bay-wave .cab-hit {
+  display: none;
+}
+
+html[data-arcade-play="wave"] .arcade-page.console-page {
+  min-height: calc(100dvh - var(--site-chrome-h));
+}
+
+html[data-arcade-play="wave"] .arcade-page .console-shell {
+  height: calc(100dvh - var(--site-chrome-h));
+  min-height: 0;
+}
+
+html[data-arcade-play="wave"] .arcade-page .console-stage {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+html[data-arcade-play="wave"] .arcade-pit {
+  flex: 1;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+}
+
+html[data-arcade-play="wave"] .arcade-bay-wave.is-front,
+html[data-arcade-play="wave"] .arcade-bay-wave .cab-wrap,
+html[data-arcade-play="wave"] .arcade-bay-wave .cab-machine,
+html[data-arcade-play="wave"] .arcade-bay-wave .cab-body {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+}
+
+html[data-arcade-play="wave"] .arcade-bay-wave.is-front {
+  display: flex;
+  flex-direction: column;
+}
+
+html[data-arcade-play="wave"] .arcade-bay-wave .cab-crt-slot {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  z-index: 8;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+html[data-arcade-play="wave"] .arcade-bay-wave .cab-crt-well {
+  place-items: stretch;
+}
+
+html[data-arcade-play="wave"] .wave-runner-canvas {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+}
+
+html[data-arcade-play="wave"] .cab-crt-photo.cab-crt-live .cab-crt-glass {
+  opacity: 0.1;
+}
+
+html[data-arcade-play="wave"] .cab-crt-live .cab-crt-scan {
+  opacity: 0.16;
+}
+
+@media (max-width: 1023px) {
+  html[data-arcade-play="wave"] .arcade-page .console-deck {
+    display: none;
+  }
+
+  html[data-arcade-play="wave"] .arcade-page .console-stage {
+    padding: 0;
+    min-height: calc(100dvh - var(--site-chrome-h));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcade-bay-wave .cab-crt-slot {
+    transition: none;
+  }
+
+  html[data-arcade-play="wave"] .cab-crt-scan {
+    display: none;
+  }
 }
 
 .cab-crt-hit,
