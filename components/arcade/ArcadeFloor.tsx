@@ -4,6 +4,7 @@ import { Press_Start_2P } from "next/font/google";
 import { useEffect, useState } from "react";
 import { ArcadeApp } from "@/components/arcade/ArcadeApp";
 import { ArcadeBoards } from "@/components/arcade/ArcadeBoards";
+import { ArcadeFloorCards } from "@/components/arcade/ArcadeFloorCards";
 import { RetroApp } from "@/components/arcade/RetroApp";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import {
@@ -34,6 +35,7 @@ export function ArcadeFloor() {
   }, [front]);
 
   return (
+    <>
     <ConsoleShell
       name="arcade"
       className={`${pixel.variable} arcade-page`}
@@ -48,6 +50,7 @@ export function ArcadeFloor() {
         <>
           <h1 className="sr-only">SurfSats Lightning Arcade</h1>
           <div className="arcade-haze" aria-hidden="true" />
+          <div id="cabinet" className="arcade-cabinet-anchor">
           <div className="arcade-toggle" role="tablist" aria-label="Cabinet">
             <button
               type="button"
@@ -77,6 +80,7 @@ export function ArcadeFloor() {
               front={front === "retro"}
               onBringForward={() => setFront("retro")}
             />
+          </div>
           </div>
         </>
       }
@@ -121,6 +125,8 @@ export function ArcadeFloor() {
         </div>
       ) : null}
     </ConsoleShell>
+    <ArcadeFloorCards />
+    </>
   );
 }
 

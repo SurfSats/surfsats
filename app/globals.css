@@ -3710,6 +3710,150 @@ body:has(.graffiti-page) .site-watermark {
   color: #c9b8a4;
 }
 
+.arcade-cabinet-anchor {
+  scroll-margin-top: calc(var(--site-chrome-h) + 0.5rem);
+}
+
+.arcade-floor {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 58rem);
+  margin: 0 auto;
+  padding: 0.85rem 0.75rem 1.4rem;
+}
+
+.arcade-floor-kicker {
+  margin: 0 0 0.7rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c9b8a4;
+}
+
+.arcade-floor-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.arcade-floor-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 0.9rem 0.95rem;
+  border: 1px solid rgb(255 122 24 / 0.28);
+  background: rgb(8 8 11 / 0.82);
+}
+
+.arcade-floor-card h2 {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #efe6d4;
+}
+
+.arcade-floor-card p {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ff7a18;
+}
+
+.arcade-floor-play {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.7rem;
+  background: #ff7a18;
+  color: #140a04;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.arcade-floor-card.is-soon {
+  border-color: rgb(201 184 164 / 0.22);
+  opacity: 0.7;
+}
+
+.arcade-floor-card.is-soon p {
+  color: #c9b8a4;
+}
+
+@media (min-width: 700px) {
+  .arcade-floor-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.anarch-shell {
+  display: flex;
+  min-height: calc(100dvh - var(--site-chrome-h));
+  flex-direction: column;
+  background: #041018;
+  color: #efe6d4;
+}
+
+.anarch-stage {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 16rem;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+
+.anarch-kicker {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.6rem, 6vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #3dfff3;
+}
+
+.anarch-copy {
+  margin: 0.55rem 0 0;
+  max-width: 22rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  line-height: 1.55;
+  text-transform: uppercase;
+  color: #c9b8a4;
+}
+
+.anarch-till {
+  display: grid;
+  gap: 0.55rem;
+  width: min(22rem, calc(100% - 1.5rem));
+  margin: 0 auto 1.1rem;
+  padding: 0.7rem 0.75rem 0.8rem;
+  border: 1px solid rgb(255 122 24 / 0.28);
+  background: rgb(8 8 11 / 0.92);
+}
+
+.anarch-till .cab-insert-primary {
+  width: 100%;
+  min-height: 2.75rem;
+  align-items: center;
+  text-align: center;
+}
+
 .arcade-haze {
   pointer-events: none;
   position: absolute;
@@ -4657,6 +4801,7 @@ html[data-arcade-play="wave"] body {
 }
 
 html[data-arcade-play="wave"] .arcade-page .console-strip,
+html[data-arcade-play="wave"] .arcade-floor,
 html[data-arcade-play="wave"] .arcade-toggle,
 html[data-arcade-play="wave"] .arcade-haze,
 html[data-arcade-play="wave"] .arcade-bay-retro,
