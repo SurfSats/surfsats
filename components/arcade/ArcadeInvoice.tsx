@@ -52,11 +52,9 @@ export function ArcadeInvoice({
           <SettleRitual subtitle={memo} titleId={titleId} onComplete={onSettled} />
         ) : (
           <>
-        <p className="arcade-pay-kicker">lightning invoice</p>
         <h2 id={titleId} className="arcade-pay-title">
           INSERT {ARCADE_PRICE_SATS} SATS
         </h2>
-        <p className="arcade-pay-memo">{memo}</p>
 
         {qrSrc && live && !expired ? (
           // data: URL from the live BOLT11 — next/image cannot optimize it
@@ -65,8 +63,8 @@ export function ArcadeInvoice({
             src={qrSrc}
             alt="Lightning invoice QR"
             className="arcade-pay-qr"
-            width={256}
-            height={256}
+            width={220}
+            height={220}
           />
         ) : (
           <div className="arcade-pay-qr arcade-pay-qr-wait">
@@ -74,6 +72,35 @@ export function ArcadeInvoice({
           </div>
         )}
 
+        <div className="arcade-pay-actions">
+          {expired || (!live && !pending) ? (
+            <button type="button" className="arcade-pay-btn" onClick={onRetry} disabled={pending}>
+              {pending ? "BUILDING…" : "NEW INVOICE"}
+            </button>
+          ) : (
+            <>
+              {live ? (
+                <a className="arcade-pay-btn arcade-pay-link" href={`lightning:${paymentRequest}`}>
+                  OPEN WALLET
+                </a>
+              ) : null}
+              <button
+                type="button"
+                className="arcade-pay-btn"
+                onClick={onCopy}
+                disabled={!live}
+              >
+                {copied ? "COPIED" : "COPY INVOICE"}
+              </button>
+            </>
+          )}
+          <button type="button" className="arcade-pay-btn arcade-pay-ghost" onClick={onCancel}>
+            BACK
+          </button>
+        </div>
+
+        <p className="arcade-pay-kicker">lightning invoice</p>
+        <p className="arcade-pay-memo">{memo}</p>
         <p className="arcade-pay-status">
           {expired
             ? "invoice expired · generate a new one"
@@ -92,33 +119,6 @@ export function ArcadeInvoice({
         ) : null}
 
         {invoiceError ? <p className="arcade-pay-error">{invoiceError}</p> : null}
-
-        <div className="arcade-pay-actions">
-          {expired || (!live && !pending) ? (
-            <button type="button" className="arcade-pay-btn" onClick={onRetry} disabled={pending}>
-              {pending ? "BUILDING…" : "NEW INVOICE"}
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="arcade-pay-btn"
-                onClick={onCopy}
-                disabled={!live}
-              >
-                {copied ? "COPIED" : "COPY INVOICE"}
-              </button>
-              {live ? (
-                <a className="arcade-pay-btn arcade-pay-link" href={`lightning:${paymentRequest}`}>
-                  OPEN WALLET
-                </a>
-              ) : null}
-            </>
-          )}
-          <button type="button" className="arcade-pay-btn arcade-pay-ghost" onClick={onCancel}>
-            BACK
-          </button>
-        </div>
           </>
         )}
       </div>
