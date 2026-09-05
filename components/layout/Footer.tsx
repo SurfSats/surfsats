@@ -54,7 +54,7 @@ export function Footer() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo-surfporn-white.png" alt="SurfPorn" />
               </span>
-              COMPANY
+              PROJECT
             </span>
           </p>
           <div className="footer-strip-links">

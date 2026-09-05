@@ -125,8 +125,9 @@ export function FeaturedTools({
             {"//"} money_rules
           </p>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted sm:text-base">
-            Sats in, sats out. No treasury. Never HODLed. No KYC. 100% zapped
-            back to the ecosystem.
+            Sats in, sats out. Not a &quot;treasury&quot; project. No KYC
+            &amp; never exchanged for cuckbucks. 100% zapped back to the
+            bitcoin ecosystem.
           </p>
         </Container>
       </section>
