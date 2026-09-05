@@ -3,11 +3,13 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
+import { InvoiceQr } from "@/components/pay/InvoiceQr";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { payFetch } from "@/lib/pay-fetch";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import { BOTTLE_PRICE_SATS, type BottlePull } from "@/lib/bottle";
 import { COPY } from "@/lib/copy";
+import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 
 const BOTTLE_EVENT = "surfsats-bottle-pull";
 const CRACK_MS = 400;
@@ -33,12 +35,7 @@ export function BottleStage() {
     }
     let cancelled = false;
     void import("qrcode").then(async (QRCode) => {
-      const src = await QRCode.toDataURL(paymentRequest, {
-        width: 280,
-        margin: 2,
-        color: { dark: "#111111", light: "#efe6d4" },
-        errorCorrectionLevel: "M",
-      });
+      const src = await QRCode.toDataURL(paymentRequest, INVOICE_QR_OPTIONS);
       if (!cancelled) setQrSrc(src);
     });
     return () => {
@@ -217,18 +214,12 @@ export function BottleStage() {
               </p>
             }
           >
-            {qrSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={qrSrc}
-                alt="Lightning invoice QR"
-                className="bottle-qr"
-                width={200}
-                height={200}
-              />
-            ) : (
-              <div className="bottle-qr bottle-qr-wait">{COPY.loadingPeer}</div>
-            )}
+            <InvoiceQr
+              src={qrSrc}
+              invoice={paymentRequest}
+              copied={copied}
+              onCopy={() => void copyInvoice()}
+            />
           </InvoiceBurst>
           <div className="bottle-pay-actions">
             <button type="button" onClick={() => void copyInvoice()}>

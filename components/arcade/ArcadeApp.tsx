@@ -18,6 +18,7 @@ import {
   sanitizeAlias,
   type ArcadeHighScore,
 } from "@/lib/arcade";
+import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 
 type SessionCache = {
   playerId: string;
@@ -132,12 +133,7 @@ export function ArcadeApp({
     }
     let cancelled = false;
     void import("qrcode").then(async (QRCode) => {
-      const src = await QRCode.toDataURL(paymentRequest, {
-        width: 280,
-        margin: 2,
-        color: { dark: "#111111", light: "#efe6d4" },
-        errorCorrectionLevel: "M",
-      });
+      const src = await QRCode.toDataURL(paymentRequest, INVOICE_QR_OPTIONS);
       if (!cancelled) setQrSrc(src);
     });
     return () => {

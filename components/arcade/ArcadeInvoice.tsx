@@ -1,6 +1,7 @@
 "use client";
 
 import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
+import { InvoiceQr } from "@/components/pay/InvoiceQr";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual } from "@/components/pay/SettleRitual";
 import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
@@ -88,21 +89,13 @@ export function ArcadeInvoice({
             </p>
           }
         >
-          {qrSrc && live && !expired ? (
-            // data: URL from the live BOLT11 — next/image cannot optimize it
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={qrSrc}
-              alt="Lightning invoice QR"
-              className="arcade-pay-qr"
-              width={220}
-              height={220}
-            />
-          ) : (
-            <div className="arcade-pay-qr arcade-pay-qr-wait">
-              {expired ? "invoice expired" : COPY.loadingPeer}
-            </div>
-          )}
+          <InvoiceQr
+            src={qrSrc}
+            invoice={paymentRequest}
+            copied={copied}
+            expired={expired}
+            onCopy={onCopy}
+          />
         </InvoiceBurst>
 
         <div className="arcade-pay-actions">

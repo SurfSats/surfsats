@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
 import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
+import { InvoiceQr } from "@/components/pay/InvoiceQr";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import { cn } from "@/lib/cn";
 import { COPY } from "@/lib/copy";
+import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 import { payFetch } from "@/lib/pay-fetch";
 import {
   GRAFFITI_MAX_CHARS,
@@ -87,12 +89,7 @@ export function GraffitiForm({
     }
     let cancelled = false;
     void import("qrcode").then(async (QRCode) => {
-      const src = await QRCode.toDataURL(paymentRequest, {
-        width: 280,
-        margin: 2,
-        color: { dark: "#111111", light: "#efe6d4" },
-        errorCorrectionLevel: "M",
-      });
+      const src = await QRCode.toDataURL(paymentRequest, INVOICE_QR_OPTIONS);
       if (!cancelled) setQrSrc(src);
     });
     return () => {
@@ -420,19 +417,14 @@ export function GraffitiForm({
               )
             }
           >
-            {qrSrc ? (
-              // data: URL from the live BOLT11 — next/image cannot optimize it
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={qrSrc}
-                alt="Lightning invoice QR"
-                className="graf-invoice-qr mx-auto mt-4"
-              />
-            ) : (
-              <div className="graf-invoice-qr mx-auto mt-4 grid place-items-center bg-[#efe6d4] text-[11px] uppercase text-black">
-                {COPY.loadingPeer}
-              </div>
-            )}
+            <InvoiceQr
+              className="mt-4"
+              src={qrSrc}
+              invoice={paymentRequest}
+              copied={copied}
+              expired={expired}
+              onCopy={() => void copyInvoice()}
+            />
           </InvoiceBurst>
           <p className="mt-4 break-all font-mono text-[11px] leading-relaxed text-stone-400">
             {paymentRequest}

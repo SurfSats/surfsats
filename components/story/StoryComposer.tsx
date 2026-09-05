@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
+import { InvoiceQr } from "@/components/pay/InvoiceQr";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { payFetch } from "@/lib/pay-fetch";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import { COPY } from "@/lib/copy";
+import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 import {
   STORY_ALIAS_MAX,
   STORY_MAX_CHARS,
@@ -52,12 +54,7 @@ export function StoryComposer({
     }
     let cancelled = false;
     void import("qrcode").then(async (QRCode) => {
-      const src = await QRCode.toDataURL(paymentRequest, {
-        width: 320,
-        margin: 2,
-        color: { dark: "#1a1208", light: "#f3e6c4" },
-        errorCorrectionLevel: "M",
-      });
+      const src = await QRCode.toDataURL(paymentRequest, INVOICE_QR_OPTIONS);
       if (!cancelled) setQrSrc(src);
     });
     return () => {
@@ -333,21 +330,13 @@ export function StoryComposer({
                 </p>
               }
             >
-              {qrSrc && live && !expired ? (
-                // data: URL from the live BOLT11
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={qrSrc}
-                  alt="Lightning invoice QR"
-                  className="story-pay-qr"
-                  width={320}
-                  height={320}
-                />
-              ) : (
-                <div className="story-pay-qr story-pay-qr-wait">
-                  {expired ? "seal expired" : COPY.loadingPeer}
-                </div>
-              )}
+              <InvoiceQr
+                src={qrSrc}
+                invoice={paymentRequest}
+                copied={copied}
+                expired={expired}
+                onCopy={() => void copyInvoice()}
+              />
             </InvoiceBurst>
             {remainLabel && !expired ? (
               <p className="story-pay-remain">{remainLabel}</p>

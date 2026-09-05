@@ -7,4 +7,6 @@ export const COPY = {
   loadingNode: "Running node in closet...",
   emptyFeed: "No sats zapped yet. Don't let your node sit idle, anon.",
   footerTag: "Zero altcoins. Powered by pure Proof-of-Work.",
+  tapQr: "Tap QR to Copy Invoice",
+  qrCopied: "Copied",
 } as const;

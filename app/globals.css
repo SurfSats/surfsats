@@ -128,6 +128,100 @@ body {
   line-height: 1;
 }
 
+.invoice-qr {
+  position: relative;
+  z-index: 82;
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  flex-direction: column;
+  align-items: center;
+  margin-inline: auto;
+  isolation: isolate;
+  background: transparent;
+  box-shadow: none;
+  filter: none;
+}
+
+.invoice-qr-hit {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.invoice-qr-well {
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+  opacity: 1;
+  box-shadow: none;
+  filter: none;
+  mix-blend-mode: normal;
+  transition: transform 80ms ease-out;
+}
+
+.invoice-qr-img {
+  display: block;
+  width: 220px;
+  height: 220px;
+  min-width: 220px;
+  min-height: 220px;
+  background: #ffffff;
+  image-rendering: auto;
+  box-shadow: none;
+  filter: none;
+}
+
+.invoice-qr-wait {
+  display: grid;
+  place-items: center;
+  width: 220px;
+  height: 220px;
+  min-width: 220px;
+  min-height: 220px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.invoice-qr-tap {
+  margin-top: 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.invoice-qr-hit:active .invoice-qr-well {
+  transform: translateY(2px) scale(0.985);
+}
+
+.invoice-qr-hit:active .invoice-qr-tap {
+  transform: translateY(1px);
+}
+
+@media (min-width: 640px) {
+  .invoice-qr-img,
+  .invoice-qr-wait {
+    width: 280px;
+    height: 280px;
+    min-width: 280px;
+    min-height: 280px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .invoice-qr-hit:active .invoice-qr-well,
+  .invoice-qr-hit:active .invoice-qr-tap {
+    transform: none;
+  }
+}
+
 .invoice-burst-preimage {
   display: block;
   width: 100%;
@@ -568,6 +662,8 @@ body {
 }
 
 .bottle-pay {
+  position: relative;
+  z-index: 82;
   margin-top: 0.55rem;
   text-align: center;
 }
@@ -2665,6 +2761,8 @@ body:has(.graffiti-page) .site-watermark {
 }
 
 .graf-invoice-pane {
+  position: relative;
+  z-index: 82;
   overflow: visible;
 }
 
