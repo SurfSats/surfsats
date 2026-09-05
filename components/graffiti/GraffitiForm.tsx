@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
 import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
+import { InvoiceHint } from "@/components/pay/InvoiceHint";
 import { InvoiceQr } from "@/components/pay/InvoiceQr";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
@@ -390,6 +391,7 @@ export function GraffitiForm({
             invoice · {GRAFFITI_PRICE_SATS} sats ·{" "}
             {expired ? "expired" : "unpaid"}
           </p>
+          <InvoiceHint className="mt-2 text-stone-400" />
           {paymentRequest && !expired ? (
             <OneTapZap
               invoice={paymentRequest}

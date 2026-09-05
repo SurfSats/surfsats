@@ -1,6 +1,7 @@
 "use client";
 
 import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
+import { InvoiceHint } from "@/components/pay/InvoiceHint";
 import { InvoiceQr } from "@/components/pay/InvoiceQr";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual } from "@/components/pay/SettleRitual";
@@ -126,6 +127,7 @@ export function ArcadeInvoice({
         </div>
 
         <p className="arcade-pay-kicker">lightning invoice</p>
+        <InvoiceHint />
         <p className="arcade-pay-memo">{memo}</p>
         {remainLabel && !expired ? (
           <p className="arcade-pay-remain">{remainLabel}</p>

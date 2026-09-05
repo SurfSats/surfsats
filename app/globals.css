@@ -6310,6 +6310,17 @@ html[data-arcade-play="wave"] .cab-crt-live .cab-crt-scan {
   color: #5a4030;
 }
 
+.invoice-hint {
+  margin: 0.15rem 0 0;
+  width: 100%;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  text-align: center;
+  color: inherit;
+  opacity: 0.78;
+}
+
 .arcade-pay-title {
   margin: 0;
   font-family: var(--font-display), sans-serif;

@@ -65,7 +65,7 @@ export function Footer() {
               /about
             </Link>
             <Link
-              href="/jukebox"
+              href="/music?tab=jukebox"
               className="tracking-[0.14em] text-magenta glitch-hover hover:text-cyan"
             >
               drop 21

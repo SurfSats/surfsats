@@ -9,4 +9,5 @@ export const COPY = {
   footerTag: "Zero altcoins. Powered by pure Proof-of-Work.",
   tapQr: "Tap QR to Copy Invoice",
   qrCopied: "Copied",
+  invoiceHint: "Any Lightning wallet • 21 sats • No account required",
 } as const;

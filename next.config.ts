@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/dirty-fiat",
+        destination: "/fiat",
+        permanent: true,
+      },
+      {
         source: "/arcade/swell",
         destination: "/arcade/bitties",
         permanent: true,

@@ -1,7 +1,7 @@
 import type { NavGroup, NavLink } from "./types";
 
 export const primaryNavLinks: NavLink[] = [
-  { href: "/music", label: "Music" },
+  { href: "/music", label: "Radio" },
   { href: "/arcade", label: "Arcade" },
   { href: "/tab", label: "TAB" },
   { href: "/graffiti", label: "Graffiti" },

@@ -398,7 +398,7 @@ export function GooeyDropSats({
         radius={999}
       >
         <Link
-          href="/jukebox"
+          href="/music?tab=jukebox"
           onClick={onNavigate}
           className={cn(
             pillLayout,

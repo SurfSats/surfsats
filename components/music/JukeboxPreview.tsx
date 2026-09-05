@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 export function JukeboxPreview({ className }: { className?: string }) {
   return (
     <Link
-      href="/jukebox"
+      href="/music?tab=jukebox"
       className={cn("group relative block h-full min-h-[14rem] w-full", className)}
     >
       <Image

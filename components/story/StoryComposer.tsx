@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
+import { InvoiceHint } from "@/components/pay/InvoiceHint";
 import { InvoiceQr } from "@/components/pay/InvoiceQr";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { payFetch } from "@/lib/pay-fetch";
@@ -305,6 +306,7 @@ export function StoryComposer({
             <h3 id="story-pay-title" className="story-pay-title">
               Inscribe · {STORY_PRICE_SATS} sats
             </h3>
+            <InvoiceHint />
             <p className="story-pay-memo">One sentence bound into the chain</p>
             {live && !expired ? (
               <OneTapZap

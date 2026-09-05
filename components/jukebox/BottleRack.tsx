@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
+import { InvoiceHint } from "@/components/pay/InvoiceHint";
 import { InvoiceQr } from "@/components/pay/InvoiceQr";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { payFetch } from "@/lib/pay-fetch";
@@ -202,6 +203,7 @@ export function BottleStage() {
               tone="bottle"
             />
           ) : null}
+          <InvoiceHint className="mb-2 text-sats" />
           <InvoiceBurst
             paymentHash={paymentHash}
             enabled={Boolean(paymentRequest)}

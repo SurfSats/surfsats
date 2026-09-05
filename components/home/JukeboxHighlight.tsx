@@ -20,7 +20,7 @@ export function JukeboxHighlight() {
               One queue. The whole coast. Drop any track into the Global
               Jukebox and let Lightning do the talking.
             </p>
-            <ButtonLink href="/jukebox" className="mt-8">
+            <ButtonLink href="/music?tab=jukebox" className="mt-8">
               [ open_jukebox ]
             </ButtonLink>
           </div>
