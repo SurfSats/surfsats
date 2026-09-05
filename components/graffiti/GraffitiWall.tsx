@@ -10,9 +10,9 @@ import {
 } from "@/lib/graffiti";
 
 const WALL_ART = {
-  src: "/graffiti-wall-bg.jpg",
-  width: 1391,
-  height: 752,
+  src: "/graffiti-wall-v2.jpg",
+  width: 1352,
+  height: 784,
 };
 
 const WALL_ECHOES: {

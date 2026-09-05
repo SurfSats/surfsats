@@ -107,17 +107,17 @@ export function isGraffitiColor(value: unknown): value is GraffitiColor {
 
 /** Scatter across the empty dark brick face (inside the neon L-frames). */
 const PLACE_ZONES = [
-  { topMin: 10, topMax: 36, leftMin: 4, leftMax: 44 },
-  { topMin: 10, topMax: 36, leftMin: 48, leftMax: 84 },
-  { topMin: 40, topMax: 66, leftMin: 4, leftMax: 46 },
-  { topMin: 40, topMax: 66, leftMin: 46, leftMax: 84 },
-  { topMin: 68, topMax: 82, leftMin: 12, leftMax: 78 },
+  { topMin: 8, topMax: 36, leftMin: 2, leftMax: 46 },
+  { topMin: 8, topMax: 36, leftMin: 50, leftMax: 86 },
+  { topMin: 38, topMax: 64, leftMin: 2, leftMax: 48 },
+  { topMin: 38, topMax: 64, leftMin: 48, leftMax: 86 },
+  { topMin: 66, topMax: 88, leftMin: 8, leftMax: 80 },
 ] as const;
 
-const WALL_TOP_MIN = 6;
-const WALL_TOP_MAX = 84;
-const WALL_LEFT_MIN = 3;
-const WALL_LEFT_MAX = 88;
+const WALL_TOP_MIN = 4;
+const WALL_TOP_MAX = 88;
+const WALL_LEFT_MIN = 2;
+const WALL_LEFT_MAX = 86;
 
 export function clampPlacement(top: number, left: number) {
   return {
