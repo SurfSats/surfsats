@@ -214,7 +214,7 @@ export const directoryTools: DirectoryTool[] = [
     id: "satoshis-place",
     name: "Satoshi's Place",
     url: "https://satoshis.place",
-    blurb: "A Lightning pixel canvas. Pay a sat. Leave a mark. Fight the crowd.",
+    blurb: "A Lightning pixel canvas. Zap a sat. Leave a mark. Fight the crowd.",
     why: "Collective graffiti. Same energy as the Wave Pool, noisier.",
     tag: "Fun",
     section: "fun",
@@ -251,7 +251,7 @@ export const directoryTools: DirectoryTool[] = [
     name: "Lightning Piggy",
     url: "https://lightningpiggy.com",
     blurb:
-      "Pay and stack sats into a physical Lightning piggy bank.",
+      "Zap and stack sats into a physical Lightning piggy bank.",
     why: "A jar on the shelf that speaks BOLT11. Kids get it. So do you.",
     tag: "Fun",
     section: "fun",

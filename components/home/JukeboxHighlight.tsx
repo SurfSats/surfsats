@@ -14,7 +14,7 @@ export function JukeboxHighlight() {
           <div>
             <TerminalLabel>global_jukebox</TerminalLabel>
             <h2 className="mt-3 font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">
-              Pay {JUKEBOX_PRICE_SATS} sats. Be the DJ.
+              Zap {JUKEBOX_PRICE_SATS} sats. Be the DJ.
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
               One queue. The whole coast. Drop any track into the Global

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTimechainSnapshot } from "@/components/timechain/useTimechainSnapshot";
 import { cn } from "@/lib/cn";
+import { COPY } from "@/lib/copy";
 import { SWELL_SCALE, swellFromPct } from "@/lib/swell";
 import { formatChange, type TimechainSnapshot } from "@/lib/timechain";
 
@@ -43,7 +44,7 @@ export function SwellScorecard({
         aria-label={
           swell
             ? `Swell ${swell.size}, ${swell.rating}, ${formatChange(swell.pct)} 24h`
-            : "Swell waiting on 24h print"
+            : COPY.loadingMempool
         }
       >
         <Corners />
@@ -70,7 +71,7 @@ export function SwellScorecard({
           <p className="swell-card-sub">
             {swell
               ? `${up ? "Up day" : "Down day"} — ${ladder}`
-              : "waiting on 24h print"}
+              : COPY.loadingMempool}
           </p>
           <p className="swell-card-pct">
             {swell ? formatChange(swell.pct) : "—"}

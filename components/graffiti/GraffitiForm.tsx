@@ -6,6 +6,7 @@ import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import { cn } from "@/lib/cn";
+import { COPY } from "@/lib/copy";
 import { payFetch } from "@/lib/pay-fetch";
 import {
   GRAFFITI_MAX_CHARS,
@@ -360,7 +361,7 @@ export function GraffitiForm({
           <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-amber-500/80">
             {placed
               ? "placed on the wall · tap again to move"
-              : "tap the wall to place · or pay and we’ll pick a spot"}
+              : "tap the wall to place · or zap and we’ll pick a spot"}
           </p>
 
           {error ? (
@@ -373,9 +374,7 @@ export function GraffitiForm({
             onClick={() => void requestInvoice()}
             className="mt-5 min-h-12 w-full bg-amber-500 px-5 py-3.5 text-sm font-bold uppercase tracking-[0.12em] text-black disabled:opacity-40"
           >
-            {pending
-              ? "building invoice…"
-              : `pay ${GRAFFITI_PRICE_SATS} sats`}
+            {pending ? COPY.validating : COPY.zapSats}
           </button>
         </>
       ) : null}
@@ -411,7 +410,7 @@ export function GraffitiForm({
             />
           ) : (
             <div className="graf-invoice-qr mx-auto mt-4 grid place-items-center bg-[#efe6d4] text-[11px] uppercase text-black">
-              loading qr
+              {COPY.loadingPeer}
             </div>
           )}
           <p className="mt-4 break-all font-mono text-[11px] leading-relaxed text-stone-400">
@@ -425,7 +424,7 @@ export function GraffitiForm({
             <div className="graf-wait">
               <span className="graf-wait-dot" aria-hidden="true" />
               <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
-                {waiting ? "waiting for 21 sats" : "scan or copy the invoice"}
+                {waiting ? COPY.validating : "scan or copy the invoice"}
               </p>
               <p className="text-[11px] uppercase tracking-[0.12em] text-stone-400">
                 pay from any lightning wallet
@@ -454,7 +453,7 @@ export function GraffitiForm({
                 }}
                 className="min-h-11 flex-1 bg-amber-500 px-4 py-2 text-xs font-bold uppercase text-black disabled:opacity-40"
               >
-                {pending ? "building invoice…" : "new invoice"}
+                {pending ? COPY.validating : "new invoice"}
               </button>
             ) : (
               <button
@@ -470,7 +469,7 @@ export function GraffitiForm({
                 href={`lightning:${paymentRequest}`}
                 className="min-h-11 flex-1 border border-stone-500 px-4 py-2 text-center text-xs uppercase leading-[1.9] text-stone-300"
               >
-                open wallet
+                {COPY.zapSats}
               </a>
             ) : (
               <button

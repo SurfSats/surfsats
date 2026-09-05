@@ -6,7 +6,7 @@ import { pageMeta } from "@/lib/seo";
 export const metadata: Metadata = pageMeta({
   title: "Graffiti Wall",
   description:
-    "Pay 21 sats. Leave a mark for 21 hours. Bitcoin Is Hope stays forever.",
+    "Zap 21 sats. Leave a mark for 21 hours. Bitcoin Is Hope stays forever.",
   path: "/graffiti",
 });
 

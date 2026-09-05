@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
+import { COPY } from "@/lib/copy";
 import { footerGroups } from "@/lib/nav";
 
 export function Footer() {
@@ -76,6 +77,9 @@ export function Footer() {
               the shack · side door
             </Link>
           </div>
+        </Container>
+        <Container>
+          <p className="footer-maxi">{COPY.footerTag}</p>
         </Container>
       </div>
     </footer>

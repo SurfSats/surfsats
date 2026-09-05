@@ -1,4 +1,5 @@
-import { JUKEBOX_PRICE_SATS, type JukeboxLiveQueueItem } from "@/lib/jukebox";
+import { COPY } from "@/lib/copy";
+import { type JukeboxLiveQueueItem } from "@/lib/jukebox";
 
 export function Queue({
   tracks,
@@ -23,7 +24,7 @@ export function Queue({
             ? tracks.length
               ? `${tracks.length} in_hold`
               : "library_mode"
-            : "tuning"}
+            : COPY.loadingNode}
         </p>
       </div>
 
@@ -49,9 +50,7 @@ export function Queue({
         </ol>
       ) : (
         <div className="panel mt-4 px-4 py-6 font-mono text-sm leading-relaxed text-muted">
-          {ready
-            ? `Queue is the ship's library — request ${JUKEBOX_PRICE_SATS} sats to cut the line.`
-            : "tuning the hold…"}
+          {ready ? COPY.emptyFeed : COPY.loadingNode}
         </div>
       )}
     </section>

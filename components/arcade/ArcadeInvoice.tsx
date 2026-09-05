@@ -3,6 +3,7 @@
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual } from "@/components/pay/SettleRitual";
 import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
+import { COPY } from "@/lib/copy";
 
 export function ArcadeInvoice({
   qrSrc,
@@ -80,20 +81,20 @@ export function ArcadeInvoice({
           />
         ) : (
           <div className="arcade-pay-qr arcade-pay-qr-wait">
-            {expired ? "invoice expired" : pending || !live ? "building qr" : "loading qr"}
+            {expired ? "invoice expired" : COPY.loadingPeer}
           </div>
         )}
 
         <div className="arcade-pay-actions">
           {expired || (!live && !pending) ? (
             <button type="button" className="arcade-pay-btn" onClick={onRetry} disabled={pending}>
-              {pending ? "BUILDING…" : "NEW INVOICE"}
+              {pending ? COPY.validating : "NEW INVOICE"}
             </button>
           ) : (
             <>
               {live ? (
                 <a className="arcade-pay-btn arcade-pay-link" href={`lightning:${paymentRequest}`}>
-                  OPEN WALLET
+                  {COPY.zapSats}
                 </a>
               ) : null}
               <button
@@ -117,9 +118,9 @@ export function ArcadeInvoice({
           {expired
             ? "invoice expired · generate a new one"
             : waiting
-              ? `waiting for ${ARCADE_PRICE_SATS} sats`
+              ? COPY.validating
               : pending
-                ? "building invoice…"
+                ? COPY.loadingPeer
                 : "scan the qr or copy the invoice"}
         </p>
         {remainLabel && !expired ? (

@@ -6,6 +6,7 @@ import { OneTapZap } from "@/components/pay/OneTapZap";
 import { payFetch } from "@/lib/pay-fetch";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import { BOTTLE_PRICE_SATS, type BottlePull } from "@/lib/bottle";
+import { COPY } from "@/lib/copy";
 
 const BOTTLE_EVENT = "surfsats-bottle-pull";
 const CRACK_MS = 400;
@@ -186,7 +187,7 @@ export function BottleStage() {
       </div>
       <p className="bottle-caption">
         {pending
-          ? "BUILDING INVOICE…"
+          ? COPY.validating
           : paying
             ? `SCAN · ${BOTTLE_PRICE_SATS} SATS`
             : `PULL A BOTTLE · ${BOTTLE_PRICE_SATS} SATS`}
@@ -213,18 +214,18 @@ export function BottleStage() {
               height={200}
             />
           ) : (
-            <div className="bottle-qr bottle-qr-wait">building qr</div>
+            <div className="bottle-qr bottle-qr-wait">{COPY.loadingPeer}</div>
           )}
           <p className="bottle-pay-status">
             {waiting
-              ? `waiting for ${BOTTLE_PRICE_SATS} sats`
+              ? COPY.validating
               : `scan · ${BOTTLE_PRICE_SATS} sats`}
           </p>
           <div className="bottle-pay-actions">
             <button type="button" onClick={() => void copyInvoice()}>
               {copied ? "COPIED" : "COPY INVOICE"}
             </button>
-            <a href={`lightning:${paymentRequest}`}>WALLET</a>
+            <a href={`lightning:${paymentRequest}`}>{COPY.zapSats}</a>
             <button
               type="button"
               onClick={() => {

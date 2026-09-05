@@ -16,6 +16,7 @@ import {
   isSeedStoryLine,
   type StoryLine,
 } from "@/lib/story";
+import { COPY } from "@/lib/copy";
 
 const titleFace = Cinzel_Decorative({
   weight: ["400", "700"],
@@ -129,7 +130,7 @@ export function StoryApp() {
               </li>
             ))
           ) : (
-            <li className="is-empty">The book grows.</li>
+            <li className="is-empty">{COPY.emptyFeed}</li>
           )}
         </ol>
       ) : null}

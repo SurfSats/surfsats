@@ -1,3 +1,4 @@
+import { COPY } from "@/lib/copy";
 import type { JukeboxLiveTrack } from "@/lib/jukebox";
 
 export function NowPlaying({
@@ -47,12 +48,12 @@ export function NowPlaying({
             <div>
               <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-cyan sm:text-3xl">
                 {status === "loading"
-                  ? "Tuning the deck"
+                  ? COPY.loadingNode
                   : "Stream live · track data offline"}
               </h2>
               <p className="mt-2 font-mono text-xs uppercase tracking-[0.12em] text-muted">
                 {status === "loading"
-                  ? "asking the ship for the current cut"
+                  ? COPY.loadingPeer
                   : "listen above · metadata silent"}
               </p>
             </div>

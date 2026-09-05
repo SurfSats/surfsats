@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useWebLn } from "@/components/pay/useWebLn";
+import { COPY } from "@/lib/copy";
 
 export function OneTapZap({
   invoice,
@@ -25,11 +26,7 @@ export function OneTapZap({
   if (!available) return null;
 
   const label =
-    phase === "confirming"
-      ? "Confirming…"
-      : paying
-        ? "Requesting…"
-        : "⚡ One-Tap Zap";
+    phase === "confirming" || paying ? COPY.validating : COPY.zapSats;
 
   return (
     <>

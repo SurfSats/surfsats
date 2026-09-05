@@ -1,5 +1,6 @@
-import type { FeedItem, FeedSourceStatus } from "@/lib/types";
+import { COPY } from "@/lib/copy";
 import { formatAge } from "@/lib/format";
+import type { FeedItem, FeedSourceStatus } from "@/lib/types";
 
 export function FeedWire({
   items,
@@ -16,7 +17,7 @@ export function FeedWire({
       <p className="signal-band-label">pleb feeds</p>
       {empty ? (
         <p className="signal-quiet">
-          wire silent. curated signal above still stands.
+          {COPY.emptyFeed}
         </p>
       ) : (
         <ol className="signal-wire-list">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { COPY } from "@/lib/copy";
 import { useTimechainSnapshot } from "@/components/timechain/useTimechainSnapshot";
 import {
   type TimechainSnapshot,
@@ -46,7 +47,7 @@ export function TimechainStats({
             </h2>
           </div>
           <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-            {status === "loading" && "syncing"}
+            {status === "loading" && COPY.loadingMempool}
             {status === "live" && "live · 30s"}
             {status === "error" && "signal lost"}
           </p>

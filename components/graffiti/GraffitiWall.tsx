@@ -1,6 +1,7 @@
 import type { MouseEvent } from "react";
 import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
 import { cn } from "@/lib/cn";
+import { COPY } from "@/lib/copy";
 import {
   GRAFFITI_CENTER,
   type GraffitiColor,
@@ -68,7 +69,7 @@ export function GraffitiWall({
 
       {quiet ? (
         <p className="graf-quiet">
-          Wall&apos;s quiet. First spray of the day sets the tone.
+          {COPY.emptyFeed}
         </p>
       ) : null}
 

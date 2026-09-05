@@ -108,7 +108,7 @@ export function FeaturedTools({
             <SectionHeading
               eyebrow="the_floor"
               title="The machines"
-              description="Pay 21 sats. The thing happens. No accounts. No committee."
+              description="Zap 21 sats. The thing happens. No accounts. No committee."
             />
           </div>
           <div className="floor-dock">

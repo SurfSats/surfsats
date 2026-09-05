@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { TideClock, swellLabel } from "@/components/timechain/TideClock";
 import { useTimechainSnapshot } from "@/components/timechain/useTimechainSnapshot";
 import { cn } from "@/lib/cn";
+import { COPY } from "@/lib/copy";
 import {
   type TimechainSnapshot,
   feeTone,
@@ -50,7 +51,7 @@ export function TidechainApp({ initial }: { initial: TimechainSnapshot }) {
     return (
       <div className="grid min-h-[70vh] place-items-center px-4 text-center">
         <p className="flicker font-display text-2xl font-bold uppercase text-cyan">
-          Syncing protocol
+          {COPY.loadingMempool}
         </p>
       </div>
     );

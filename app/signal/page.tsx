@@ -4,6 +4,7 @@ import { FeedWire } from "@/components/news/FeedWire";
 import { HandpickedCard } from "@/components/news/HandpickedCard";
 import { SignalWriting } from "@/components/news/SignalWriting";
 import { getArticles } from "@/lib/articles";
+import { COPY } from "@/lib/copy";
 import { getLiveFeeds } from "@/lib/feeds";
 import {
   getLatestHandpicked,
@@ -70,7 +71,7 @@ export default async function SignalPage() {
               ))}
             </div>
           ) : (
-            <p className="signal-quiet">no dispatches on the desk.</p>
+            <p className="signal-quiet">{COPY.emptyFeed}</p>
           )}
         </section>
 

@@ -1,5 +1,6 @@
 import { graffitiStyles, type GraffitiMark } from "@/lib/graffiti";
 import { cn } from "@/lib/cn";
+import { COPY } from "@/lib/copy";
 
 export function GraffitiFeed({
   marks,
@@ -19,7 +20,7 @@ export function GraffitiFeed({
   if (!rows.length) {
     return (
       <p className="graffiti-feed-empty">
-        Wall&apos;s quiet. First spray of the day sets the tone.
+        {COPY.emptyFeed}
       </p>
     );
   }

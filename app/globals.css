@@ -7479,6 +7479,16 @@ body:has(.story-page) .site-watermark {
   gap: 1rem;
 }
 
+.footer-maxi {
+  margin: 0;
+  padding: 0.15rem 0 0.65rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--sats);
+  text-transform: none;
+}
+
 .footer-strip-links a[href="/lot"] {
   text-transform: none;
 }

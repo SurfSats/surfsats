@@ -8,6 +8,7 @@ import {
   type ArcadeHighScore,
   type ArcadeRecentPlay,
 } from "@/lib/arcade";
+import { COPY } from "@/lib/copy";
 
 export function ArcadeBoards({
   highScores,
@@ -72,7 +73,7 @@ export function ArcadeBoards({
             ))}
           </ol>
         ) : (
-          <p className="arcade-board-empty">NO LEGENDS YET · INSERT COIN</p>
+          <p className="arcade-board-empty">{COPY.emptyFeed}</p>
         )}
       </section>
 
@@ -108,7 +109,7 @@ export function ArcadeBoards({
             ))}
           </ol>
         ) : (
-          <p className="arcade-board-empty">NO COINS YET · BE FIRST</p>
+          <p className="arcade-board-empty">{COPY.emptyFeed}</p>
         )}
         <p className="arcade-board-foot">
           STAY LIGHTNING. STAY LEGEND.

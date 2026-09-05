@@ -5,6 +5,7 @@ import { OneTapZap } from "@/components/pay/OneTapZap";
 import { payFetch } from "@/lib/pay-fetch";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
+import { COPY } from "@/lib/copy";
 import {
   STORY_ALIAS_MAX,
   STORY_MAX_CHARS,
@@ -281,7 +282,7 @@ export function StoryComposer({
             disabled={!canPay}
             onClick={() => void requestInvoice()}
           >
-            {pending ? "Preparing the seal…" : `Inscribe · ${STORY_PRICE_SATS} sats`}
+            {pending ? COPY.validating : COPY.zapSats}
           </button>
         </>
       ) : null}
@@ -327,16 +328,16 @@ export function StoryComposer({
               />
             ) : (
               <div className="story-pay-qr story-pay-qr-wait">
-                {expired ? "seal expired" : "drawing the seal…"}
+                {expired ? "seal expired" : COPY.loadingPeer}
               </div>
             )}
             <p className="story-pay-status">
               {expired
                 ? "invoice expired · generate a new one"
                 : waiting
-                  ? `waiting for ${STORY_PRICE_SATS} sats`
+                  ? COPY.validating
                   : pending
-                    ? "preparing invoice…"
+                    ? COPY.loadingPeer
                     : "scan the qr or copy the invoice"}
             </p>
             {remainLabel && !expired ? (
@@ -352,7 +353,7 @@ export function StoryComposer({
                   onClick={() => void requestInvoice()}
                   disabled={pending}
                 >
-                  {pending ? "Preparing…" : "New invoice"}
+                  {pending ? COPY.validating : "New invoice"}
                 </button>
               ) : (
                 <>
@@ -369,7 +370,7 @@ export function StoryComposer({
                       className="story-pay-btn story-pay-link"
                       href={`lightning:${paymentRequest}`}
                     >
-                      Open wallet
+                      {COPY.zapSats}
                     </a>
                   ) : null}
                 </>

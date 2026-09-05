@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { COPY } from "@/lib/copy";
 import { payFetch } from "@/lib/pay-fetch";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
@@ -536,7 +537,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                     </li>
                   ))
                 ) : (
-                  <li className="is-empty">NO LEGENDS YET</li>
+                  <li className="is-empty">{COPY.emptyFeed}</li>
                 )}
               </ol>
             </section>
@@ -552,7 +553,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                     </li>
                   ))
                 ) : (
-                  <li className="is-empty">NO COINS YET</li>
+                  <li className="is-empty">{COPY.emptyFeed}</li>
                 )}
               </ol>
             </section>

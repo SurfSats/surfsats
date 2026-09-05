@@ -6,9 +6,9 @@ export const SETTLE_WAIT_MS = 180;
 export const SETTLE_REDUCED_SNAP_MS = 16;
 
 export const SETTLE_TITLES = {
-  waiting: "WAITING",
-  settling: "SETTLING THE TAB",
-  settled: "TAB SETTLED",
+  waiting: "Connecting to LN peer...",
+  settling: "Validating Preimage...",
+  settled: "Sats Settled! ⚡",
 } as const;
 
 export type SettlePhase = keyof typeof SETTLE_TITLES;
