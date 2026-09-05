@@ -3,6 +3,7 @@ import { FeaturedTools } from "@/components/home/FeaturedTools";
 import { FromTheCoast } from "@/components/home/FromTheCoast";
 import { Hero } from "@/components/home/Hero";
 import { HomeClose } from "@/components/home/HomeClose";
+import { BathymetricPcbDivider } from "@/components/ui/BathymetricPcbDivider";
 import { pageMeta } from "@/lib/seo";
 import { getTimechainSnapshot } from "@/lib/timechain";
 
@@ -20,8 +21,11 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
+      <BathymetricPcbDivider />
       <FeaturedTools initial={snapshot} />
+      <BathymetricPcbDivider />
       <FromTheCoast />
+      <BathymetricPcbDivider />
       <HomeClose />
     </>
   );

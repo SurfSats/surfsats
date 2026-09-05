@@ -119,12 +119,12 @@ export function FeaturedTools({
         </Container>
       </section>
 
-      <section className="border-y border-dashed border-cyan/20 bg-panel/70">
+      <section className="border-y border-zinc-raw bg-void">
         <Container className="py-8 sm:py-10">
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cyan">
+          <p className="font-mono text-[11px] uppercase tracking-telemetry text-zinc-raw">
             {"//"} money_rules
           </p>
-          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted sm:text-base">
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-salt/70 sm:text-base">
             Sats in, sats out. Not a &quot;treasury&quot; project. No KYC
             &amp; never exchanged for cuckbucks. 100% zapped back to the
             bitcoin ecosystem.
@@ -144,22 +144,22 @@ export function FeaturedTools({
               <Link
                 key={item.href}
                 href={item.href}
-                className="panel panel-hover group flex min-w-0 flex-col p-4 sm:p-5"
+                className="group flex min-w-0 flex-col border border-zinc-raw bg-void p-4 transition-colors hover:border-violet/60 sm:p-5"
               >
-                <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em]">
-                  <span className="text-cyan">{item.code}</span>
-                  <span className="text-muted">readout</span>
+                <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-telemetry">
+                  <span className="text-violet">{item.code}</span>
+                  <span className="text-zinc-raw">readout</span>
                 </div>
-                <h3 className="mt-3 break-words font-display text-xl font-bold uppercase tracking-tight">
+                <h3 className="mt-3 break-words font-display text-xl font-bold uppercase tracking-tight text-salt">
                   {item.name}
                 </h3>
-                <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-cyan">
+                <p className="mt-1 font-mono text-[11px] uppercase tracking-telemetry text-amber">
                   {item.hook}
                 </p>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-salt/70">
                   {item.body}
                 </p>
-                <span className="mt-4 font-mono text-[11px] uppercase tracking-[0.16em] text-sats group-hover:text-cyan">
+                <span className="mt-4 font-mono text-[11px] uppercase tracking-telemetry text-amber group-hover:text-violet">
                   open -&gt;
                 </span>
               </Link>

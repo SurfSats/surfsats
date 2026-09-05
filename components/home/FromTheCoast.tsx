@@ -19,14 +19,14 @@ export function FromTheCoast() {
             title="Dispatches"
             description="One dispatch. Two picks. The rest is noise."
           />
-          <div className="flex shrink-0 flex-wrap gap-x-5 gap-y-2 font-mono text-xs uppercase tracking-[0.16em]">
-            <Link href="/signal" className="text-sats glitch-hover hover:text-cyan">
+          <div className="flex shrink-0 flex-wrap gap-x-5 gap-y-2 font-mono text-xs uppercase tracking-telemetry">
+            <Link href="/signal" className="text-amber hover:text-violet">
               signal -&gt;
             </Link>
-            <Link href="/tidechain" className="text-sats glitch-hover hover:text-cyan">
+            <Link href="/tidechain" className="text-amber hover:text-violet">
               tidechain -&gt;
             </Link>
-            <Link href="/tools" className="text-sats glitch-hover hover:text-cyan">
+            <Link href="/tools" className="text-amber hover:text-violet">
               tools -&gt;
             </Link>
           </div>
@@ -38,27 +38,30 @@ export function FromTheCoast() {
           </div>
 
           <aside className="flex min-w-0 flex-col gap-4">
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan">
+            <p className="font-mono text-[11px] uppercase tracking-telemetry text-zinc-raw">
               {"//"} hand_picked
             </p>
             {picks.map((item) => (
-              <article key={item.id} className="panel panel-hover p-5">
-                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-                  <span className="text-cyan">[{item.source}]</span>
-                  <span className="mx-2 text-magenta">/</span>
+              <article
+                key={item.id}
+                className="border border-zinc-raw bg-void p-5 transition-colors hover:border-violet/60"
+              >
+                <p className="font-mono text-[11px] uppercase tracking-telemetry text-zinc-raw">
+                  <span className="text-violet">[{item.source}]</span>
+                  <span className="mx-2 text-amber">/</span>
                   <time dateTime={item.date}>{formatDate(item.date)}</time>
                 </p>
-                <h3 className="mt-3 break-words font-display text-xl font-bold uppercase tracking-tight">
+                <h3 className="mt-3 break-words font-display text-xl font-bold uppercase tracking-tight text-salt">
                   <a
                     href={item.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="glitch-hover hover:text-sats"
+                    className="hover:text-amber"
                   >
                     {item.title}
                   </a>
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{item.blurb}</p>
+                <p className="mt-2 text-sm leading-relaxed text-salt/70">{item.blurb}</p>
               </article>
             ))}
           </aside>

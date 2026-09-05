@@ -1324,7 +1324,7 @@ html {
   line-height: 1.2;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--sats);
+  color: var(--color-amber);
 }
 
 .home-stage-sub {
@@ -1374,7 +1374,7 @@ html {
 
 .home-walk:hover,
 .home-walk:focus-visible {
-  color: var(--cyan);
+  color: var(--color-violet);
 }
 
 @keyframes home-walk-bob {

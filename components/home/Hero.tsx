@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
+import { cn } from "@/lib/cn";
+import {
+  BRUTALIST_BUTTON_SIZE_CLASS,
+  BRUTALIST_BUTTON_VARIANT_CLASS,
+} from "@/lib/brutalist-ui";
 
 const HERO_STILL = "/home-hero-still.jpg";
 
@@ -28,7 +33,7 @@ export function Hero() {
       </div>
       <Container className="home-stage-copy">
         <p className="home-stage-boot">
-          <span className="text-cyan">root@surfsats:~$</span> boot --btc --no-kyc
+          <span className="text-terminal-green">root@surfsats:~$</span> boot --btc --no-kyc
         </p>
         <h1
           data-text="SurfSats"
@@ -44,10 +49,24 @@ export function Hero() {
           Lightning sandbox. 21 sats. No accounts.
         </p>
         <div className="home-stage-actions">
-          <Link href="/graffiti" className="btn home-cta home-cta-primary">
+          <Link
+            href="/graffiti"
+            className={cn(
+              "inline-flex min-h-12 items-center justify-center border font-mono font-bold tracking-telemetry uppercase",
+              BRUTALIST_BUTTON_SIZE_CLASS.lg,
+              BRUTALIST_BUTTON_VARIANT_CLASS.primary,
+            )}
+          >
             TAG THE WALL · 21 SATS
           </Link>
-          <Link href="/arcade" className="btn btn-ghost home-cta home-cta-secondary">
+          <Link
+            href="/arcade"
+            className={cn(
+              "inline-flex min-h-12 items-center justify-center border font-mono font-bold tracking-telemetry uppercase",
+              BRUTALIST_BUTTON_SIZE_CLASS.lg,
+              BRUTALIST_BUTTON_VARIANT_CLASS.secondary,
+            )}
+          >
             SMASH THE ARCADE · 21 SATS
           </Link>
         </div>
