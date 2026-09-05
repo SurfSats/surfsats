@@ -213,6 +213,14 @@ body {
     min-width: 280px;
     min-height: 280px;
   }
+
+  .invoice-qr--compact .invoice-qr-img,
+  .invoice-qr--compact .invoice-qr-wait {
+    width: 180px;
+    height: 180px;
+    min-width: 180px;
+    min-height: 180px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2940,6 +2948,154 @@ body:has(.graffiti-page) .site-watermark {
   position: relative;
   z-index: 82;
   overflow: visible;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.graffiti-form:has(.graf-invoice-pane) {
+  padding: 0.85rem 1rem 1rem;
+}
+
+.graf-invoice-kicker {
+  margin: 0 0 0.55rem;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #f59e0b;
+}
+
+.graf-invoice-pane .invoice-qr {
+  margin-top: 0.35rem;
+}
+
+.graf-invoice-pane .invoice-qr-well {
+  padding: 0.35rem;
+  border: 1px solid rgb(245 158 11 / 0.32);
+}
+
+.graf-invoice-pane .invoice-qr-img,
+.graf-invoice-pane .invoice-qr-wait {
+  width: 180px;
+  height: 180px;
+  min-width: 180px;
+  min-height: 180px;
+}
+
+.graf-invoice-pane .graf-wait {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.55rem;
+  margin-top: 0.5rem;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f59e0b;
+}
+
+.graf-invoice-pane .invoice-burst-status {
+  margin-top: 0.45rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.68rem;
+}
+
+.graf-invoice-error {
+  margin: 0.45rem 0 0;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f87171;
+}
+
+.graf-invoice-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+
+.graf-invoice-btn,
+.graf-invoice-actions .one-tap-zap {
+  display: inline-flex;
+  flex: 1 1 0;
+  min-height: 2.45rem;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.45rem;
+  border: 1px solid #5a5348;
+  background: transparent;
+  color: #efe6d4;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.graf-invoice-btn-primary,
+.graf-invoice-actions .one-tap-zap {
+  border-color: #f59e0b;
+  background: #f59e0b;
+  color: #000;
+  margin-top: 0;
+  width: auto;
+}
+
+.graf-open-wallet {
+  display: none;
+}
+
+.graf-invoice-raw {
+  margin-top: 0.55rem;
+}
+
+.graf-invoice-raw summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a8a29a;
+}
+
+.graf-invoice-raw summary::-webkit-details-marker {
+  display: none;
+}
+
+.graf-invoice-raw p {
+  margin: 0.45rem 0 0;
+  max-height: 4.5rem;
+  overflow: auto;
+  word-break: break-all;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  line-height: 1.45;
+  color: #a8a29a;
+}
+
+.graf-invoice-edit {
+  display: block;
+  width: 100%;
+  margin-top: 0.45rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #78716c;
+  cursor: pointer;
+}
+
+.graf-invoice-edit:hover {
+  color: #d6d3d1;
 }
 
 .graffiti-wall-placing {
@@ -3529,6 +3685,10 @@ body:has(.graffiti-page) .site-watermark {
 @media (min-width: 640px) {
   .graffiti-form {
     padding: 1.6rem;
+  }
+
+  .graffiti-form:has(.graf-invoice-pane) {
+    padding: 0.9rem 1.1rem 1rem;
   }
 
   .graf-preview-wall:not(.graf-preview-wall--compact),
@@ -6706,6 +6866,13 @@ html[data-arcade-play="wave"] .cab-crt-live .cab-crt-scan {
   letter-spacing: 0.12em;
 }
 
+.graf-invoice-actions .one-tap-zap[data-tone="graf"] {
+  width: auto;
+  min-height: 2.45rem;
+  margin-top: 0;
+  font-size: 10px;
+}
+
 .one-tap-zap[data-tone="bottle"] {
   min-height: 2.2rem;
   margin-bottom: 0.35rem;
@@ -8563,6 +8730,10 @@ body:has(.tab-page) .site-watermark {
 }
 
 @media (max-width: 767px) {
+  .graf-open-wallet {
+    display: inline-flex;
+  }
+
   .graffiti-page .graffiti-stage {
     min-height: min(72dvh, 36rem);
   }

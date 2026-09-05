@@ -9,6 +9,7 @@ export function InvoiceQr({
   copied = false,
   expired = false,
   waitLabel,
+  compact = false,
   className,
   onCopy,
 }: {
@@ -17,20 +18,22 @@ export function InvoiceQr({
   copied?: boolean;
   expired?: boolean;
   waitLabel?: string;
+  compact?: boolean;
   className?: string;
   onCopy: () => void;
 }) {
   const ready = Boolean(src) && Boolean(invoice) && !expired;
+  const px = compact ? 180 : 280;
   const well = (
-    <span className="invoice-qr-well bg-white p-5">
+    <span className={cn("invoice-qr-well bg-white", compact ? "p-1.5" : "p-5")}>
       {ready ? (
         // data: URL from the live BOLT11 — next/image cannot optimize it
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}
           alt="Lightning invoice QR"
-          width={280}
-          height={280}
+          width={px}
+          height={px}
           className="invoice-qr-img"
         />
       ) : (
@@ -42,20 +45,30 @@ export function InvoiceQr({
   );
 
   if (!ready) {
-    return <div className={cn("invoice-qr", className)}>{well}</div>;
+    return (
+      <div className={cn("invoice-qr", compact && "invoice-qr--compact", className)}>
+        {well}
+      </div>
+    );
   }
 
   return (
     <button
       type="button"
-      className={cn("invoice-qr invoice-qr-hit", className)}
+      className={cn(
+        "invoice-qr invoice-qr-hit",
+        compact && "invoice-qr--compact",
+        className,
+      )}
       onClick={onCopy}
-      aria-label={COPY.tapQr}
+      aria-label={compact ? "Lightning invoice QR" : COPY.tapQr}
     >
       {well}
-      <span className="invoice-qr-tap">
-        {copied ? COPY.qrCopied : COPY.tapQr}
-      </span>
+      {compact ? null : (
+        <span className="invoice-qr-tap">
+          {copied ? COPY.qrCopied : COPY.tapQr}
+        </span>
+      )}
     </button>
   );
 }

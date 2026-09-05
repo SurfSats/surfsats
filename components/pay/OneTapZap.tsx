@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useWebLn } from "@/components/pay/useWebLn";
+import { cn } from "@/lib/cn";
 import { COPY } from "@/lib/copy";
 
 export function OneTapZap({
@@ -10,11 +11,15 @@ export function OneTapZap({
   disabled = false,
   onPaid,
   tone = "arcade",
+  className,
+  hideWhenUnavailable = true,
 }: {
   invoice: string;
   disabled?: boolean;
   onPaid: () => void;
   tone?: "arcade" | "story" | "graf" | "bottle";
+  className?: string;
+  hideWhenUnavailable?: boolean;
 }) {
   const { available, phase, paying, pay, reset, toast } = useWebLn();
   const live = Boolean(invoice) && invoice.toLowerCase().startsWith("ln");
@@ -23,7 +28,7 @@ export function OneTapZap({
     reset();
   }, [invoice, reset]);
 
-  if (!available) return null;
+  if (!available && hideWhenUnavailable) return null;
 
   const label =
     phase === "confirming" || paying ? COPY.validating : COPY.zapSats;
@@ -32,7 +37,7 @@ export function OneTapZap({
     <>
       <button
         type="button"
-        className="one-tap-zap"
+        className={cn("one-tap-zap", className)}
         data-tone={tone}
         disabled={disabled || !live || paying || phase === "confirming"}
         aria-busy={paying || phase === "confirming"}
@@ -50,7 +55,7 @@ export function OneTapZap({
   );
 }
 
-function PayToast({ message }: { message: string }) {
+export function PayToast({ message }: { message: string }) {
   const [node, setNode] = useState<HTMLElement | null>(null);
 
   useEffect(() => {

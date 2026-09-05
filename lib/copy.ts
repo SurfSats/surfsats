@@ -9,5 +9,9 @@ export const COPY = {
   footerTag: "No shitcoins. Powered by pure Proof-of-Work.",
   tapQr: "Tap QR to Copy Invoice",
   qrCopied: "Copied",
+  copyInvoice: "Copy Invoice",
+  openWallet: "Open Wallet",
+  showRawInvoice: "Show raw invoice details",
+  invoiceCopied: "Invoice copied",
   invoiceHint: "Any Lightning wallet • 21 sats • No account required",
 } as const;

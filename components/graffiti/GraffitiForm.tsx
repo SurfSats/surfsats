@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
 import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
-import { InvoiceHint } from "@/components/pay/InvoiceHint";
 import { InvoiceQr } from "@/components/pay/InvoiceQr";
-import { OneTapZap } from "@/components/pay/OneTapZap";
+import { OneTapZap, PayToast } from "@/components/pay/OneTapZap";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import { cn } from "@/lib/cn";
@@ -75,6 +74,7 @@ export function GraffitiForm({
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [expired, setExpired] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   const check = sanitizeGraffiti(text);
   const previewText = check.ok ? check.text : text.trim() || "your mark";
@@ -234,10 +234,23 @@ export function GraffitiForm({
     try {
       await navigator.clipboard.writeText(paymentRequest);
       setCopied(true);
+      setToast(COPY.invoiceCopied);
       window.setTimeout(() => setCopied(false), 1800);
+      window.setTimeout(() => setToast(null), 2400);
     } catch {
       setCopied(false);
     }
+  }
+
+  function backToCompose() {
+    setPaymentHash("");
+    setPaymentRequest("");
+    setQrSrc("");
+    setWaiting(false);
+    setExpired(false);
+    setInvoiceError(null);
+    setToast(null);
+    setStep("compose");
   }
 
   function reset() {
@@ -253,6 +266,7 @@ export function GraffitiForm({
     setInvoiceError(null);
     setExpiresAt(null);
     setExpired(false);
+    setToast(null);
   }
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
@@ -263,19 +277,19 @@ export function GraffitiForm({
 
   return (
     <section className="graffiti-form">
-      <p className="text-[11px] uppercase tracking-[0.2em] text-amber-500/90">
-        spray can · {GRAFFITI_PRICE_SATS} sats · {GRAFFITI_TTL_HOURS}h
-      </p>
-      <h2 className="mt-2 font-display text-2xl font-bold uppercase tracking-tight text-[#efe6d4]">
-        Leave a mark
-      </h2>
-      <p className="mt-2 text-sm leading-relaxed text-stone-300">
-        {GRAFFITI_PRICE_SATS} sats. {GRAFFITI_TTL_HOURS} hours. Then it fades.
-        Hope stays.
-      </p>
-
       {step === "compose" ? (
         <>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-amber-500/90">
+            spray can · {GRAFFITI_PRICE_SATS} sats · {GRAFFITI_TTL_HOURS}h
+          </p>
+          <h2 className="mt-2 font-display text-2xl font-bold uppercase tracking-tight text-[#efe6d4]">
+            Leave a mark
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-stone-300">
+            {GRAFFITI_PRICE_SATS} sats. {GRAFFITI_TTL_HOURS} hours. Then it fades.
+            Hope stays.
+          </p>
+
           <label className="mt-5 block">
             <span className="mb-1.5 flex justify-between text-[11px] uppercase tracking-[0.16em] text-stone-400">
               <span>message</span>
@@ -380,142 +394,126 @@ export function GraffitiForm({
       ) : null}
 
       {step === "invoice" ? (
-        <div id="graf-invoice" className="graf-invoice-pane mt-5 border border-stone-600 bg-black/70 p-4">
+        <div id="graf-invoice" className="graf-invoice-pane">
           {settling ? (
             <SettleRitual
               subtitle={`spray · ${GRAFFITI_PRICE_SATS} sats · ${GRAFFITI_TTL_HOURS}h`}
               onComplete={finishSettle}
             />
           ) : (
-          <>
-          <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
-            invoice · {GRAFFITI_PRICE_SATS} sats ·{" "}
-            {expired ? "expired" : "unpaid"}
-          </p>
-          <InvoiceHint className="mt-2 text-stone-400" />
-          {paymentRequest && !expired ? (
-            <OneTapZap
-              invoice={paymentRequest}
-              disabled={pending}
-              onPaid={kickCheck}
-              tone="graf"
-            />
-          ) : null}
-          <InvoiceBurst
-            paymentHash={paymentHash}
-            enabled={!expired && Boolean(paymentRequest)}
-            onPaid={kickCheck}
-            status={
-              expired ? null : (
-                <div className="graf-wait">
-                  <span className="graf-wait-dot" aria-hidden="true" />
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
-                    {waiting ? COPY.validating : "scan or copy the invoice"}
-                  </p>
-                  <p className="text-[11px] uppercase tracking-[0.12em] text-stone-400">
-                    pay from any lightning wallet
-                    {remainLabel ? ` · ${remainLabel}` : ""}
-                  </p>
-                </div>
-              )
-            }
-          >
-            <InvoiceQr
-              className="mt-4"
-              src={qrSrc}
-              invoice={paymentRequest}
-              copied={copied}
-              expired={expired}
-              onCopy={() => void copyInvoice()}
-            />
-          </InvoiceBurst>
-          <p className="mt-4 break-all font-mono text-[11px] leading-relaxed text-stone-400">
-            {paymentRequest}
-          </p>
-          {expired ? (
-            <p className="mt-3 text-center text-xs uppercase tracking-[0.14em] text-red-400">
-              invoice expired. generate a new one to pay.
-            </p>
-          ) : null}
-          {invoiceError ? (
-            <p className="mt-2 text-center text-xs uppercase text-red-400">
-              {invoiceError}
-            </p>
-          ) : null}
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-            {hardFail ? (
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => {
-                  setPaymentHash("");
-                  setPaymentRequest("");
-                  setQrSrc("");
-                  setWaiting(false);
-                  setExpired(false);
-                  setInvoiceError(null);
-                  void requestInvoice();
-                }}
-                className="min-h-11 flex-1 bg-amber-500 px-4 py-2 text-xs font-bold uppercase text-black disabled:opacity-40"
+            <>
+              <p className="graf-invoice-kicker">
+                invoice · {GRAFFITI_PRICE_SATS} sats ·{" "}
+                {expired ? "expired" : "unpaid"}
+              </p>
+              <InvoiceBurst
+                paymentHash={paymentHash}
+                enabled={!expired && Boolean(paymentRequest)}
+                onPaid={kickCheck}
+                status={
+                  expired ? null : (
+                    <div className="graf-wait">
+                      <span className="graf-wait-dot" aria-hidden="true" />
+                      <p>
+                        {waiting ? COPY.validating : "scan or copy"}
+                        {remainLabel ? ` · ${remainLabel}` : ""}
+                      </p>
+                    </div>
+                  )
+                }
               >
-                {pending ? COPY.validating : "new invoice"}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => void copyInvoice()}
-                className="min-h-11 flex-1 bg-amber-500 px-4 py-2 text-xs font-bold uppercase text-black"
-              >
-                {copied ? "copied" : "copy invoice"}
-              </button>
-            )}
-            {!expired ? (
-              <a
-                href={`lightning:${paymentRequest}`}
-                className="min-h-11 flex-1 border border-stone-500 px-4 py-2 text-center text-xs uppercase leading-[1.9] text-stone-300"
-              >
-                {COPY.zapSats}
-              </a>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setPaymentHash("");
-                  setPaymentRequest("");
-                  setQrSrc("");
-                  setWaiting(false);
-                  setExpired(false);
-                  setInvoiceError(null);
-                  setStep("compose");
-                }}
-                className="min-h-11 flex-1 border border-stone-500 px-4 py-2 text-xs uppercase text-stone-300"
-              >
-                edit mark
-              </button>
-            )}
-          </div>
-          {!expired ? (
-            <button
-              type="button"
-              onClick={() => {
-                setPaymentHash("");
-                setPaymentRequest("");
-                setQrSrc("");
-                setWaiting(false);
-                setExpired(false);
-                setInvoiceError(null);
-                setStep("compose");
-              }}
-              className="mt-3 w-full text-[11px] uppercase tracking-[0.14em] text-stone-500 hover:text-stone-300"
-            >
-              edit mark
-            </button>
-          ) : null}
-          </>
+                <InvoiceQr
+                  compact
+                  src={qrSrc}
+                  invoice={paymentRequest}
+                  copied={copied}
+                  expired={expired}
+                  onCopy={() => void copyInvoice()}
+                />
+              </InvoiceBurst>
+              {expired ? (
+                <p className="graf-invoice-error">
+                  invoice expired. generate a new one to pay.
+                </p>
+              ) : null}
+              {invoiceError ? (
+                <p className="graf-invoice-error">{invoiceError}</p>
+              ) : null}
+              <div className="graf-invoice-actions">
+                {hardFail ? (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => {
+                      setPaymentHash("");
+                      setPaymentRequest("");
+                      setQrSrc("");
+                      setWaiting(false);
+                      setExpired(false);
+                      setInvoiceError(null);
+                      void requestInvoice();
+                    }}
+                    className="graf-invoice-btn graf-invoice-btn-primary"
+                  >
+                    {pending ? COPY.validating : "new invoice"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => void copyInvoice()}
+                    className="graf-invoice-btn"
+                  >
+                    {COPY.copyInvoice}
+                  </button>
+                )}
+                {!expired && paymentRequest ? (
+                  <>
+                    <OneTapZap
+                      invoice={paymentRequest}
+                      disabled={pending}
+                      onPaid={kickCheck}
+                      tone="graf"
+                      hideWhenUnavailable={false}
+                      className="graf-invoice-btn graf-invoice-btn-primary"
+                    />
+                    <a
+                      href={`lightning:${paymentRequest}`}
+                      className="graf-invoice-btn graf-open-wallet"
+                    >
+                      {COPY.openWallet}
+                    </a>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={backToCompose}
+                    className="graf-invoice-btn"
+                  >
+                    edit mark
+                  </button>
+                )}
+              </div>
+              {paymentRequest ? (
+                <details className="graf-invoice-raw">
+                  <summary>{COPY.showRawInvoice}</summary>
+                  <p>{paymentRequest}</p>
+                </details>
+              ) : null}
+              {!expired ? (
+                <button
+                  type="button"
+                  onClick={backToCompose}
+                  className="graf-invoice-edit"
+                >
+                  edit mark
+                </button>
+              ) : null}
+            </>
           )}
         </div>
       ) : null}
 
+      {toast ? <PayToast message={toast} /> : null}
     </section>
   );
 }
