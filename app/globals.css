@@ -2664,7 +2664,7 @@ body:has(.graffiti-page) .site-watermark {
 
 .graf-art {
   position: relative;
-  aspect-ratio: 1376 / 768;
+  aspect-ratio: 1391 / 752;
   width: 100%;
   max-height: 100%;
   height: auto;
@@ -2672,7 +2672,7 @@ body:has(.graffiti-page) .site-watermark {
 
 @supports (width: 1cqi) {
   .graf-art {
-    width: min(100cqi, calc(100cqb * 1376 / 768));
+    width: min(100cqi, calc(100cqb * 1391 / 752));
   }
 }
 
@@ -2690,8 +2690,8 @@ body:has(.graffiti-page) .site-watermark {
   position: absolute;
   z-index: 2;
   top: 42%;
-  left: 31%;
-  width: 39%;
+  left: 23%;
+  width: 56%;
   height: 33%;
 }
 
@@ -3461,6 +3461,10 @@ body:has(.graffiti-page) .site-watermark {
   .console-stage,
   .graffiti-stage {
     min-height: min(68dvh, 34rem);
+  }
+
+  .graf-art {
+    width: 100%;
   }
 
   .console-deck,

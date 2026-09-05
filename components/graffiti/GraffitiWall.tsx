@@ -11,8 +11,8 @@ import {
 
 const WALL_ART = {
   src: "/graffiti-wall-bg.jpg",
-  width: 1376,
-  height: 768,
+  width: 1391,
+  height: 752,
 };
 
 const WALL_ECHOES: {
