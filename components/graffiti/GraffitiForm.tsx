@@ -2,15 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
-import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
-import { InvoiceQr } from "@/components/pay/InvoiceQr";
-import { OneTapZap, PayToast } from "@/components/pay/OneTapZap";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
+import { useOfferZap } from "@/components/pay/useOfferZap";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import { cn } from "@/lib/cn";
 import { COPY } from "@/lib/copy";
-import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 import { payFetch } from "@/lib/pay-fetch";
+import { playMechanicalLatch } from "@/lib/sound";
 import {
   GRAFFITI_MAX_CHARS,
   GRAFFITI_PRICE_SATS,
@@ -23,8 +21,6 @@ import {
   graffitiStyles,
   sanitizeGraffiti,
 } from "@/lib/graffiti";
-
-type Step = "compose" | "invoice";
 
 const STYLE_SAMPLES: Record<GraffitiStyle, string> = {
   tag: "Aa",
@@ -62,19 +58,20 @@ export function GraffitiForm({
 }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
-  const [step, setStep] = useState<Step>("compose");
+  const { offer, modal } = useOfferZap({
+    amountSats: GRAFFITI_PRICE_SATS,
+    onPreimage: () => {
+      kickCheck();
+    },
+  });
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [paymentRequest, setPaymentRequest] = useState("");
   const [paymentHash, setPaymentHash] = useState("");
-  const [qrSrc, setQrSrc] = useState("");
-  const [copied, setCopied] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [invoiceError, setInvoiceError] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [expired, setExpired] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
 
   const check = sanitizeGraffiti(text);
   const previewText = check.ok ? check.text : text.trim() || "your mark";
@@ -84,42 +81,21 @@ export function GraffitiForm({
     graffitiColors.find((item) => item.id === color)?.label ?? color;
 
   useEffect(() => {
-    if (!paymentRequest) {
-      setQrSrc("");
-      return;
-    }
-    let cancelled = false;
-    void import("qrcode").then(async (QRCode) => {
-      const src = await QRCode.toDataURL(paymentRequest, INVOICE_QR_OPTIONS);
-      if (!cancelled) setQrSrc(src);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [paymentRequest]);
-
-  useEffect(() => {
-    if (step !== "invoice") return;
+    if (!paymentHash) return;
     const id = window.setInterval(() => setNowTick(Date.now()), 1000);
-    window.requestAnimationFrame(() => {
-      document.getElementById("graf-invoice")?.scrollIntoView({
-        block: "nearest",
-        behavior: "smooth",
-      });
-    });
     return () => window.clearInterval(id);
-  }, [step]);
+  }, [paymentHash]);
 
   useEffect(() => {
-    if (step !== "invoice" || !expiresAt) return;
+    if (!paymentHash || !expiresAt) return;
     if (Date.now() >= new Date(expiresAt).getTime()) {
       setExpired(true);
       setWaiting(false);
     }
-  }, [step, expiresAt, nowTick]);
+  }, [paymentHash, expiresAt, nowTick]);
 
   useEffect(() => {
-    if (step !== "invoice" || !paymentHash || expired || settling) return;
+    if (!paymentHash || expired || settling) return;
 
     let cancelled = false;
     setWaiting(true);
@@ -140,6 +116,7 @@ export function GraffitiForm({
           const mark = data.mark;
           setInvoiceError(null);
           setWaiting(false);
+          playMechanicalLatch();
           beginSettle(() => {
             onPaid(mark);
             reset();
@@ -168,13 +145,12 @@ export function GraffitiForm({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, bindCheck, expired, onPaid, paymentHash, settling, step]);
+  }, [beginSettle, bindCheck, expired, onPaid, paymentHash, settling]);
 
   async function requestInvoice() {
     const next = sanitizeGraffiti(text);
     if (!next.ok) {
       setError(next.reason);
-      setStep("compose");
       return;
     }
     setError(null);
@@ -212,16 +188,14 @@ export function GraffitiForm({
         setError(data.error || "could not create invoice. try again");
         return;
       }
-      setPaymentRequest(data.payment_request);
       setPaymentHash(data.payment_hash);
       setExpiresAt(
         data.expires_at ||
           new Date(Date.now() + 50 * 60 * 1000).toISOString(),
       );
-      setCopied(false);
       setInvoiceError(null);
       setExpired(false);
-      setStep("invoice");
+      await offer(data.payment_request);
     } catch {
       setError("could not create invoice. try again");
     } finally {
@@ -229,55 +203,25 @@ export function GraffitiForm({
     }
   }
 
-  async function copyInvoice() {
-    if (!paymentRequest) return;
-    try {
-      await navigator.clipboard.writeText(paymentRequest);
-      setCopied(true);
-      setToast(COPY.invoiceCopied);
-      window.setTimeout(() => setCopied(false), 1800);
-      window.setTimeout(() => setToast(null), 2400);
-    } catch {
-      setCopied(false);
-    }
-  }
-
-  function backToCompose() {
-    setPaymentHash("");
-    setPaymentRequest("");
-    setQrSrc("");
-    setWaiting(false);
-    setExpired(false);
-    setInvoiceError(null);
-    setToast(null);
-    setStep("compose");
-  }
-
   function reset() {
     onResetDraft();
-    setStep("compose");
     setError(null);
     setPending(false);
-    setPaymentRequest("");
     setPaymentHash("");
-    setQrSrc("");
-    setCopied(false);
     setWaiting(false);
     setInvoiceError(null);
     setExpiresAt(null);
     setExpired(false);
-    setToast(null);
   }
-
-  const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
-  const remainLabel = formatRemain(remainMs);
-  const hardFail =
-    expired ||
-    Boolean(invoiceError && !invoiceError.includes("retrying"));
 
   return (
     <section className="graffiti-form">
-      {step === "compose" ? (
+      {settling ? (
+        <SettleRitual
+          subtitle={`spray · ${GRAFFITI_PRICE_SATS} sats · ${GRAFFITI_TTL_HOURS}h`}
+          onComplete={finishSettle}
+        />
+      ) : (
         <>
           <p className="text-[11px] uppercase tracking-[0.2em] text-amber-500/90">
             spray can · {GRAFFITI_PRICE_SATS} sats · {GRAFFITI_TTL_HOURS}h
@@ -381,6 +325,9 @@ export function GraffitiForm({
           {error ? (
             <p className="mt-4 text-xs uppercase text-red-400">{error}</p>
           ) : null}
+          {invoiceError ? (
+            <p className="mt-4 text-xs uppercase text-red-400">{invoiceError}</p>
+          ) : null}
 
           <button
             type="button"
@@ -388,140 +335,12 @@ export function GraffitiForm({
             onClick={() => void requestInvoice()}
             className="mt-5 min-h-12 w-full bg-amber-500 px-5 py-3.5 text-sm font-bold uppercase tracking-[0.12em] text-black disabled:opacity-40"
           >
-            {pending ? COPY.validating : COPY.zapSats}
+            {pending || waiting ? COPY.validating : COPY.zapSats}
           </button>
         </>
-      ) : null}
+      )}
 
-      {step === "invoice" ? (
-        <div id="graf-invoice" className="graf-invoice-pane">
-          {settling ? (
-            <SettleRitual
-              subtitle={`spray · ${GRAFFITI_PRICE_SATS} sats · ${GRAFFITI_TTL_HOURS}h`}
-              onComplete={finishSettle}
-            />
-          ) : (
-            <>
-              <p className="graf-invoice-kicker">
-                invoice · {GRAFFITI_PRICE_SATS} sats ·{" "}
-                {expired ? "expired" : "unpaid"}
-              </p>
-              <InvoiceBurst
-                paymentHash={paymentHash}
-                enabled={!expired && Boolean(paymentRequest)}
-                onPaid={kickCheck}
-                status={
-                  expired ? null : (
-                    <div className="graf-wait">
-                      <span className="graf-wait-dot" aria-hidden="true" />
-                      <p>
-                        {waiting ? COPY.validating : "scan or copy"}
-                        {remainLabel ? ` · ${remainLabel}` : ""}
-                      </p>
-                    </div>
-                  )
-                }
-              >
-                <InvoiceQr
-                  compact
-                  src={qrSrc}
-                  invoice={paymentRequest}
-                  copied={copied}
-                  expired={expired}
-                  onCopy={() => void copyInvoice()}
-                />
-              </InvoiceBurst>
-              {expired ? (
-                <p className="graf-invoice-error">
-                  invoice expired. generate a new one to pay.
-                </p>
-              ) : null}
-              {invoiceError ? (
-                <p className="graf-invoice-error">{invoiceError}</p>
-              ) : null}
-              <div className="graf-invoice-actions">
-                {hardFail ? (
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => {
-                      setPaymentHash("");
-                      setPaymentRequest("");
-                      setQrSrc("");
-                      setWaiting(false);
-                      setExpired(false);
-                      setInvoiceError(null);
-                      void requestInvoice();
-                    }}
-                    className="graf-invoice-btn graf-invoice-btn-primary"
-                  >
-                    {pending ? COPY.validating : "new invoice"}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => void copyInvoice()}
-                    className="graf-invoice-btn"
-                  >
-                    {COPY.copyInvoice}
-                  </button>
-                )}
-                {!expired && paymentRequest ? (
-                  <>
-                    <OneTapZap
-                      invoice={paymentRequest}
-                      disabled={pending}
-                      onPaid={kickCheck}
-                      tone="graf"
-                      hideWhenUnavailable={false}
-                      className="graf-invoice-btn graf-invoice-btn-primary"
-                    />
-                    <a
-                      href={`lightning:${paymentRequest}`}
-                      className="graf-invoice-btn graf-open-wallet"
-                    >
-                      {COPY.openWallet}
-                    </a>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={backToCompose}
-                    className="graf-invoice-btn"
-                  >
-                    edit mark
-                  </button>
-                )}
-              </div>
-              {paymentRequest ? (
-                <details className="graf-invoice-raw">
-                  <summary>{COPY.showRawInvoice}</summary>
-                  <p>{paymentRequest}</p>
-                </details>
-              ) : null}
-              {!expired ? (
-                <button
-                  type="button"
-                  onClick={backToCompose}
-                  className="graf-invoice-edit"
-                >
-                  edit mark
-                </button>
-              ) : null}
-            </>
-          )}
-        </div>
-      ) : null}
-
-      {toast ? <PayToast message={toast} /> : null}
+      {modal}
     </section>
   );
-}
-
-function formatRemain(ms: number) {
-  if (ms <= 0) return "";
-  const total = Math.ceil(ms / 1000);
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")} left`;
 }

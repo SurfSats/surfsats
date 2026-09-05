@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
 import { payFetch } from "@/lib/pay-fetch";
+import { useOfferZap } from "@/components/pay/useOfferZap";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
+import { playMechanicalLatch } from "@/lib/sound";
 import { RetroCabinet } from "@/components/arcade/RetroCabinet";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import { emptyPad, type RetroPad } from "@/components/arcade/retroGames";
@@ -38,6 +39,12 @@ export function RetroApp({
 }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { offer, modal } = useOfferZap({
+    amountSats: ARCADE_PRICE_SATS,
+    onPreimage: () => {
+      kickCheck();
+    },
+  });
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
@@ -193,13 +200,12 @@ export function RetroApp({
           const creditsNext = data.credits ?? 0;
           setInvoiceError(null);
           setWaiting(false);
-          beginSettle(() => {
-            setCredits(creditsNext);
-            setMode(creditsNext > 0 && game ? "ready" : "attract");
-            setPaymentHash("");
-            setPaymentRequest("");
-            void loadBoards();
-          });
+          playMechanicalLatch();
+          setCredits(creditsNext);
+          setMode(creditsNext > 0 && game ? "ready" : "attract");
+          setPaymentHash("");
+          setPaymentRequest("");
+          void loadBoards();
           return;
         }
         if (data.paid && !data.ok) {
@@ -294,6 +300,7 @@ export function RetroApp({
       setInvoiceError(null);
       setExpired(false);
       setMode("invoice");
+      await offer(data.payment_request);
     } catch {
       setError("could not create invoice. try again");
       setMode(credits > 0 ? "ready" : "attract");
@@ -500,27 +507,7 @@ export function RetroApp({
         onCopyScore={() => void copyScore()}
         onPad={onPad}
       />
-      {showInvoice ? (
-        <ArcadeInvoice
-          qrSrc={qrSrc}
-          paymentHash={paymentHash}
-          paymentRequest={paymentRequest}
-          waiting={waiting}
-          pending={pending}
-          expired={expired}
-          remainLabel={remainLabel}
-          copied={copied}
-          invoiceError={invoiceError}
-          memo={gameMemo}
-          titleId="arcade-pay-title-retro"
-          settling={settling}
-          onSettled={finishSettle}
-          onCopy={() => void copyInvoice()}
-          onRetry={() => void requestInvoice()}
-          onCancel={cancelPay}
-          onZapPaid={kickCheck}
-        />
-      ) : null}
+      {modal}
     </div>
   );
 }

@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArcadeCabinet } from "@/components/arcade/ArcadeCabinet";
-import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
 import { payFetch } from "@/lib/pay-fetch";
+import { useOfferZap } from "@/components/pay/useOfferZap";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
+import { playMechanicalLatch } from "@/lib/sound";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import type { WaveRunnerHandle } from "@/components/arcade/WaveRunner";
 import {
@@ -34,6 +35,12 @@ export function ArcadeApp({
 }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { offer, modal } = useOfferZap({
+    amountSats: ARCADE_PRICE_SATS,
+    onPreimage: () => {
+      kickCheck();
+    },
+  });
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
@@ -171,13 +178,12 @@ export function ArcadeApp({
           const creditsNext = data.credits ?? 0;
           setInvoiceError(null);
           setWaiting(false);
-          beginSettle(() => {
-            setCredits(creditsNext);
-            setMode(creditsNext > 0 ? "ready" : "attract");
-            setPaymentHash("");
-            setPaymentRequest("");
-            void loadBoards();
-          });
+          playMechanicalLatch();
+          setCredits(creditsNext);
+          setMode(creditsNext > 0 ? "ready" : "attract");
+          setPaymentHash("");
+          setPaymentRequest("");
+          void loadBoards();
           return;
         }
         if (data.paid && !data.ok) {
@@ -256,6 +262,7 @@ export function ArcadeApp({
       setInvoiceError(null);
       setExpired(false);
       setMode("invoice");
+      await offer(data.payment_request);
     } catch {
       setError("could not create invoice. try again");
       setMode(credits > 0 ? "ready" : "attract");
@@ -466,25 +473,7 @@ export function ArcadeApp({
         onWipeout={(score) => void handleWipeout(score)}
         onCopyScore={() => void copyScore()}
       />
-      {showInvoice ? (
-        <ArcadeInvoice
-          qrSrc={qrSrc}
-          paymentHash={paymentHash}
-          paymentRequest={paymentRequest}
-          waiting={waiting}
-          pending={pending}
-          expired={expired}
-          remainLabel={remainLabel}
-          copied={copied}
-          invoiceError={invoiceError}
-          settling={settling}
-          onSettled={finishSettle}
-          onCopy={() => void copyInvoice()}
-          onRetry={() => void requestInvoice()}
-          onCancel={cancelPay}
-          onZapPaid={kickCheck}
-        />
-      ) : null}
+      {modal}
     </div>
   );
 }

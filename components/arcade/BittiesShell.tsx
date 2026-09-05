@@ -3,7 +3,8 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { useOfferZap } from "@/components/pay/useOfferZap";
+import { playMechanicalLatch } from "@/lib/sound";
 import { payFetch } from "@/lib/pay-fetch";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
@@ -37,6 +38,12 @@ type Mode = "attract" | "invoice" | "ready" | "playing";
 export function BittiesShell() {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { offer, modal } = useOfferZap({
+    amountSats: ARCADE_PRICE_SATS,
+    onPreimage: () => {
+      kickCheck();
+    },
+  });
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
@@ -163,15 +170,14 @@ export function BittiesShell() {
           const creditsNext = data.credits ?? 0;
           setInvoiceError(null);
           setWaiting(false);
-          beginSettle(() => {
-            setCredits(creditsNext);
-            setPaymentHash("");
-            setPaymentRequest("");
-            setMode(creditsNext > 0 ? "ready" : "attract");
-            if (creditsNext > 0) {
-              void bootRef.current({ creditCount: creditsNext });
-            }
-          });
+          playMechanicalLatch();
+          setCredits(creditsNext);
+          setPaymentHash("");
+          setPaymentRequest("");
+          setMode(creditsNext > 0 ? "ready" : "attract");
+          if (creditsNext > 0) {
+            void bootRef.current({ creditCount: creditsNext });
+          }
           return;
         }
         if (data.paid && !data.ok) {
@@ -245,6 +251,7 @@ export function BittiesShell() {
       setInvoiceError(null);
       setExpired(false);
       setMode("invoice");
+      await offer(data.payment_request);
     } catch {
       setError("could not create invoice. try again");
       setMode(credits > 0 ? "ready" : "attract");
@@ -420,27 +427,7 @@ export function BittiesShell() {
         </>
       )}
 
-      {showInvoice ? (
-        <ArcadeInvoice
-          qrSrc={qrSrc}
-          paymentHash={paymentHash}
-          paymentRequest={paymentRequest}
-          waiting={waiting}
-          pending={pending}
-          expired={expired}
-          remainLabel={remainLabel}
-          copied={copied}
-          invoiceError={invoiceError}
-          memo={`${ARCADE_CREDITS_PER_PAY} credits · BOUNCING BITTIES · SurfSats Arcade`}
-          titleId="arcade-pay-title-bitties"
-          settling={settling}
-          onSettled={finishSettle}
-          onCopy={() => void copyInvoice()}
-          onRetry={() => void requestInvoice()}
-          onCancel={cancelPay}
-          onZapPaid={kickCheck}
-        />
-      ) : null}
+      {modal}
     </div>
   );
 }

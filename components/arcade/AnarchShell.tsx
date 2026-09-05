@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
 import { payFetch } from "@/lib/pay-fetch";
+import { useOfferZap } from "@/components/pay/useOfferZap";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
+import { playMechanicalLatch } from "@/lib/sound";
 import {
   ANARCH_BUILD_HTML,
   ANARCH_BUILD_JS,
@@ -44,6 +45,12 @@ async function anarchFilesPresent() {
 export function AnarchShell() {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { offer, modal } = useOfferZap({
+    amountSats: ARCADE_PRICE_SATS,
+    onPreimage: () => {
+      kickCheck();
+    },
+  });
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
@@ -172,15 +179,14 @@ export function AnarchShell() {
           const creditsNext = data.credits ?? 0;
           setInvoiceError(null);
           setWaiting(false);
-          beginSettle(() => {
-            setCredits(creditsNext);
-            setPaymentHash("");
-            setPaymentRequest("");
-            setMode(creditsNext > 0 ? "ready" : "attract");
-            if (creditsNext > 0) {
-              void bootRef.current({ creditCount: creditsNext });
-            }
-          });
+          playMechanicalLatch();
+          setCredits(creditsNext);
+          setPaymentHash("");
+          setPaymentRequest("");
+          setMode(creditsNext > 0 ? "ready" : "attract");
+          if (creditsNext > 0) {
+            void bootRef.current({ creditCount: creditsNext });
+          }
           return;
         }
         if (data.paid && !data.ok) {
@@ -254,6 +260,7 @@ export function AnarchShell() {
       setInvoiceError(null);
       setExpired(false);
       setMode("invoice");
+      await offer(data.payment_request);
     } catch {
       setError("could not create invoice. try again");
       setMode(credits > 0 ? "ready" : "attract");
@@ -441,27 +448,7 @@ export function AnarchShell() {
         </>
       )}
 
-      {showInvoice ? (
-        <ArcadeInvoice
-          qrSrc={qrSrc}
-          paymentHash={paymentHash}
-          paymentRequest={paymentRequest}
-          waiting={waiting}
-          pending={pending}
-          expired={expired}
-          remainLabel={remainLabel}
-          copied={copied}
-          invoiceError={invoiceError}
-          memo={`${ARCADE_CREDITS_PER_PAY} credits · ANARCH · SurfSats Arcade`}
-          titleId="arcade-pay-title-anarch"
-          settling={settling}
-          onSettled={finishSettle}
-          onCopy={() => void copyInvoice()}
-          onRetry={() => void requestInvoice()}
-          onCancel={cancelPay}
-          onZapPaid={kickCheck}
-        />
-      ) : null}
+      {modal}
     </div>
   );
 }
