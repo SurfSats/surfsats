@@ -54,7 +54,10 @@ export function ConsoleShell({
           {stage}
         </div>
 
-        <aside className={skin(name, "console-deck", "graffiti-deck")}>
+        <aside
+          className={skin(name, "console-deck", "graffiti-deck")}
+          id={name === "graffiti" ? "graf-spray-dock" : undefined}
+        >
           <nav
             className={skin(name, "console-deck-tabs", "graffiti-deck-tabs")}
             role="tablist"

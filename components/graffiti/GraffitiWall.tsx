@@ -10,6 +10,22 @@ import {
   type GraffitiStyle,
 } from "@/lib/graffiti";
 
+const WALL_ECHOES: {
+  text: string;
+  style: GraffitiStyle;
+  color: GraffitiColor;
+  top: number;
+  left: number;
+  rotate: number;
+  scale: number;
+}[] = [
+  { text: "anon", style: "tag", color: "chrome", top: 16, left: 7, rotate: -11, scale: 0.92 },
+  { text: "21", style: "blockbuster", color: "rust", top: 76, left: 8, rotate: 6, scale: 0.72 },
+  { text: "HODL", style: "stencil", color: "bone", top: 20, left: 52, rotate: 8, scale: 0.68 },
+  { text: "gm", style: "throwup", color: "ice", top: 80, left: 48, rotate: -4, scale: 0.78 },
+  { text: "zap", style: "fatcap", color: "pink", top: 32, left: 4, rotate: -6, scale: 0.7 },
+];
+
 export function GraffitiWall({
   marks,
   freshId,
@@ -60,12 +76,38 @@ export function GraffitiWall({
       }}
       onMouseLeave={() => onHover?.(null)}
     >
+      <div className="graf-grid" aria-hidden="true" />
+
       <div className="graf graf-center" aria-label={GRAFFITI_CENTER}>
         <p className="graf-center-piece graf-drip graf-color-banana">
           <span className="graf-center-line">Bitcoin Is</span>
           <span className="graf-center-hope">Hope</span>
         </p>
       </div>
+
+      {quiet
+        ? WALL_ECHOES.map((echo) => (
+            <div
+              key={`${echo.text}-${echo.top}-${echo.left}`}
+              className="graf graf-temp graf-echo"
+              style={{
+                top: `${echo.top}%`,
+                left: `${echo.left}%`,
+                transform: `rotate(${echo.rotate}deg) scale(${echo.scale})`,
+              }}
+              aria-hidden="true"
+            >
+              <div className="graf-inner">
+                <GraffitiTag
+                  text={echo.text}
+                  style={echo.style}
+                  color={echo.color}
+                  className="text-lg sm:text-3xl"
+                />
+              </div>
+            </div>
+          ))
+        : null}
 
       {quiet ? (
         <p className="graf-quiet">

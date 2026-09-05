@@ -230,32 +230,49 @@ export function GraffitiApp() {
         </p>
       }
       stage={
-        <GraffitiWall
-          marks={live}
-          freshId={freshId}
-          highlightId={highlightId}
-          placing
-          quiet={paidLive === 0}
-          ghost={
-            showGhost
-              ? {
-                  text: text.trim(),
-                  style,
-                  color,
-                  placement: ghostPlacement,
-                  locked: Boolean(placement),
-                }
-              : null
-          }
-          onPlace={(top, left) => {
-            setPlacement(organicPlacement(top, left));
-            setTab("spray");
-          }}
-          onHover={(point) => {
-            if (placement) return;
-            setHover(point);
-          }}
-        />
+        <>
+          <GraffitiWall
+            marks={live}
+            freshId={freshId}
+            highlightId={highlightId}
+            placing
+            quiet={paidLive === 0}
+            ghost={
+              showGhost
+                ? {
+                    text: text.trim(),
+                    style,
+                    color,
+                    placement: ghostPlacement,
+                    locked: Boolean(placement),
+                  }
+                : null
+            }
+            onPlace={(top, left) => {
+              setPlacement(organicPlacement(top, left));
+              setTab("spray");
+            }}
+            onHover={(point) => {
+              if (placement) return;
+              setHover(point);
+            }}
+          />
+          <button
+            type="button"
+            className="graffiti-spray-fab"
+            onClick={() => {
+              setTab("spray");
+              window.requestAnimationFrame(() => {
+                document
+                  .getElementById("graf-spray-dock")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              });
+            }}
+          >
+            SPRAY WALL
+            <span>21 SATS</span>
+          </button>
+        </>
       }
       tabs={[
         { id: "spray", label: "SPRAY" },
