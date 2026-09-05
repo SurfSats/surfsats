@@ -105,42 +105,25 @@ export function isGraffitiColor(value: unknown): value is GraffitiColor {
   return graffitiColors.some((item) => item.id === value);
 }
 
-/** Side and bottom bands only — leave the center Hope piece clear. */
+/** Scatter across the empty dark brick face (inside the neon frame). */
 const PLACE_ZONES = [
-  { topMin: 28, topMax: 38, leftMin: 3, leftMax: 18 },
-  { topMin: 28, topMax: 38, leftMin: 54, leftMax: 60 },
-  { topMin: 70, topMax: 86, leftMin: 4, leftMax: 26 },
-  { topMin: 70, topMax: 86, leftMin: 48, leftMax: 58 },
+  { topMin: 10, topMax: 36, leftMin: 6, leftMax: 42 },
+  { topMin: 10, topMax: 36, leftMin: 48, leftMax: 74 },
+  { topMin: 40, topMax: 66, leftMin: 8, leftMax: 44 },
+  { topMin: 40, topMax: 66, leftMin: 46, leftMax: 74 },
+  { topMin: 68, topMax: 82, leftMin: 16, leftMax: 68 },
 ] as const;
 
-const WALL_TOP_MIN = 8;
-const WALL_TOP_MAX = 90;
-const WALL_LEFT_MIN = 2;
-const WALL_LEFT_MAX = 62;
-const MURAL = { top: 40, bottom: 66, left: 20, right: 54 };
+const WALL_TOP_MIN = 6;
+const WALL_TOP_MAX = 84;
+const WALL_LEFT_MIN = 4;
+const WALL_LEFT_MAX = 78;
 
 export function clampPlacement(top: number, left: number) {
-  let nextTop = Math.min(WALL_TOP_MAX, Math.max(WALL_TOP_MIN, top));
-  let nextLeft = Math.min(WALL_LEFT_MAX, Math.max(WALL_LEFT_MIN, left));
-
-  if (
-    nextTop > MURAL.top &&
-    nextTop < MURAL.bottom &&
-    nextLeft > MURAL.left &&
-    nextLeft < MURAL.right
-  ) {
-    const dt = nextTop - MURAL.top;
-    const db = MURAL.bottom - nextTop;
-    const dl = nextLeft - MURAL.left;
-    const dr = MURAL.right - nextLeft;
-    const nearest = Math.min(dt, db, dl, dr);
-    if (nearest === dt) nextTop = MURAL.top;
-    else if (nearest === db) nextTop = MURAL.bottom;
-    else if (nearest === dl) nextLeft = MURAL.left;
-    else nextLeft = MURAL.right;
-  }
-
-  return { top: nextTop, left: nextLeft };
+  return {
+    top: Math.min(WALL_TOP_MAX, Math.max(WALL_TOP_MIN, top)),
+    left: Math.min(WALL_LEFT_MAX, Math.max(WALL_LEFT_MIN, left)),
+  };
 }
 
 export function isGraffitiPlacement(value: unknown): value is GraffitiPlacement {

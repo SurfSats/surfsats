@@ -1,15 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Anton,
-  Bangers,
-  Bungee,
-  Permanent_Marker,
-  Rubik_Dirt,
-  Rubik_Glitch,
-  Stardos_Stencil,
-} from "next/font/google";
 import { GraffitiFeed } from "@/components/graffiti/GraffitiFeed";
 import { GraffitiForm } from "@/components/graffiti/GraffitiForm";
 import { GraffitiHow } from "@/components/graffiti/GraffitiHow";
@@ -29,48 +20,6 @@ import {
   type GraffitiStyle,
   isActiveMark,
 } from "@/lib/graffiti";
-
-const marker = Permanent_Marker({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-graf-tag",
-});
-
-const throwup = Bangers({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-graf-throw",
-});
-
-const wild = Rubik_Glitch({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-graf-wild",
-});
-
-const drip = Rubik_Dirt({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-graf-drip",
-});
-
-const block = Anton({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-graf-block",
-});
-
-const fat = Bungee({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-graf-fat",
-});
-
-const stencil = Stardos_Stencil({
-  weight: "700",
-  subsets: ["latin"],
-  variable: "--font-graf-stencil",
-});
 
 type DeckTab = "spray" | "wall" | "how";
 
@@ -223,7 +172,7 @@ export function GraffitiApp() {
   return (
     <ConsoleShell
       name="graffiti"
-      className={`${marker.variable} ${throwup.variable} ${wild.variable} ${drip.variable} ${block.variable} ${fat.variable} ${stencil.variable} graffiti-page`}
+      className="graffiti-page"
       strip={
         <p>
           city wall · {GRAFFITI_PRICE_SATS} sats · {GRAFFITI_TTL_HOURS} hours

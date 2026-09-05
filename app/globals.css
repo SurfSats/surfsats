@@ -2593,19 +2593,7 @@ body {
   min-height: calc(100dvh - var(--site-chrome-h));
   flex-direction: column;
   color: #efe6d4;
-  background-color: #3a3832;
-  background-image:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.28)),
-    repeating-linear-gradient(
-      90deg,
-      #4a4640 0 18px,
-      #3f3b36 18px 36px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.03) 0 1px,
-      transparent 1px 11px
-    );
+  background-color: #07080c;
 }
 
 .graffiti-page::after {
@@ -2614,14 +2602,11 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  background:
-    radial-gradient(ellipse at 8% 90%, rgba(18, 32, 14, 0.45), transparent 36%),
-    linear-gradient(
-      180deg,
-      transparent 0%,
-      transparent 88%,
-      rgba(0, 0, 0, 0.4) 100%
-    );
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    rgba(0, 0, 0, 0.38),
+    transparent 48%
+  );
 }
 
 .console-strip,
@@ -2672,7 +2657,42 @@ body:has(.graffiti-page) .site-watermark {
   position: absolute;
   inset: 0;
   z-index: 2;
+  display: grid;
+  place-items: center;
   min-height: 100%;
+}
+
+.graf-art {
+  position: relative;
+  aspect-ratio: 1376 / 768;
+  width: 100%;
+  max-height: 100%;
+  height: auto;
+}
+
+@supports (width: 1cqi) {
+  .graf-art {
+    width: min(100cqi, calc(100cqb * 1376 / 768));
+  }
+}
+
+.graf-art-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.graf-face {
+  position: absolute;
+  z-index: 2;
+  top: 42%;
+  left: 31%;
+  width: 39%;
+  height: 33%;
 }
 
 .console-deck,
@@ -3004,13 +3024,12 @@ body:has(.graffiti-page) .site-watermark {
   background-image:
     linear-gradient(to right, rgba(239, 230, 212, 0.08) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(239, 230, 212, 0.08) 1px, transparent 1px);
-  background-size: 2rem 2rem;
-  mask-image: radial-gradient(ellipse at 38% 48%, #000 30%, transparent 78%);
-  opacity: 0.28;
+  background-size: 1.35rem 1.35rem;
+  opacity: 0.22;
 }
 
 .graffiti-wall:has(.graf-echo) .graf-grid {
-  opacity: 0.62;
+  opacity: 0.5;
 }
 
 .graf-echo {
@@ -3026,17 +3045,24 @@ body:has(.graffiti-page) .site-watermark {
 
 .graf-quiet {
   position: absolute;
-  top: 72%;
+  top: auto;
+  right: 6%;
+  bottom: 8%;
   left: 6%;
   z-index: 3;
-  max-width: 18rem;
+  max-width: none;
   pointer-events: none;
-  font-size: 0.78rem;
+  text-align: center;
+  font-size: 0.72rem;
   line-height: 1.45;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(239, 230, 212, 0.58);
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+.graf-face .graf-temp {
+  max-width: min(48%, 11rem);
 }
 
 .graffiti-spray-fab {
@@ -3087,99 +3113,130 @@ body:has(.graffiti-page) .site-watermark {
 }
 
 .graf-tag {
-  font-family: var(--font-graf-tag), cursive;
+  font-family: var(--font-graf-tag), "Permanent Marker", cursive;
   font-style: italic;
   font-weight: 400;
   letter-spacing: -0.03em;
+  transform: rotate(-1.5deg);
   text-shadow:
     2px 2px 0 #111,
     0 1px 0 #000;
+  filter: drop-shadow(0 0 6px currentColor);
 }
 
 .graf-throwup {
-  font-family: var(--font-graf-throw), sans-serif;
+  font-family: var(--font-graf-throw), "Rubik Spray Paint", sans-serif;
   font-weight: 400;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  -webkit-text-stroke: 5px #111;
+  transform: rotate(1.2deg);
+  -webkit-text-stroke: 4px #111;
   paint-order: stroke fill;
-  filter: drop-shadow(2px 3px 0 #000);
+  filter:
+    drop-shadow(0 0 6px currentColor)
+    drop-shadow(2px 3px 0 #000);
 }
 
 .graf-wildstyle {
-  font-family: var(--font-graf-wild), sans-serif;
+  font-family: var(--font-graf-wild), "Rock Salt", cursive;
   font-weight: 400;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
-  transform: skewX(-10deg);
+  transform: rotate(-1.2deg) skewX(-8deg);
   text-shadow:
     3px 3px 0 #111,
-    -2px 0 #000,
-    0 0 10px currentColor;
+    -2px 0 #000;
+  filter: drop-shadow(0 0 6px currentColor);
 }
 
 .graf-stencil {
-  font-family: var(--font-graf-stencil), var(--font-mono), monospace;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  font-family: var(--font-graf-stencil), Plaster, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  transform: rotate(0.6deg);
   text-shadow: 2px 2px 0 #111;
+  filter: drop-shadow(0 0 6px currentColor);
 }
 
 .graf-drip {
-  font-family: var(--font-graf-drip), sans-serif;
+  font-family: var(--font-graf-drip), Creepster, cursive;
   font-weight: 400;
   text-transform: uppercase;
+  transform: rotate(2deg);
   text-shadow:
     0 2px 0 #111,
     0 8px 0 currentColor,
     2px 16px 0 currentColor,
     -1px 26px 0 currentColor,
     1px 34px 0 currentColor;
+  filter: drop-shadow(0 0 6px currentColor);
 }
 
 .graf-blockbuster {
-  font-family: var(--font-graf-block), sans-serif;
+  font-family: var(--font-graf-block), "Black Ops One", sans-serif;
   font-weight: 400;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
+  transform: rotate(-0.8deg);
   -webkit-text-stroke: 2px #111;
   paint-order: stroke fill;
-  filter: drop-shadow(3px 4px 0 #000);
+  filter:
+    drop-shadow(0 0 6px currentColor)
+    drop-shadow(3px 4px 0 #000);
 }
 
 .graf-fatcap {
-  font-family: var(--font-graf-fat), sans-serif;
+  font-family: var(--font-graf-fat), "Reenie Beanie", cursive;
   font-weight: 400;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  -webkit-text-stroke: 6px #111;
-  paint-order: stroke fill;
-  filter: drop-shadow(2px 3px 0 #000);
+  letter-spacing: 0.02em;
+  transform: rotate(1.6deg);
+  -webkit-text-stroke: 0.6px currentColor;
+  filter:
+    drop-shadow(0 0 6px currentColor)
+    drop-shadow(1px 2px 0 #000);
 }
 
 .graf-chrome {
-  font-family: var(--font-graf-block), sans-serif;
+  font-family: var(--font-graf-chrome), VT323, monospace;
   font-weight: 400;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #d8dee4;
-  -webkit-text-stroke: 3px #111;
+  transform: rotate(-1deg);
+  background: linear-gradient(180deg, #ffffff 0%, #999999 50%, #333333 51%, #cccccc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  -webkit-text-stroke: 2px #111;
   paint-order: stroke fill;
-  text-shadow:
-    0 1px 0 #fff,
-    0 3px 0 #8b939c,
-    2px 5px 0 #111;
+  filter:
+    drop-shadow(0 0 6px #cfd4d8)
+    drop-shadow(1px 2px 0 #000);
 }
 
-.graf-chrome.graf-color-blood { filter: drop-shadow(0 0 8px #c41e3a); }
-.graf-chrome.graf-color-banana { filter: drop-shadow(0 0 8px #f4d03f); }
-.graf-chrome.graf-color-ice { filter: drop-shadow(0 0 8px #6ec4e0); }
-.graf-chrome.graf-color-rust { filter: drop-shadow(0 0 8px #d35400); }
-.graf-chrome.graf-color-bone { filter: drop-shadow(0 0 8px #efe6d4); }
-.graf-chrome.graf-color-pink { filter: drop-shadow(0 0 8px #ff4fa3); }
-.graf-chrome.graf-color-night { filter: drop-shadow(0 0 8px #efe6d4); }
-.graf-chrome.graf-color-chrome { filter: drop-shadow(0 0 8px #cfd4d8); }
+.graf-chrome.graf-color-blood,
+.graf-chrome.graf-color-banana,
+.graf-chrome.graf-color-ice,
+.graf-chrome.graf-color-rust,
+.graf-chrome.graf-color-bone,
+.graf-chrome.graf-color-pink,
+.graf-chrome.graf-color-night,
+.graf-chrome.graf-color-chrome {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+
+.graf-chrome.graf-color-blood { filter: drop-shadow(0 0 6px #c41e3a) drop-shadow(1px 2px 0 #000); }
+.graf-chrome.graf-color-banana { filter: drop-shadow(0 0 6px #f4d03f) drop-shadow(1px 2px 0 #000); }
+.graf-chrome.graf-color-ice { filter: drop-shadow(0 0 6px #6ec4e0) drop-shadow(1px 2px 0 #000); }
+.graf-chrome.graf-color-rust { filter: drop-shadow(0 0 6px #d35400) drop-shadow(1px 2px 0 #000); }
+.graf-chrome.graf-color-bone { filter: drop-shadow(0 0 6px #efe6d4) drop-shadow(1px 2px 0 #000); }
+.graf-chrome.graf-color-pink { filter: drop-shadow(0 0 6px #ff4fa3) drop-shadow(1px 2px 0 #000); }
+.graf-chrome.graf-color-night { filter: drop-shadow(0 0 6px #efe6d4) drop-shadow(1px 2px 0 #000); }
+.graf-chrome.graf-color-chrome { filter: drop-shadow(0 0 6px #cfd4d8) drop-shadow(1px 2px 0 #000); }
 
 .graf-color-chrome { color: #cfd4d8; text-shadow: 1px 1px 0 #111, 0 2px 0 #000; }
 .graf-color-blood { color: #e23a54; text-shadow: 1px 1px 0 #111, 0 2px 0 #000; }
@@ -3192,10 +3249,6 @@ body:has(.graffiti-page) .site-watermark {
   color: #141414;
   -webkit-text-stroke: 1px #efe6d4;
   text-shadow: 0 2px 0 #000;
-}
-
-.graf-chrome {
-  color: #d8dee4;
 }
 
 .graf-wait {
@@ -3284,10 +3337,10 @@ body:has(.graffiti-page) .site-watermark {
 
 .graf-style-glyph {
   display: flex;
-  height: 2.15rem;
+  height: 2.55rem;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: none;
 }
 
@@ -3300,6 +3353,43 @@ body:has(.graffiti-page) .site-watermark {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #a8a29a;
+}
+
+.graf-style-tip[data-style="tag"] .graf-style-name {
+  font-family: var(--font-graf-tag), "Permanent Marker", cursive;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.graf-style-tip[data-style="throwup"] .graf-style-name {
+  font-family: var(--font-graf-throw), "Rubik Spray Paint", sans-serif;
+}
+
+.graf-style-tip[data-style="blockbuster"] .graf-style-name {
+  font-family: var(--font-graf-block), "Black Ops One", sans-serif;
+}
+
+.graf-style-tip[data-style="stencil"] .graf-style-name {
+  font-family: var(--font-graf-stencil), Plaster, sans-serif;
+}
+
+.graf-style-tip[data-style="drip"] .graf-style-name {
+  font-family: var(--font-graf-drip), Creepster, cursive;
+}
+
+.graf-style-tip[data-style="wildstyle"] .graf-style-name {
+  font-family: var(--font-graf-wild), "Rock Salt", cursive;
+  text-transform: none;
+}
+
+.graf-style-tip[data-style="fatcap"] .graf-style-name {
+  font-family: var(--font-graf-fat), "Reenie Beanie", cursive;
+  text-transform: none;
+  font-size: 12px;
+}
+
+.graf-style-tip[data-style="chrome"] .graf-style-name {
+  font-family: var(--font-graf-chrome), VT323, monospace;
 }
 
 .graf-fab {
@@ -3444,6 +3534,10 @@ body:has(.graffiti-page) .site-watermark {
 
   .graf-temp {
     max-width: min(36vw, 250px);
+  }
+
+  .graf-face .graf-temp {
+    max-width: min(42%, 13rem);
   }
 }
 

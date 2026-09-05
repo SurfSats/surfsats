@@ -306,6 +306,7 @@ export function GraffitiForm({
                   "graf-style-tip",
                   style === item.id && "graf-style-tip-active",
                 )}
+                data-style={item.id}
                 aria-pressed={style === item.id}
               >
                 <span className="graf-style-glyph">
