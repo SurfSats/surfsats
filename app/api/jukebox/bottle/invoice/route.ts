@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { isAlbyConfigured, publicErrorMessage, publicErrorStatus } from "@/lib/alby";
+import { canServeLightning, publicErrorMessage, publicErrorStatus } from "@/lib/alby";
 import { createBottleInvoice } from "@/lib/bottle-payments";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST() {
-  if (!isAlbyConfigured()) {
+  if (!canServeLightning()) {
     return NextResponse.json(
       { error: "lightning is offline right now" },
       { status: 503 },

@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { OneTapZap } from "@/components/pay/OneTapZap";
+import { payFetch } from "@/lib/pay-fetch";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
+import { useCheckNow } from "@/components/pay/useWebLn";
 import {
   STORY_ALIAS_MAX,
   STORY_MAX_CHARS,
@@ -19,6 +22,7 @@ export function StoryComposer({
   onPaid: (line: StoryLine) => void;
 }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
+  const { bind: bindCheck, kick: kickCheck } = useCheckNow();
   const [text, setText] = useState("");
   const [alias, setAlias] = useState("");
   const [step, setStep] = useState<Step>("compose");
@@ -89,7 +93,7 @@ export function StoryComposer({
 
     async function poll() {
       try {
-        const response = await fetch(
+        const response = await payFetch(
           `/api/story/check?hash=${encodeURIComponent(paymentHash)}`,
           { cache: "no-store" },
         );
@@ -124,13 +128,14 @@ export function StoryComposer({
       }
     }
 
+    bindCheck(poll);
     void poll();
     const id = window.setInterval(() => void poll(), 2500);
     return () => {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, expired, onPaid, paymentHash, settling, step]);
+  }, [beginSettle, bindCheck, expired, onPaid, paymentHash, settling, step]);
 
   async function requestInvoice() {
     const nextLine = sanitizeStoryLine(text);
@@ -152,7 +157,7 @@ export function StoryComposer({
     setInvoiceError(null);
     setStep("invoice");
     try {
-      const response = await fetch("/api/story/invoice", {
+      const response = await payFetch("/api/story/invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -302,6 +307,14 @@ export function StoryComposer({
               Inscribe · {STORY_PRICE_SATS} sats
             </h3>
             <p className="story-pay-memo">One sentence bound into the chain</p>
+            {live && !expired ? (
+              <OneTapZap
+                invoice={paymentRequest}
+                disabled={pending}
+                onPaid={kickCheck}
+                tone="story"
+              />
+            ) : null}
             {qrSrc && live && !expired ? (
               // data: URL from the live BOLT11
               // eslint-disable-next-line @next/next/no-img-element

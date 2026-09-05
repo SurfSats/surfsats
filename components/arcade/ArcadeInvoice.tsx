@@ -1,5 +1,6 @@
 "use client";
 
+import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual } from "@/components/pay/SettleRitual";
 import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
 
@@ -19,6 +20,7 @@ export function ArcadeInvoice({
   onCopy,
   onRetry,
   onCancel,
+  onZapPaid,
 }: {
   qrSrc: string;
   paymentRequest: string;
@@ -35,6 +37,7 @@ export function ArcadeInvoice({
   onCopy: () => void;
   onRetry: () => void;
   onCancel: () => void;
+  onZapPaid?: () => void;
 }) {
   const live =
     Boolean(paymentRequest) && paymentRequest.toLowerCase().startsWith("ln");
@@ -55,6 +58,15 @@ export function ArcadeInvoice({
         <h2 id={titleId} className="arcade-pay-title">
           INSERT {ARCADE_PRICE_SATS} SATS
         </h2>
+
+        {live && !expired ? (
+          <OneTapZap
+            invoice={paymentRequest}
+            disabled={pending}
+            onPaid={() => onZapPaid?.()}
+            tone="arcade"
+          />
+        ) : null}
 
         {qrSrc && live && !expired ? (
           // data: URL from the live BOLT11 — next/image cannot optimize it

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAlbyConfigured, publicErrorMessage, publicErrorStatus } from "@/lib/alby";
+import { canServeLightning, publicErrorMessage, publicErrorStatus } from "@/lib/alby";
 import {
   createGraffitiInvoice,
   pendingFromBody,
@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  if (!isAlbyConfigured()) {
+  if (!canServeLightning()) {
     return NextResponse.json(
       { error: "lightning is offline right now" },
       { status: 503 },

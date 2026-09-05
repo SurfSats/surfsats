@@ -1,5 +1,15 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { GRAFFITI_PRICE_SATS } from "@/lib/graffiti";
+import {
+  canServeLightning,
+  createMockInvoice,
+  getMockInvoice,
+  isDevLightningFallback,
+  isMockPaymentHash,
+  lightningMode,
+} from "@/lib/lightning-mock";
+
+export { canServeLightning };
 
 const ALBY_API_BASE =
   process.env.ALBY_API_BASE?.replace(/\/$/, "") || "https://api.getalby.com";
@@ -87,42 +97,110 @@ export function publicErrorStatus(error: unknown) {
   return 502;
 }
 
+function logLightningFallback(
+  reason: string,
+  extra?: Record<string, unknown>,
+  level: "warn" | "error" = "error",
+) {
+  if (level === "warn") {
+    console.warn("[lightning]", reason, extra ?? {});
+    return;
+  }
+  console.error("[lightning]", reason, extra ?? {});
+}
+
+function mockOrThrow(input: {
+  amountSats: number;
+  description: string;
+  metadata?: Record<string, unknown>;
+}, reason: string, extra?: Record<string, unknown>) {
+  if (!isDevLightningFallback()) {
+    throw Object.assign(new Error("lightning is offline right now"), {
+      status: 503,
+    });
+  }
+  logLightningFallback(reason, extra);
+  return createMockInvoice(input);
+}
+
 export async function createAlbyInvoice(input: {
   amountSats: number;
   description: string;
   metadata?: Record<string, unknown>;
 }) {
+  const mode = lightningMode();
+  if (mode === "mock") {
+    logLightningFallback(
+      "ALBY_ACCESS_TOKEN missing; using mock invoice",
+      {},
+      "warn",
+    );
+    return createMockInvoice(input);
+  }
+
   const payload: Record<string, unknown> = {
     amount: input.amountSats,
     description: input.description,
   };
   if (input.metadata) payload.metadata = input.metadata;
 
-  const body = await albyFetch("/invoices", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-
-  const invoice = asInvoice(body);
-  if (
-    !invoice?.payment_request ||
-    !invoice.payment_request.toLowerCase().startsWith("ln") ||
-    !invoicePaymentHash(invoice)
-  ) {
-    throw Object.assign(new Error("could not create invoice. try again"), {
-      status: 502,
+  try {
+    const body = await albyFetch("/invoices", {
+      method: "POST",
+      body: JSON.stringify(payload),
     });
+
+    const invoice = asInvoice(body);
+    if (
+      !invoice?.payment_request ||
+      !invoice.payment_request.toLowerCase().startsWith("ln") ||
+      !invoicePaymentHash(invoice)
+    ) {
+      throw Object.assign(new Error("could not create invoice. try again"), {
+        status: 502,
+      });
+    }
+    return invoice;
+  } catch (error) {
+    if (isDevLightningFallback()) {
+      return mockOrThrow(input, "Alby create invoice failed; using mock", {
+        status: publicErrorStatus(error),
+        message: publicErrorMessage(error),
+      });
+    }
+    throw error;
   }
-  return invoice;
 }
 
 export async function getAlbyInvoice(paymentHash: string) {
-  const body = await albyFetch(`/invoices/${encodeURIComponent(paymentHash)}`);
-  const invoice = asInvoice(body);
-  if (!invoice) {
+  if (isMockPaymentHash(paymentHash)) {
+    const mock = getMockInvoice(paymentHash);
+    if (mock) return mock;
     throw Object.assign(new Error("invoice not found"), { status: 404 });
   }
-  return invoice;
+
+  if (lightningMode() !== "alby") {
+    throw Object.assign(new Error("lightning is offline right now"), {
+      status: 503,
+    });
+  }
+
+  try {
+    const body = await albyFetch(`/invoices/${encodeURIComponent(paymentHash)}`);
+    const invoice = asInvoice(body);
+    if (!invoice) {
+      throw Object.assign(new Error("invoice not found"), { status: 404 });
+    }
+    return invoice;
+  } catch (error) {
+    if (isDevLightningFallback()) {
+      logLightningFallback("Alby lookup failed", {
+        status: publicErrorStatus(error),
+        message: publicErrorMessage(error),
+      });
+    }
+    throw error;
+  }
 }
 
 export async function listIncomingInvoices(items = 50) {

@@ -6193,6 +6193,77 @@ html[data-arcade-play="wave"] .cab-crt-live .cab-crt-scan {
   color: #1a0e08;
 }
 
+.one-tap-zap {
+  display: inline-flex;
+  width: 100%;
+  min-height: 2.85rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  background: var(--sats);
+  color: #140a04;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.one-tap-zap:disabled {
+  opacity: 0.5;
+}
+
+.one-tap-zap[data-tone="story"] {
+  background: #3a220c;
+  color: #f3e6c4;
+  font-family: var(--font-story-title), serif;
+  letter-spacing: 0.12em;
+}
+
+.one-tap-zap[data-tone="graf"] {
+  min-height: 2.75rem;
+  margin-top: 1rem;
+  background: #f59e0b;
+  color: #000;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+}
+
+.one-tap-zap[data-tone="bottle"] {
+  min-height: 2.2rem;
+  margin-bottom: 0.35rem;
+  background: rgba(8, 8, 11, 0.72);
+  color: var(--sats);
+  border: 1px solid var(--sats);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-shadow: 0 1px 4px #000;
+}
+
+.pay-toast {
+  position: fixed;
+  z-index: 200;
+  left: 50%;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.55rem 0.9rem;
+  background: #140a04;
+  color: #efe6d4;
+  border: 1px solid var(--sats);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 var(--sats);
+  pointer-events: none;
+}
+
 @media (max-width: 639px) {
   .arcade-pay {
     display: block;

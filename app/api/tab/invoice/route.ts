@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import {
-  isAlbyConfigured,
+  canServeLightning,
   publicErrorMessage,
   publicErrorStatus,
 } from "@/lib/alby";
@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  if (!isAlbyConfigured()) {
+  if (!canServeLightning()) {
     return NextResponse.json(
       { error: "lightning is offline right now" },
       { status: 503 },

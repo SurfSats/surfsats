@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
+import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
+import { useCheckNow } from "@/components/pay/useWebLn";
 import { cn } from "@/lib/cn";
+import { payFetch } from "@/lib/pay-fetch";
 import {
   GRAFFITI_MAX_CHARS,
   GRAFFITI_PRICE_SATS,
@@ -54,6 +57,7 @@ export function GraffitiForm({
   onResetDraft: () => void;
 }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
+  const { bind: bindCheck, kick: kickCheck } = useCheckNow();
   const [step, setStep] = useState<Step>("compose");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -122,7 +126,7 @@ export function GraffitiForm({
 
     async function poll() {
       try {
-        const response = await fetch(
+        const response = await payFetch(
           `/api/lightning/check?hash=${encodeURIComponent(paymentHash)}`,
           { cache: "no-store" },
         );
@@ -157,13 +161,14 @@ export function GraffitiForm({
       }
     }
 
+    bindCheck(poll);
     void poll();
     const id = window.setInterval(() => void poll(), 2500);
     return () => {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, expired, onPaid, paymentHash, settling, step]);
+  }, [beginSettle, bindCheck, expired, onPaid, paymentHash, settling, step]);
 
   async function requestInvoice() {
     const next = sanitizeGraffiti(text);
@@ -175,7 +180,7 @@ export function GraffitiForm({
     setError(null);
     setPending(true);
     try {
-      const response = await fetch("/api/lightning/invoice", {
+      const response = await payFetch("/api/lightning/invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -388,6 +393,14 @@ export function GraffitiForm({
             invoice · {GRAFFITI_PRICE_SATS} sats ·{" "}
             {expired ? "expired" : "unpaid"}
           </p>
+          {paymentRequest && !expired ? (
+            <OneTapZap
+              invoice={paymentRequest}
+              disabled={pending}
+              onPaid={kickCheck}
+              tone="graf"
+            />
+          ) : null}
           {qrSrc ? (
             // data: URL from the live BOLT11 — next/image cannot optimize it
             // eslint-disable-next-line @next/next/no-img-element

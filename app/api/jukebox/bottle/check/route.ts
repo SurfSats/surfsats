@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAlbyConfigured, publicErrorMessage, publicErrorStatus } from "@/lib/alby";
+import { canServeLightning, publicErrorMessage, publicErrorStatus } from "@/lib/alby";
 import { bottleLog, hashRef } from "@/lib/bottle-log";
 import { settleBottlePayment } from "@/lib/bottle-payments";
 import { bottleStoreKind } from "@/lib/bottle-store";
@@ -11,7 +11,7 @@ async function checkHash(paymentHash: string) {
   if (!paymentHash) {
     return NextResponse.json({ error: "missing invoice" }, { status: 400 });
   }
-  if (!isAlbyConfigured()) {
+  if (!canServeLightning()) {
     return NextResponse.json(
       { error: "lightning is offline right now" },
       { status: 503 },

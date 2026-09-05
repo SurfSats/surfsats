@@ -2,6 +2,9 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { OneTapZap } from "@/components/pay/OneTapZap";
+import { payFetch } from "@/lib/pay-fetch";
+import { useCheckNow } from "@/components/pay/useWebLn";
 import { BOTTLE_PRICE_SATS, type BottlePull } from "@/lib/bottle";
 
 const BOTTLE_EVENT = "surfsats-bottle-pull";
@@ -10,6 +13,7 @@ const CRACK_MS = 400;
 type Face = "idle" | "crack" | "message";
 
 export function BottleStage() {
+  const { bind: bindCheck, kick: kickCheck } = useCheckNow();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentRequest, setPaymentRequest] = useState("");
@@ -47,7 +51,7 @@ export function BottleStage() {
 
     async function poll() {
       try {
-        const response = await fetch(
+        const response = await payFetch(
           `/api/jukebox/bottle/check?hash=${encodeURIComponent(paymentHash)}`,
           { cache: "no-store" },
         );
@@ -79,13 +83,14 @@ export function BottleStage() {
       }
     }
 
+    bindCheck(poll);
     void poll();
     const id = window.setInterval(() => void poll(), 2500);
     return () => {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [paymentHash]);
+  }, [bindCheck, paymentHash]);
 
   async function pullBottle() {
     if (pending || paymentHash) return;
@@ -94,7 +99,7 @@ export function BottleStage() {
     setFace("idle");
     setPending(true);
     try {
-      const response = await fetch("/api/jukebox/bottle/invoice", {
+      const response = await payFetch("/api/jukebox/bottle/invoice", {
         method: "POST",
       });
       const data = (await response.json()) as {
@@ -190,6 +195,14 @@ export function BottleStage() {
 
       {paying ? (
         <div className="bottle-pay">
+          {paymentRequest ? (
+            <OneTapZap
+              invoice={paymentRequest}
+              disabled={pending}
+              onPaid={kickCheck}
+              tone="bottle"
+            />
+          ) : null}
           {qrSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -209,7 +222,7 @@ export function BottleStage() {
           </p>
           <div className="bottle-pay-actions">
             <button type="button" onClick={() => void copyInvoice()}>
-              {copied ? "COPIED" : "COPY"}
+              {copied ? "COPIED" : "COPY INVOICE"}
             </button>
             <a href={`lightning:${paymentRequest}`}>WALLET</a>
             <button

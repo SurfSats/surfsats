@@ -4,7 +4,9 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { payFetch } from "@/lib/pay-fetch";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
+import { useCheckNow } from "@/components/pay/useWebLn";
 import {
   ARCADE_ALIAS_MAX,
   ARCADE_CREDITS_PER_PAY,
@@ -33,6 +35,7 @@ type Mode = "attract" | "invoice" | "ready" | "playing";
 
 export function BittiesShell() {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
+  const { bind: bindCheck, kick: kickCheck } = useCheckNow();
   const [playerId, setPlayerId] = useState("");
   const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
@@ -149,7 +152,7 @@ export function BittiesShell() {
 
     async function poll() {
       try {
-        const response = await fetch(
+        const response = await payFetch(
           `/api/arcade/check?hash=${encodeURIComponent(paymentHash)}`,
           { cache: "no-store" },
         );
@@ -188,13 +191,14 @@ export function BittiesShell() {
       }
     }
 
+    bindCheck(poll);
     void poll();
     const id = window.setInterval(() => void poll(), 2500);
     return () => {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, expired, mode, paymentHash, settling]);
+  }, [beginSettle, bindCheck, expired, mode, paymentHash, settling]);
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
@@ -215,7 +219,7 @@ export function BittiesShell() {
     setInvoiceError(null);
     setMode("invoice");
     try {
-      const response = await fetch("/api/arcade/invoice", {
+      const response = await payFetch("/api/arcade/invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerId, alias: next.alias }),
@@ -437,6 +441,7 @@ export function BittiesShell() {
           onCopy={() => void copyInvoice()}
           onRetry={() => void requestInvoice()}
           onCancel={cancelPay}
+          onZapPaid={kickCheck}
         />
       ) : null}
     </div>
