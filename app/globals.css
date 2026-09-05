@@ -105,6 +105,19 @@ html {
   opacity: 0.04;
 }
 
+@keyframes hud-zap-in {
+  from {
+    background-color: rgb(124 58 237 / 0.4);
+  }
+  to {
+    background-color: rgb(124 58 237 / 0.1);
+  }
+}
+
+.hud-zap-in {
+  animation: hud-zap-in 400ms ease-out;
+}
+
 ::selection {
   background: var(--magenta);
   color: #08080b;

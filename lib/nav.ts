@@ -17,6 +17,7 @@ export const readoutNavLinks: NavLink[] = [
 
 export const kitNavLinks: NavLink[] = [
   { href: "/tools", label: "Tools" },
+  { href: "/sandbox", label: "Sandbox" },
 ];
 
 export const navGroups: NavGroup[] = [

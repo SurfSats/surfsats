@@ -16,6 +16,7 @@ const routes = [
   "/lineup",
   "/signal",
   "/tools",
+  "/sandbox",
   "/fiat",
   "/story",
   "/about",
