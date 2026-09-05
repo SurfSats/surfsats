@@ -10,7 +10,7 @@ import {
 import { useLightningLive } from "@/components/pay/useLightningLive";
 import { COPY } from "@/lib/copy";
 import type { SettlementEvent } from "@/lib/lightning-live";
-import { playSettleChime } from "@/lib/sfx";
+import { playMechanicalLatch } from "@/lib/sound";
 
 export function InvoiceBurst({
   paymentHash,
@@ -34,7 +34,7 @@ export function InvoiceBurst({
       if (fired.current) return;
       fired.current = true;
       setBurst(event);
-      playSettleChime();
+      playMechanicalLatch();
       onPaid?.(event);
     },
     [onPaid],

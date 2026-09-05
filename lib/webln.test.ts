@@ -3,6 +3,8 @@ import { test } from "node:test";
 import {
   isWebLnAvailable,
   isWebLnRejection,
+  parseWebLnBalance,
+  parseWebLnPubkey,
   payWithWebLn,
   weblnToastMessage,
   type WebLnHost,
@@ -113,4 +115,22 @@ test("isWebLnRejection catches wallet denial shapes", () => {
   assert.equal(isWebLnRejection({ message: "cancelled", code: 4001 }), true);
   assert.equal(isWebLnRejection(new Error("insufficient balance")), false);
   assert.equal(isWebLnRejection("nope"), false);
+});
+
+test("parseWebLnPubkey reads node.pubkey and falls back to SOVEREIGN_NODE", () => {
+  assert.equal(
+    parseWebLnPubkey({ node: { pubkey: "02abc" } }),
+    "02abc",
+  );
+  assert.equal(parseWebLnPubkey({ node: {} }), "SOVEREIGN_NODE");
+  assert.equal(parseWebLnPubkey({}), "SOVEREIGN_NODE");
+  assert.equal(parseWebLnPubkey(null), "SOVEREIGN_NODE");
+});
+
+test("parseWebLnBalance reads a sat integer and ignores junk", () => {
+  assert.equal(parseWebLnBalance({ balance: 2100 }), 2100);
+  assert.equal(parseWebLnBalance({ balance: 0 }), 0);
+  assert.equal(parseWebLnBalance({ balance: "21" }), null);
+  assert.equal(parseWebLnBalance({}), null);
+  assert.equal(parseWebLnBalance(null), null);
 });

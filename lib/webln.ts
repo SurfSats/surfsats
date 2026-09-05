@@ -5,11 +5,45 @@ export type WebLnSendResult = {
 export type WebLnProvider = {
   enable: () => Promise<void>;
   sendPayment: (bolt11: string) => Promise<WebLnSendResult>;
+  isEnabled?: boolean | (() => Promise<boolean>);
+  getInfo?: () => Promise<unknown>;
+  getBalance?: () => Promise<unknown>;
   makeInvoice?: (args: {
     amount: number;
     defaultMemo?: string;
   }) => Promise<{ paymentRequest: string }>;
 };
+
+export const SOVEREIGN_NODE = "SOVEREIGN_NODE";
+
+export function parseWebLnPubkey(value: unknown): string {
+  if (value == null || typeof value !== "object") return SOVEREIGN_NODE;
+  if (!("node" in value) || value.node == null || typeof value.node !== "object") {
+    return SOVEREIGN_NODE;
+  }
+  if (!("pubkey" in value.node) || typeof value.node.pubkey !== "string") {
+    return SOVEREIGN_NODE;
+  }
+  const pubkey = value.node.pubkey.trim();
+  return pubkey || SOVEREIGN_NODE;
+}
+
+export function parseWebLnBalance(value: unknown): number | null {
+  if (value == null || typeof value !== "object") return null;
+  if (!("balance" in value) || typeof value.balance !== "number") return null;
+  if (!Number.isFinite(value.balance)) return null;
+  return value.balance;
+}
+
+export async function webLnIsEnabled(
+  provider: WebLnProvider,
+): Promise<boolean> {
+  if (typeof provider.isEnabled === "function") {
+    return provider.isEnabled();
+  }
+  if (typeof provider.isEnabled === "boolean") return provider.isEnabled;
+  return true;
+}
 
 export type WebLnHost = {
   webln?: WebLnProvider;

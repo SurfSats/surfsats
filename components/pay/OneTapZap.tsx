@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useWebLn } from "@/components/pay/useWebLn";
 import { cn } from "@/lib/cn";
 import { COPY } from "@/lib/copy";
+import { playMechanicalLatch } from "@/lib/sound";
 
 export function OneTapZap({
   invoice,
@@ -44,7 +45,10 @@ export function OneTapZap({
         onClick={() => {
           void (async () => {
             const result = await pay(invoice);
-            if (result.ok) onPaid();
+            if (result.ok) {
+              playMechanicalLatch();
+              onPaid();
+            }
           })();
         }}
       >
