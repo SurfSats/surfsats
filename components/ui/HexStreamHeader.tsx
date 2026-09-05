@@ -33,9 +33,9 @@ export function HexStreamHeader({
       className={cn("w-full border-b border-zinc-raw bg-void p-4", className)}
     >
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div className="flex items-center gap-3">
-          <Terminal className="h-5 w-5 text-violet" />
-          <h1 className="font-display text-2xl font-black tracking-brutalist text-salt uppercase md:text-3xl">
+        <div className="flex min-w-0 items-center gap-3">
+          <Terminal className="h-5 w-5 shrink-0 text-violet" />
+          <h1 className="min-w-0 break-words font-display text-xl font-black tracking-brutalist text-salt uppercase sm:text-2xl md:text-3xl">
             {title}
           </h1>
         </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { JetBrains_Mono, Syne } from "next/font/google";
 import { BitcoinConnectRoot } from "@/components/layout/BitcoinConnectRoot";
 import { Footer } from "@/components/layout/Footer";
+import { Drop21Provider } from "@/components/pay/Drop21Provider";
 import { LiveSettlementTape } from "@/components/layout/LiveSettlementTape";
 import { LiveSignalBar } from "@/components/layout/LiveSignalBar";
 import { Navbar } from "@/components/layout/Navbar";
@@ -60,14 +61,16 @@ export default async function RootLayout({
       <body className="relative flex min-h-screen flex-col bg-void font-mono text-salt">
         <div className="crt-scanlines" aria-hidden="true" />
         <BitcoinConnectRoot>
-          <Watermark />
-          <SiteChrome>
-            <Navbar />
-            <LiveSignalBar initial={snapshot} />
-            <LiveSettlementTape />
-          </SiteChrome>
-          <main className="relative z-0 min-w-0 flex-1">{children}</main>
-          <Footer />
+          <Drop21Provider>
+            <Watermark />
+            <SiteChrome>
+              <Navbar />
+              <LiveSignalBar initial={snapshot} />
+              <LiveSettlementTape />
+            </SiteChrome>
+            <main className="relative z-0 min-w-0 flex-1">{children}</main>
+            <Footer />
+          </Drop21Provider>
         </BitcoinConnectRoot>
       </body>
     </html>

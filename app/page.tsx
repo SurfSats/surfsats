@@ -1,32 +1,42 @@
 import type { Metadata } from "next";
-import { FeaturedTools } from "@/components/home/FeaturedTools";
-import { FromTheCoast } from "@/components/home/FromTheCoast";
-import { Hero } from "@/components/home/Hero";
+import { MachineDock } from "@/components/home/MachineDock";
 import { HomeClose } from "@/components/home/HomeClose";
+import { TerminalHero } from "@/components/home/TerminalHero";
+import { HydrographicRelayHud } from "@/components/nostr/HydrographicRelayHud";
 import { BathymetricPcbDivider } from "@/components/ui/BathymetricPcbDivider";
+import { Container } from "@/components/ui/Container";
+import { HexStreamHeader } from "@/components/ui/HexStreamHeader";
 import { pageMeta } from "@/lib/seo";
-import { getTimechainSnapshot } from "@/lib/timechain";
 
 export const metadata: Metadata = pageMeta({
   title: "SurfSats · no banks, no bosses",
   description:
-    "Lightning sandbox. Five machines on the floor. 21 sats. No accounts.",
+    "Lightning sandbox. 21 sats. Permissionless ocean intelligence.",
   path: "/",
   absoluteTitle: true,
 });
 
-export default async function HomePage() {
-  const snapshot = await getTimechainSnapshot();
-
+export default function HomePage() {
   return (
-    <>
-      <Hero />
+    <div className="bg-void text-salt">
+      <HexStreamHeader
+        title="SURFSATS // SOVEREIGN_TERMINAL"
+        telemetryTag="L402_CORE // 21_SATS"
+      />
+      <TerminalHero />
       <BathymetricPcbDivider />
-      <FeaturedTools initial={snapshot} />
+      <MachineDock />
       <BathymetricPcbDivider />
-      <FromTheCoast />
+      <section className="bg-void">
+        <Container className="py-8 sm:py-10">
+          <p className="mb-6 font-mono text-[11px] tracking-telemetry text-zinc-raw uppercase">
+            DECENTRALIZED_TRANSMISSION // DAMUS_NOS_PRIMAL
+          </p>
+          <HydrographicRelayHud />
+        </Container>
+      </section>
       <BathymetricPcbDivider />
       <HomeClose />
-    </>
+    </div>
   );
 }

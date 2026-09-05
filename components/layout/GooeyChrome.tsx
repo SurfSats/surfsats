@@ -12,6 +12,8 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { Liquid } from "liquid-gooey";
+import { useDrop21 } from "@/components/pay/Drop21Provider";
+import { BrutalistButton } from "@/components/ui/BrutalistButton";
 import { cn } from "@/lib/cn";
 import {
   isActivePath,
@@ -23,7 +25,6 @@ import {
 import type { NavLink } from "@/lib/types";
 
 const GLASS_SILHOUETTE = "rgba(255,255,255,0.14)";
-const DROP_SILHOUETTE = "rgba(255,122,24,0.42)";
 
 const NAV_MORPH = {
   shape: true as const,
@@ -378,36 +379,21 @@ export function GooeyDropSats({
   className?: string;
   onNavigate?: () => void;
 }) {
+  const { drop21, dropping } = useDrop21();
+
   return (
-    <Liquid
-      blur={3}
-      contrast={16}
-      fill={DROP_SILHOUETTE}
-      shadow="inset 0 1px 0 rgba(255,255,255,0.4)"
-      waviness={0}
-      filterPadding={20}
-      className={cn("relative z-10 inline-flex shrink-0", className)}
+    <BrutalistButton
+      variant="amber"
+      size="sm"
+      data-drop="21"
+      disabled={dropping}
+      className={cn("relative z-10 shrink-0", className)}
+      onClick={() => {
+        onNavigate?.();
+        void drop21();
+      }}
     >
-      <Liquid.Item
-        morph={{
-          shape: true,
-          contentBlur: 0,
-          bounce: 0.3,
-          speed: 1.6,
-        }}
-        radius={999}
-      >
-        <Link
-          href="/music?tab=jukebox"
-          onClick={onNavigate}
-          className={cn(
-            pillLayout,
-            "nav-glass nav-glass-drop font-semibold backdrop-blur-[10px] backdrop-saturate-[160%]",
-          )}
-        >
-          <span className="relative z-[2]">[ drop_21_sats ]</span>
-        </Link>
-      </Liquid.Item>
-    </Liquid>
+      {dropping ? "[ MINTING… ]" : "[ DROP_21_SATS ]"}
+    </BrutalistButton>
   );
 }
