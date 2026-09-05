@@ -29,6 +29,7 @@ export type AlbyInvoice = {
   memo?: string | null;
   description?: string | null;
   type?: string | null;
+  preimage?: string | null;
 };
 
 export type AlbyError = {
@@ -215,6 +216,10 @@ export function invoicePaymentHash(invoice: AlbyInvoice) {
   return invoice.payment_hash || invoice.r_hash_str || "";
 }
 
+export function invoicePreimage(invoice: AlbyInvoice) {
+  return invoice.preimage || "";
+}
+
 export function invoiceAmountSats(invoice: AlbyInvoice) {
   const amount = Number(invoice.amount);
   if (Number.isFinite(amount) && amount > 0) return amount;
@@ -270,6 +275,13 @@ export function asInvoice(value: unknown): AlbyInvoice | null {
     memo: stringOrNull(record.memo),
     description: stringOrNull(record.description),
     type: stringOrNull(record.type),
+    preimage:
+      stringOrNull(record.preimage) ||
+      stringOrNull(record.payment_preimage) ||
+      stringOrNull(record.r_preimage) ||
+      stringOrNull(nested?.preimage) ||
+      stringOrNull(nested?.payment_preimage) ||
+      stringOrNull(nested?.r_preimage),
   };
 }
 

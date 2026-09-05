@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
+import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
@@ -400,19 +401,39 @@ export function GraffitiForm({
               tone="graf"
             />
           ) : null}
-          {qrSrc ? (
-            // data: URL from the live BOLT11 — next/image cannot optimize it
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={qrSrc}
-              alt="Lightning invoice QR"
-              className="graf-invoice-qr mx-auto mt-4"
-            />
-          ) : (
-            <div className="graf-invoice-qr mx-auto mt-4 grid place-items-center bg-[#efe6d4] text-[11px] uppercase text-black">
-              {COPY.loadingPeer}
-            </div>
-          )}
+          <InvoiceBurst
+            paymentHash={paymentHash}
+            enabled={!expired && Boolean(paymentRequest)}
+            onPaid={kickCheck}
+            status={
+              expired ? null : (
+                <div className="graf-wait">
+                  <span className="graf-wait-dot" aria-hidden="true" />
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
+                    {waiting ? COPY.validating : "scan or copy the invoice"}
+                  </p>
+                  <p className="text-[11px] uppercase tracking-[0.12em] text-stone-400">
+                    pay from any lightning wallet
+                    {remainLabel ? ` · ${remainLabel}` : ""}
+                  </p>
+                </div>
+              )
+            }
+          >
+            {qrSrc ? (
+              // data: URL from the live BOLT11 — next/image cannot optimize it
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={qrSrc}
+                alt="Lightning invoice QR"
+                className="graf-invoice-qr mx-auto mt-4"
+              />
+            ) : (
+              <div className="graf-invoice-qr mx-auto mt-4 grid place-items-center bg-[#efe6d4] text-[11px] uppercase text-black">
+                {COPY.loadingPeer}
+              </div>
+            )}
+          </InvoiceBurst>
           <p className="mt-4 break-all font-mono text-[11px] leading-relaxed text-stone-400">
             {paymentRequest}
           </p>
@@ -420,18 +441,7 @@ export function GraffitiForm({
             <p className="mt-3 text-center text-xs uppercase tracking-[0.14em] text-red-400">
               invoice expired. generate a new one to pay.
             </p>
-          ) : (
-            <div className="graf-wait">
-              <span className="graf-wait-dot" aria-hidden="true" />
-              <p className="text-[11px] uppercase tracking-[0.16em] text-amber-500">
-                {waiting ? COPY.validating : "scan or copy the invoice"}
-              </p>
-              <p className="text-[11px] uppercase tracking-[0.12em] text-stone-400">
-                pay from any lightning wallet
-                {remainLabel ? ` · ${remainLabel}` : ""}
-              </p>
-            </div>
-          )}
+          ) : null}
           {invoiceError ? (
             <p className="mt-2 text-center text-xs uppercase text-red-400">
               {invoiceError}

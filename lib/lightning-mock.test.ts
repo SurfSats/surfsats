@@ -66,6 +66,7 @@ test("getMockInvoice stays open, then settles after the delay", () => {
   assert.equal(paid.settled, true);
   assert.equal(String(paid.state).toUpperCase(), "SETTLED");
   assert.equal(paid.amount, 21);
+  assert.ok(paid.preimage && paid.preimage.length >= 16);
 });
 
 test("getMockInvoice recovers a restarted mock hash as settled", () => {

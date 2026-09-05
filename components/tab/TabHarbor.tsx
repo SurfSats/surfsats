@@ -575,6 +575,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
       {showInvoice ? (
         <ArcadeInvoice
           qrSrc={qrSrc}
+          paymentHash={paymentHash}
           paymentRequest={paymentRequest}
           waiting={waiting}
           pending={pending}

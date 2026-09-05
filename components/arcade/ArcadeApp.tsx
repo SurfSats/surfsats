@@ -473,6 +473,7 @@ export function ArcadeApp({
       {showInvoice ? (
         <ArcadeInvoice
           qrSrc={qrSrc}
+          paymentHash={paymentHash}
           paymentRequest={paymentRequest}
           waiting={waiting}
           pending={pending}

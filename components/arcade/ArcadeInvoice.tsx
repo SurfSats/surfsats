@@ -1,5 +1,6 @@
 "use client";
 
+import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual } from "@/components/pay/SettleRitual";
 import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
@@ -7,6 +8,7 @@ import { COPY } from "@/lib/copy";
 
 export function ArcadeInvoice({
   qrSrc,
+  paymentHash = "",
   paymentRequest,
   waiting,
   pending,
@@ -24,6 +26,7 @@ export function ArcadeInvoice({
   onZapPaid,
 }: {
   qrSrc: string;
+  paymentHash?: string;
   paymentRequest: string;
   waiting: boolean;
   pending: boolean;
@@ -69,21 +72,38 @@ export function ArcadeInvoice({
           />
         ) : null}
 
-        {qrSrc && live && !expired ? (
-          // data: URL from the live BOLT11 — next/image cannot optimize it
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={qrSrc}
-            alt="Lightning invoice QR"
-            className="arcade-pay-qr"
-            width={220}
-            height={220}
-          />
-        ) : (
-          <div className="arcade-pay-qr arcade-pay-qr-wait">
-            {expired ? "invoice expired" : COPY.loadingPeer}
-          </div>
-        )}
+        <InvoiceBurst
+          paymentHash={paymentHash}
+          enabled={live && !expired && !settling}
+          onPaid={() => onZapPaid?.()}
+          status={
+            <p className="arcade-pay-status">
+              {expired
+                ? "invoice expired · generate a new one"
+                : waiting
+                  ? COPY.validating
+                  : pending
+                    ? COPY.loadingPeer
+                    : "scan the qr or copy the invoice"}
+            </p>
+          }
+        >
+          {qrSrc && live && !expired ? (
+            // data: URL from the live BOLT11 — next/image cannot optimize it
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={qrSrc}
+              alt="Lightning invoice QR"
+              className="arcade-pay-qr"
+              width={220}
+              height={220}
+            />
+          ) : (
+            <div className="arcade-pay-qr arcade-pay-qr-wait">
+              {expired ? "invoice expired" : COPY.loadingPeer}
+            </div>
+          )}
+        </InvoiceBurst>
 
         <div className="arcade-pay-actions">
           {expired || (!live && !pending) ? (
@@ -114,15 +134,6 @@ export function ArcadeInvoice({
 
         <p className="arcade-pay-kicker">lightning invoice</p>
         <p className="arcade-pay-memo">{memo}</p>
-        <p className="arcade-pay-status">
-          {expired
-            ? "invoice expired · generate a new one"
-            : waiting
-              ? COPY.validating
-              : pending
-                ? COPY.loadingPeer
-                : "scan the qr or copy the invoice"}
-        </p>
         {remainLabel && !expired ? (
           <p className="arcade-pay-remain">{remainLabel}</p>
         ) : null}

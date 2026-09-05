@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import {
   invoicePaymentHash,
+  invoicePreimage,
   isAlbyConfigured,
   verifyAlbyWebhook,
   webhookEventType,
   webhookInvoicePayload,
 } from "@/lib/alby";
+import { publishSettlement } from "@/lib/lightning-bus";
 import { arcadeLog } from "@/lib/arcade-log";
 import { settleArcadePayment } from "@/lib/arcade-payments";
 import { arcadeStoreKind } from "@/lib/arcade-store";
@@ -60,6 +62,14 @@ export async function POST(request: Request) {
 
   const invoice = webhookInvoicePayload(body);
   const paymentHash = invoice ? invoicePaymentHash(invoice) : "";
+  if (paymentHash) {
+    const preimage = invoice ? invoicePreimage(invoice) : "";
+    publishSettlement({
+      type: "invoice_paid",
+      paymentHash,
+      preimage,
+    });
+  }
   if (!paymentHash) {
     graffitiLog("info", "webhook.ignored_no_hash", {
       eventType: eventType || "unknown",

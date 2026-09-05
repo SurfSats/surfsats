@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { payFetch } from "@/lib/pay-fetch";
 import { useCheckNow } from "@/components/pay/useWebLn";
@@ -204,23 +205,31 @@ export function BottleStage() {
               tone="bottle"
             />
           ) : null}
-          {qrSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={qrSrc}
-              alt="Lightning invoice QR"
-              className="bottle-qr"
-              width={200}
-              height={200}
-            />
-          ) : (
-            <div className="bottle-qr bottle-qr-wait">{COPY.loadingPeer}</div>
-          )}
-          <p className="bottle-pay-status">
-            {waiting
-              ? COPY.validating
-              : `scan · ${BOTTLE_PRICE_SATS} sats`}
-          </p>
+          <InvoiceBurst
+            paymentHash={paymentHash}
+            enabled={Boolean(paymentRequest)}
+            onPaid={kickCheck}
+            status={
+              <p className="bottle-pay-status">
+                {waiting
+                  ? COPY.validating
+                  : `scan · ${BOTTLE_PRICE_SATS} sats`}
+              </p>
+            }
+          >
+            {qrSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={qrSrc}
+                alt="Lightning invoice QR"
+                className="bottle-qr"
+                width={200}
+                height={200}
+              />
+            ) : (
+              <div className="bottle-qr bottle-qr-wait">{COPY.loadingPeer}</div>
+            )}
+          </InvoiceBurst>
           <div className="bottle-pay-actions">
             <button type="button" onClick={() => void copyInvoice()}>
               {copied ? "COPIED" : "COPY INVOICE"}

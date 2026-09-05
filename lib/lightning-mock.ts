@@ -9,6 +9,7 @@ type EnvMap = Record<string, string | undefined>;
 type MockRecord = {
   invoice: AlbyInvoice;
   createdAt: number;
+  preimage?: string;
 };
 
 const mocks = new Map<string, MockRecord>();
@@ -87,6 +88,9 @@ export function getMockInvoice(
   const stored = mocks.get(paymentHash);
   if (stored) {
     const settled = now - stored.createdAt >= MOCK_SETTLE_MS;
+    if (settled && !stored.preimage) {
+      stored.preimage = randomBytes(32).toString("hex");
+    }
     return {
       ...stored.invoice,
       settled,
@@ -94,6 +98,7 @@ export function getMockInvoice(
         ? new Date(stored.createdAt + MOCK_SETTLE_MS).toISOString()
         : null,
       state: settled ? "SETTLED" : "OPEN",
+      preimage: settled ? stored.preimage ?? null : null,
     };
   }
 
@@ -114,5 +119,6 @@ export function getMockInvoice(
     memo: "mock",
     description: "mock",
     type: "incoming",
+    preimage: randomBytes(32).toString("hex"),
   };
 }

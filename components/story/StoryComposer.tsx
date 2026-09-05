@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { payFetch } from "@/lib/pay-fetch";
 import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
@@ -316,30 +317,38 @@ export function StoryComposer({
                 tone="story"
               />
             ) : null}
-            {qrSrc && live && !expired ? (
-              // data: URL from the live BOLT11
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={qrSrc}
-                alt="Lightning invoice QR"
-                className="story-pay-qr"
-                width={320}
-                height={320}
-              />
-            ) : (
-              <div className="story-pay-qr story-pay-qr-wait">
-                {expired ? "seal expired" : COPY.loadingPeer}
-              </div>
-            )}
-            <p className="story-pay-status">
-              {expired
-                ? "invoice expired · generate a new one"
-                : waiting
-                  ? COPY.validating
-                  : pending
-                    ? COPY.loadingPeer
-                    : "scan the qr or copy the invoice"}
-            </p>
+            <InvoiceBurst
+              paymentHash={paymentHash}
+              enabled={live && !expired}
+              onPaid={kickCheck}
+              status={
+                <p className="story-pay-status">
+                  {expired
+                    ? "invoice expired · generate a new one"
+                    : waiting
+                      ? COPY.validating
+                      : pending
+                        ? COPY.loadingPeer
+                        : "scan the qr or copy the invoice"}
+                </p>
+              }
+            >
+              {qrSrc && live && !expired ? (
+                // data: URL from the live BOLT11
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={qrSrc}
+                  alt="Lightning invoice QR"
+                  className="story-pay-qr"
+                  width={320}
+                  height={320}
+                />
+              ) : (
+                <div className="story-pay-qr story-pay-qr-wait">
+                  {expired ? "seal expired" : COPY.loadingPeer}
+                </div>
+              )}
+            </InvoiceBurst>
             {remainLabel && !expired ? (
               <p className="story-pay-remain">{remainLabel}</p>
             ) : null}

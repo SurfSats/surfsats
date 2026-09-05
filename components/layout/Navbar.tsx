@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { SfxToggle } from "@/components/layout/SfxToggle";
 import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
 import {
@@ -42,6 +43,7 @@ export function Navbar() {
         </nav>
 
         <GooeyDropSats className="max-lg:hidden" />
+        <SfxToggle />
 
         <button
           type="button"
