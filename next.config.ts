@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["liquid-gooey", "vgpu"],
+  transpilePackages: [
+    "liquid-gooey",
+    "vgpu",
+    "@getalby/bitcoin-connect",
+    "@getalby/bitcoin-connect-react",
+  ],
   async redirects() {
     return [
       {

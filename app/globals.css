@@ -12,6 +12,11 @@
   --line: rgba(61, 255, 243, 0.22);
   /* Three-band header (Navbar + LiveSignalBar + SettlementTape). SiteChrome overwrites with a live px. */
   --site-chrome-h: 7.25rem;
+  --bc-color-brand: var(--sats);
+  --bc-color-brand-dark: var(--sats-hot);
+  --bc-brand-mix: 80%;
+  --bc-color-brand-button-text: #08080b;
+  --bc-color-brand-button-text-dark: #08080b;
 }
 
 @theme inline {

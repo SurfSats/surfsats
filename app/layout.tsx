@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Oxanium } from "next/font/google";
+import { BitcoinConnectRoot } from "@/components/layout/BitcoinConnectRoot";
 import { Footer } from "@/components/layout/Footer";
 import { LiveSettlementTape } from "@/components/layout/LiveSettlementTape";
 import { LiveSignalBar } from "@/components/layout/LiveSignalBar";
@@ -52,10 +53,11 @@ export default async function RootLayout({
   const snapshot = await getTimechainSnapshot();
 
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body
         className={`${plexMono.variable} ${oxanium.variable} flex min-h-screen flex-col bg-background font-mono text-foreground`}
       >
+        <BitcoinConnectRoot />
         <Watermark />
         <div className="crt-overlay" aria-hidden="true" />
         <div className="noise-overlay" aria-hidden="true" />
