@@ -3,6 +3,7 @@ import { canServeLightning, publicErrorMessage, publicErrorStatus } from "@/lib/
 import { arcadeLog, hashRef } from "@/lib/arcade-log";
 import { settleArcadePayment } from "@/lib/arcade-payments";
 import { arcadeStoreKind } from "@/lib/arcade-store";
+import { announceArcadeTape } from "@/lib/settlement-tape-announce";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,6 +25,12 @@ async function checkHash(paymentHash: string) {
       arcadeLog("error", "check.paid_without_credits", {
         hash: hashRef(paymentHash),
         store: arcadeStoreKind(),
+      });
+    }
+    if (result.ok) {
+      announceArcadeTape({
+        paymentHash,
+        alias: result.player?.alias ?? "anon",
       });
     }
     return NextResponse.json({

@@ -8,6 +8,13 @@ import {
   webhookInvoicePayload,
 } from "@/lib/alby";
 import { publishSettlement } from "@/lib/lightning-bus";
+import {
+  announceArcadeTape,
+  announceGraffitiTape,
+  announceRadioTape,
+  announceStoryTape,
+  announceTabTape,
+} from "@/lib/settlement-tape-announce";
 import { arcadeLog } from "@/lib/arcade-log";
 import { settleArcadePayment } from "@/lib/arcade-payments";
 import { arcadeStoreKind } from "@/lib/arcade-store";
@@ -87,6 +94,7 @@ export async function POST(request: Request) {
         kind: "graffiti",
         store: graffitiStoreKind(),
       });
+      announceGraffitiTape(graffiti.mark);
       return NextResponse.json({
         ok: true,
         paid: true,
@@ -103,6 +111,10 @@ export async function POST(request: Request) {
         live: true,
         kind: "tab",
         store: tabStoreKind(),
+      });
+      announceTabTape({
+        paymentHash,
+        alias: tab.player?.alias ?? "anon",
       });
       return NextResponse.json({
         ok: true,
@@ -121,6 +133,10 @@ export async function POST(request: Request) {
         kind: "arcade",
         store: arcadeStoreKind(),
       });
+      announceArcadeTape({
+        paymentHash,
+        alias: arcade.player?.alias ?? "anon",
+      });
       return NextResponse.json({
         ok: true,
         paid: true,
@@ -138,6 +154,7 @@ export async function POST(request: Request) {
         kind: "story",
         store: storyStoreKind(),
       });
+      await announceStoryTape(story.line);
       return NextResponse.json({
         ok: true,
         paid: true,
@@ -155,6 +172,7 @@ export async function POST(request: Request) {
         kind: "bottle",
         store: bottleStoreKind(),
       });
+      announceRadioTape(bottle.pull);
       return NextResponse.json({
         ok: true,
         paid: true,

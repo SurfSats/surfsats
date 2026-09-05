@@ -3,6 +3,7 @@ import { canServeLightning, publicErrorMessage, publicErrorStatus } from "@/lib/
 import { hashRef, storyLog } from "@/lib/story-log";
 import { settleStoryPayment } from "@/lib/story-payments";
 import { storyStoreKind } from "@/lib/story-store";
+import { announceStoryTape } from "@/lib/settlement-tape-announce";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ async function checkHash(paymentHash: string) {
         store: storyStoreKind(),
       });
     }
+    if (result.line) await announceStoryTape(result.line);
     return NextResponse.json({
       paid: result.paid,
       line: result.line ?? null,

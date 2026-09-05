@@ -738,3 +738,33 @@ export async function getArcadeRecentPlays(machine: ArcadeMachine = ARCADE_MACHI
       createdAt: grant.createdAt,
     }));
 }
+
+export async function getArcadeRecentGrants(limit = 12) {
+  if (isDatabaseConfigured()) {
+    await ensureNeonSchema();
+    const db = sql();
+    const rows = await db`
+      SELECT payment_hash, alias, created_at
+      FROM arcade_grants
+      ORDER BY created_at DESC
+      LIMIT 12
+    `;
+    return rows
+      .map((row) => ({
+        paymentHash: String(row.payment_hash ?? "").trim(),
+        alias: String(row.alias ?? ""),
+        createdAt: iso(row.created_at),
+      }))
+      .filter((row) => row.paymentHash && row.createdAt)
+      .slice(0, limit);
+  }
+  await loadStore();
+  return Object.values(memory.grants)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, limit)
+    .map((grant) => ({
+      paymentHash: grant.paymentHash,
+      alias: grant.alias,
+      createdAt: grant.createdAt,
+    }));
+}

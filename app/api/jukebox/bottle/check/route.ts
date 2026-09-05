@@ -3,6 +3,7 @@ import { canServeLightning, publicErrorMessage, publicErrorStatus } from "@/lib/
 import { bottleLog, hashRef } from "@/lib/bottle-log";
 import { settleBottlePayment } from "@/lib/bottle-payments";
 import { bottleStoreKind } from "@/lib/bottle-store";
+import { announceRadioTape } from "@/lib/settlement-tape-announce";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ async function checkHash(paymentHash: string) {
         store: bottleStoreKind(),
       });
     }
+    if (result.pull) announceRadioTape(result.pull);
     return NextResponse.json({
       paid: result.paid,
       pull: result.pull ?? null,

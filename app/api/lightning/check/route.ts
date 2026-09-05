@@ -3,6 +3,7 @@ import { canServeLightning, publicErrorMessage, publicErrorStatus } from "@/lib/
 import { graffitiLog, hashRef } from "@/lib/graffiti-log";
 import { settleGraffitiPayment } from "@/lib/graffiti-payments";
 import { graffitiStoreKind } from "@/lib/graffiti-store";
+import { announceGraffitiTape } from "@/lib/settlement-tape-announce";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ async function checkHash(paymentHash: string) {
         store: graffitiStoreKind(),
       });
     }
+    if (result.mark) announceGraffitiTape(result.mark);
     return NextResponse.json({
       paid: result.paid,
       mark: result.mark ?? null,

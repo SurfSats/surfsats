@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Oxanium } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
+import { LiveSettlementTape } from "@/components/layout/LiveSettlementTape";
 import { LiveSignalBar } from "@/components/layout/LiveSignalBar";
 import { Navbar } from "@/components/layout/Navbar";
 import { SiteChrome } from "@/components/layout/SiteChrome";
@@ -61,6 +62,7 @@ export default async function RootLayout({
         <SiteChrome>
           <Navbar />
           <LiveSignalBar initial={snapshot} />
+          <LiveSettlementTape />
         </SiteChrome>
         <main className="relative z-0 min-w-0 flex-1">{children}</main>
         <Footer />

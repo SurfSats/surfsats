@@ -10,8 +10,8 @@
   --sats-hot: #ff9a3c;
   --muted: #8b8d99;
   --line: rgba(61, 255, 243, 0.22);
-  /* Two-band header (Navbar + LiveSignalBar). SiteChrome overwrites with a live px. */
-  --site-chrome-h: 5.75rem;
+  /* Three-band header (Navbar + LiveSignalBar + SettlementTape). SiteChrome overwrites with a live px. */
+  --site-chrome-h: 7.25rem;
 }
 
 @theme inline {
@@ -329,6 +329,111 @@ body {
 @media (min-width: 1024px) {
   .live-tape {
     gap: 0.625rem;
+  }
+}
+
+.settle-tape {
+  position: relative;
+  z-index: 1;
+  border-bottom: 1px solid color-mix(in srgb, var(--sats) 28%, transparent);
+  background: rgb(0 0 0 / 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.settle-tape-label {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sats);
+}
+
+.settle-tape-live {
+  margin-left: 0.45rem;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--sats) 70%, transparent);
+}
+
+.settle-tape-track {
+  min-width: 0;
+  flex: 1 1 0%;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 1.1rem,
+    #000 calc(100% - 1.1rem),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 1.1rem,
+    #000 calc(100% - 1.1rem),
+    transparent 100%
+  );
+}
+
+.settle-tape-run {
+  display: flex;
+  width: max-content;
+  gap: 0;
+  animation: settle-tape-scroll 40s linear infinite;
+}
+
+.settle-tape:hover .settle-tape-run,
+.settle-tape:focus-within .settle-tape-run {
+  animation-play-state: paused;
+}
+
+.settle-tape-item {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--foreground) 78%, transparent);
+}
+
+.settle-tape-item:hover,
+.settle-tape-item:focus-visible {
+  color: var(--cyan);
+}
+
+.settle-tape-item[data-fresh] {
+  color: var(--sats);
+}
+
+.settle-tape-item + .settle-tape-item::before {
+  content: "·";
+  margin: 0 1.35rem;
+  color: color-mix(in srgb, var(--sats) 45%, transparent);
+}
+
+@keyframes settle-tape-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 639px) {
+  .settle-tape-live {
+    display: none;
+  }
+
+  .settle-tape-item {
+    letter-spacing: 0.04em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settle-tape-run {
+    animation: none;
   }
 }
 

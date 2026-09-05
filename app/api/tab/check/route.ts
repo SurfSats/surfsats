@@ -7,6 +7,7 @@ import {
 import { hashRef, tabLog } from "@/lib/tab-log";
 import { settleTabPayment } from "@/lib/tab-payments";
 import { tabStoreKind } from "@/lib/tab-store";
+import { announceTabTape } from "@/lib/settlement-tape-announce";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,6 +29,12 @@ async function checkHash(paymentHash: string) {
       tabLog("error", "check.paid_without_credits", {
         hash: hashRef(paymentHash),
         store: tabStoreKind(),
+      });
+    }
+    if (result.ok) {
+      announceTabTape({
+        paymentHash,
+        alias: result.player?.alias ?? "anon",
       });
     }
     return NextResponse.json({
