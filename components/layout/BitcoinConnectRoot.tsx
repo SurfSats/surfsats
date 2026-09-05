@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import {
   applyBitcoinConnectProvider,
   bitcoinConnectInit,
 } from "@/lib/bitcoin-connect";
 
-export function BitcoinConnectRoot() {
+export function BitcoinConnectRoot({ children }: { children?: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     let unsubConnected = () => {};
@@ -41,5 +41,5 @@ export function BitcoinConnectRoot() {
     };
   }, []);
 
-  return null;
+  return children ?? null;
 }

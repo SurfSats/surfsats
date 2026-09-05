@@ -1,8 +1,24 @@
 @import "tailwindcss";
 
+@theme {
+  --color-void: #08080a;
+  --color-violet: #7c3aed;
+  --color-amber: #f59e0b;
+  --color-salt: #f3f4f6;
+  --color-zinc-raw: #27272a;
+  --color-terminal-green: #10b981;
+
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+  --font-display: var(--font-syne), "Syne", "Druk Wide", sans-serif;
+  --font-sans: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+
+  --tracking-brutalist: -0.03em;
+  --tracking-telemetry: 0.08em;
+}
+
 :root {
-  --background: #08080b;
-  --foreground: #eceae4;
+  --background: #08080a;
+  --foreground: #f3f4f6;
   --panel: #111116;
   --cyan: #3dfff3;
   --magenta: #ff2ec4;
@@ -12,11 +28,11 @@
   --line: rgba(61, 255, 243, 0.22);
   /* Three-band header (Navbar + LiveSignalBar + SettlementTape). SiteChrome overwrites with a live px. */
   --site-chrome-h: 7.25rem;
-  --bc-color-brand: var(--sats);
-  --bc-color-brand-dark: var(--sats-hot);
+  --bc-color-brand: #f59e0b;
+  --bc-color-brand-dark: #f59e0b;
   --bc-brand-mix: 80%;
-  --bc-color-brand-button-text: #08080b;
-  --bc-color-brand-button-text-dark: #08080b;
+  --bc-color-brand-button-text: #08080a;
+  --bc-color-brand-button-text-dark: #08080a;
 }
 
 @theme inline {
@@ -29,19 +45,64 @@
   --color-sats-hot: var(--sats-hot);
   --color-muted: var(--muted);
   --color-line: var(--line);
-  --font-sans: var(--font-mono);
-  --font-mono: var(--font-mono);
-  --font-display: var(--font-display);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-radius: 0px !important;
+  }
+
+  body {
+    background-color: var(--color-void);
+    color: var(--color-salt);
+    font-family: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #08080a;
+    border-left: 1px solid #27272a;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border: 1px solid #08080a;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #7c3aed;
+  }
 }
 
 html {
   scroll-behavior: smooth;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+.crt-scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.75) 50%,
+    rgba(0, 0, 0, 0.75)
+  );
+  background-size: 100% 4px;
+  opacity: 0.04;
 }
 
 ::selection {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Oxanium } from "next/font/google";
+import { JetBrains_Mono, Syne } from "next/font/google";
 import { BitcoinConnectRoot } from "@/components/layout/BitcoinConnectRoot";
 import { Footer } from "@/components/layout/Footer";
 import { LiveSettlementTape } from "@/components/layout/LiveSettlementTape";
@@ -11,16 +11,15 @@ import { OG_HOME, SITE_ORIGIN, pageMeta } from "@/lib/seo";
 import { getTimechainSnapshot } from "@/lib/timechain";
 import "./globals.css";
 
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-mono",
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  variable: "--font-jetbrains-mono",
 });
 
-const oxanium = Oxanium({
-  variable: "--font-display",
+const syne = Syne({
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  variable: "--font-syne",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -53,21 +52,23 @@ export default async function RootLayout({
   const snapshot = await getTimechainSnapshot();
 
   return (
-    <html lang="en" data-scroll-behavior="smooth">
-      <body
-        className={`${plexMono.variable} ${oxanium.variable} flex min-h-screen flex-col bg-background font-mono text-foreground`}
-      >
-        <BitcoinConnectRoot />
-        <Watermark />
-        <div className="crt-overlay" aria-hidden="true" />
-        <div className="noise-overlay" aria-hidden="true" />
-        <SiteChrome>
-          <Navbar />
-          <LiveSignalBar initial={snapshot} />
-          <LiveSettlementTape />
-        </SiteChrome>
-        <main className="relative z-0 min-w-0 flex-1">{children}</main>
-        <Footer />
+    <html
+      lang="en"
+      className={`${jetbrainsMono.variable} ${syne.variable}`}
+      data-scroll-behavior="smooth"
+    >
+      <body className="relative flex min-h-screen flex-col bg-void font-mono text-salt">
+        <div className="crt-scanlines" aria-hidden="true" />
+        <BitcoinConnectRoot>
+          <Watermark />
+          <SiteChrome>
+            <Navbar />
+            <LiveSignalBar initial={snapshot} />
+            <LiveSettlementTape />
+          </SiteChrome>
+          <main className="relative z-0 min-w-0 flex-1">{children}</main>
+          <Footer />
+        </BitcoinConnectRoot>
       </body>
     </html>
   );
