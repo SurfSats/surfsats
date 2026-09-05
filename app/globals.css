@@ -1073,10 +1073,17 @@ body {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: #08080b;
+  background-color: #1c0d06;
+  background-image: url("data:image/jpeg;base64,/9j/2wBDABcQERQRDhcUEhQaGBcbIjklIh8fIkYyNSk5UkhXVVFIUE5bZoNvW2F8Yk5QcptzfIeLkpSSWG2grJ+OqoOPko3/2wBDARgaGiIeIkMlJUONXlBejY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY3/wAARCAAQABgDASIAAhEBAxEB/8QAGAAAAgMAAAAAAAAAAAAAAAAAAAMCBAb/xAAeEAEBAAICAgMAAAAAAAAAAAABAgAhAxEScTFh4f/EABUBAQEAAAAAAAAAAAAAAAAAAAIB/8QAFhEBAQEAAAAAAAAAAAAAAAAAAAER/9oADAMBAAIRAxEAPwDKSPkGOgCxQe/rFSjXdL7xsMzQ269ZCixyTF3M+KBrsPnDIcvKO5odPQ6D9wwlcf/Z");
+  background-size: cover;
+  background-position: center right;
 }
 
 .home-stage-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   object-position: center right;
 }
@@ -1136,22 +1143,62 @@ body {
   color: var(--muted);
 }
 
+.home-stage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.75rem;
+  margin-top: 1.45rem;
+  max-width: 38rem;
+}
+
+.home-cta {
+  min-height: 3rem;
+  padding-inline: 1.05rem;
+  text-align: center;
+  text-decoration: none;
+}
+
 .home-walk {
   display: inline-flex;
-  min-height: 2.75rem;
+  min-height: 2.5rem;
   align-items: center;
-  margin-top: 1.75rem;
-  padding: 0.35rem 0.1rem;
+  gap: 0.4rem;
+  margin-top: 1.05rem;
+  padding: 0.25rem 0.1rem;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(236, 234, 228, 0.55);
+  color: rgba(236, 234, 228, 0.5);
+  text-decoration: none;
+}
+
+.home-walk-arrow {
+  width: 0.8rem;
+  height: 0.8rem;
+  flex-shrink: 0;
+  animation: home-walk-bob 1.8s ease-in-out infinite;
 }
 
 .home-walk:hover,
 .home-walk:focus-visible {
   color: var(--cyan);
+}
+
+@keyframes home-walk-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(0.22rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-walk-arrow {
+    animation: none;
+  }
 }
 
 .floor-section {
@@ -1314,6 +1361,10 @@ body {
 }
 
 @media (max-width: 639px) {
+  .home-cta {
+    width: 100%;
+  }
+
   .home-stage-thesis {
     font-size: 1.02rem;
     letter-spacing: 0.018em;
