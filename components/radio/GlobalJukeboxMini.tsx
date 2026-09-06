@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, Radio, Square, Volume2, VolumeX } from "lucide-react";
+import { LoaderCircle, Play, Radio, Square, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { WavlakeV4VStrip } from "@/components/radio/WavlakeV4VStrip";
 import { BrutalistButton } from "@/components/ui/BrutalistButton";
@@ -16,6 +16,7 @@ import {
   parsePlaylistSrc,
   type JukeboxLivePayload,
 } from "@/lib/jukebox";
+import { playMechanicalLatch } from "@/lib/sound";
 
 type GlobalJukeboxMiniProps = {
   streamUrl?: string;
@@ -37,7 +38,8 @@ export function GlobalJukeboxMini({
   metadataUrl = "/api/jukebox/now-playing",
 }: GlobalJukeboxMiniProps) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState("FETCHING_CARRIER_METADATA...");
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState("SYNCING_CARRIER_METADATA...");
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const resolvedRef = useRef("");
@@ -56,11 +58,11 @@ export function GlobalJukeboxMini({
           }
         }
       } catch {
-        // stay on last line
+        // keep last line
       }
       if (mounted) {
         setCurrentTrack((prev) =>
-          prev === "FETCHING_CARRIER_METADATA..." ? NOW_PLAYING_STANDBY : prev,
+          prev === "SYNCING_CARRIER_METADATA..." ? NOW_PLAYING_STANDBY : prev,
         );
       }
     }
@@ -76,11 +78,16 @@ export function GlobalJukeboxMini({
   async function togglePlay() {
     const el = audioRef.current;
     if (!el) return;
+    playMechanicalLatch();
+
     if (isPlaying) {
       el.pause();
       setIsPlaying(false);
+      setIsLoading(false);
       return;
     }
+
+    setIsLoading(true);
     const src =
       resolvedRef.current ||
       (await resolveStreamUrl(STREAM_AUDIO_URL, streamUrl));
@@ -94,58 +101,104 @@ export function GlobalJukeboxMini({
       setIsPlaying(!el.paused);
     } catch {
       setIsPlaying(false);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   function toggleMute() {
     const el = audioRef.current;
     if (!el) return;
+    playMechanicalLatch();
     const next = !isMuted;
     el.muted = next;
     setIsMuted(next);
   }
 
+  const carrier = isLoading
+    ? "BUFFERING"
+    : isPlaying
+      ? "TRANSMITTING"
+      : "STANDBY";
+  const liveState = isLoading ? "BUFFERING" : isPlaying ? "LIVE" : "OFFLINE";
+
   return (
     <TerminalCard
-      title="GLOBAL_JUKEBOX_RADIO"
-      tag={`AUDIO_FEED // ${STREAM_BITRATE_LABEL}`}
-      status={isPlaying ? "live" : "active"}
+      title="GLOBAL_JUKEBOX_MINI"
+      tag={`AUDIO_STREAM // ${STREAM_BITRATE_LABEL}`}
+      status={isPlaying ? "live" : isLoading ? "warning" : "active"}
     >
       <audio
         ref={audioRef}
         preload="none"
         autoPlay={false}
         playsInline
-        onPause={() => setIsPlaying(false)}
-        onPlay={() => setIsPlaying(true)}
+        onPause={() => {
+          setIsPlaying(false);
+          setIsLoading(false);
+        }}
+        onPlay={() => {
+          setIsPlaying(true);
+          setIsLoading(false);
+        }}
+        onWaiting={() => {
+          if (audioRef.current && !audioRef.current.paused) setIsLoading(true);
+        }}
+        onPlaying={() => {
+          setIsPlaying(true);
+          setIsLoading(false);
+        }}
       />
 
-      <div className="flex flex-col items-stretch justify-between gap-4 font-mono md:flex-row md:items-center">
+      <div className="flex flex-col items-stretch justify-between gap-4 font-mono text-xs md:flex-row md:items-center">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="shrink-0 border border-zinc-raw bg-void p-2 text-salt">
-            <Radio
-              className={cn(
-                "h-5 w-5",
-                isPlaying ? "animate-pulse text-terminal-green" : "text-zinc-raw",
-              )}
-            />
+          <div className="shrink-0 border border-zinc-raw bg-void p-2">
+            {isLoading ? (
+              <LoaderCircle className="h-5 w-5 animate-spin text-amber" />
+            ) : (
+              <Radio
+                className={cn(
+                  "h-5 w-5",
+                  isPlaying
+                    ? "animate-pulse text-terminal-green"
+                    : "text-zinc-raw",
+                )}
+              />
+            )}
           </div>
           <div className="min-w-0 overflow-hidden">
             <div className="flex items-center gap-2 text-[10px] tracking-telemetry text-zinc-raw uppercase">
               <span
                 className={cn(
                   "inline-block h-1.5 w-1.5",
-                  isPlaying
-                    ? "animate-pulse bg-terminal-green"
-                    : "bg-zinc-raw",
+                  isLoading
+                    ? "animate-pulse bg-amber"
+                    : isPlaying
+                      ? "animate-pulse bg-terminal-green"
+                      : "bg-zinc-raw",
                 )}
                 aria-hidden="true"
               />
-              <span>STATUS: {isPlaying ? "TRANSMITTING" : "STANDBY"}</span>
+              <span>CARRIER: {carrier}</span>
+              <span aria-hidden="true">|</span>
+              <span
+                className={cn(
+                  isLoading
+                    ? "text-amber"
+                    : isPlaying
+                      ? "text-terminal-green"
+                      : "text-zinc-raw",
+                )}
+              >
+                {liveState}
+              </span>
               <span aria-hidden="true">•</span>
               <span className="text-amber">V4V STREAM</span>
             </div>
-            <p className="mt-0.5 truncate text-xs font-bold tracking-wider text-salt">
+            <p
+              className="mt-0.5 truncate text-xs font-bold tracking-wider text-salt"
+              title={currentTrack}
+            >
               NOW_PLAYING · {currentTrack}
             </p>
           </div>
@@ -163,32 +216,38 @@ export function GlobalJukeboxMini({
               key={index}
               className={cn(
                 "w-0.5 bg-violet",
-                isPlaying ? "jukebox-eq-bar" : "h-2",
+                isPlaying && !isLoading ? "jukebox-eq-bar" : "h-2",
               )}
               style={{ animationDelay: `${index * 70}ms` }}
             />
           ))}
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 border-t border-zinc-raw pt-2 md:border-t-0 md:pt-0">
+        <div className="flex shrink-0 items-center gap-2 border-t border-zinc-raw pt-3 md:border-t-0 md:pt-0">
           <BrutalistButton
             size="sm"
             variant={isPlaying ? "amber" : "primary"}
-            className="flex items-center gap-2 px-4"
+            className="flex min-w-[120px] items-center justify-center gap-2 px-5"
+            disabled={isLoading && !isPlaying}
             onClick={() => {
               void togglePlay();
             }}
-            aria-label={isPlaying ? "Stop live stream" : "Listen live"}
+            aria-label={isPlaying ? "Stop live stream" : "Play live stream"}
           >
             {isPlaying ? (
               <>
                 <Square className="h-3.5 w-3.5 fill-void" />
                 <span>STOP</span>
               </>
+            ) : isLoading ? (
+              <>
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                <span>SYNCING</span>
+              </>
             ) : (
               <>
                 <Play className="h-3.5 w-3.5 fill-salt" />
-                <span>LISTEN LIVE</span>
+                <span>PLAY</span>
               </>
             )}
           </BrutalistButton>

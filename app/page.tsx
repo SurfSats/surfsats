@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { HomeClose } from "@/components/home/HomeClose";
 import { MachineDock } from "@/components/home/MachineDock";
 import { RssFeedStrip } from "@/components/home/RssFeedStrip";
+import { TheMoneyCard } from "@/components/home/TheMoneyCard";
 import { TerminalHero } from "@/components/home/TerminalHero";
 import { HydrographicRelayHud } from "@/components/nostr/HydrographicRelayHud";
 import { GlobalJukeboxMini } from "@/components/radio/GlobalJukeboxMini";
@@ -46,7 +47,10 @@ export default async function HomePage() {
           <p className="mb-6 font-mono text-[11px] tracking-telemetry text-zinc-raw uppercase">
             DISPATCHES // SYNDICATION
           </p>
-          <RssFeedStrip items={feedItems} />
+          <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+            <RssFeedStrip items={feedItems} />
+            <TheMoneyCard />
+          </div>
         </Container>
       </section>
       <BathymetricPcbDivider />
