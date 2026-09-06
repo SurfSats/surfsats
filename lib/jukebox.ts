@@ -9,6 +9,9 @@ export const JUKEBOX_TELEGRAM_URL = "https://t.me/noderunnersradio";
 
 export const STREAM_LIVE_URL = "https://noderunnersradio.com/";
 export const STREAM_AUDIO_URL = "https://noderunnersradio.com/api/listen.m3u";
+export const STREAM_ICECAST_URL = "https://stream.noderunnersradio.com/stream";
+export const STREAM_BITRATE_LABEL = "128KBPS";
+export const NOW_PLAYING_STANDBY = "GLOBAL_JUKEBOX // V4V_SUBSEA_RADIO";
 export const FUNDING_URL = "https://noderunnersradio.com/funding";
 export const NOWPLAYING_URL = "https://noderunnersradio.com/api/nowplaying";
 export const NOWPLAYING_CACHE_MS = 12_000;
@@ -101,6 +104,24 @@ export function liveTrackFromPayload(
     artist: payload.artist ?? "",
     album: payload.album,
   };
+}
+
+export function parsePlaylistSrc(text: string): string {
+  const line = text
+    .split(/\r?\n/)
+    .map((entry) => entry.trim())
+    .find(
+      (entry) =>
+        /^https?:\/\//i.test(entry) && !entry.toLowerCase().includes(".m3u"),
+    );
+  return line || "";
+}
+
+export function formatNowPlayingLine(payload: JukeboxLivePayload): string {
+  const track = liveTrackFromPayload(payload);
+  if (!track) return NOW_PLAYING_STANDBY;
+  const artist = track.artist.trim();
+  return artist ? `${artist} — ${track.title}` : track.title;
 }
 
 let liveCache: { at: number; payload: JukeboxLivePayload } | null = null;
