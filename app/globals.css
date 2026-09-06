@@ -6951,32 +6951,19 @@ html[data-arcade-play="wave"] .cab-crt-live .cab-crt-scan {
   width: 100%;
   flex-direction: column;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.55rem;
   text-align: center;
-}
-
-.settle-kicker {
-  margin: 0;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--cyan);
 }
 
 .settle-title {
   margin: 0;
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(1.35rem, 4vw, 1.7rem);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: clamp(1.05rem, 3.4vw, 1.35rem);
   font-weight: 800;
-  letter-spacing: 0.06em;
-  line-height: 0.95;
+  letter-spacing: 0.16em;
+  line-height: 1.05;
   text-transform: uppercase;
-  color: var(--sats);
-}
-
-.settle-ritual[data-phase="settled"] .settle-title {
-  color: var(--cyan);
+  color: #ff6a00;
 }
 
 .settle-sub {
@@ -6985,93 +6972,140 @@ html[data-arcade-play="wave"] .cab-crt-live .cab-crt-scan {
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #b8aea0;
 }
 
-.settle-well {
-  position: relative;
+.settle-plate-well {
+  display: grid;
   width: 100%;
-  height: 9.5rem;
-  overflow: hidden;
-  border: 1px solid rgb(61 255 243 / 0.28);
-  background: #07090c;
+  place-items: center;
+}
+
+.settle-mark-svg {
+  display: block;
+  width: min(12.5rem, 72vw);
+  height: min(12.5rem, 72vw);
+  overflow: visible;
+}
+
+.settle-plate {
+  fill: #07090c;
+}
+
+.settle-ghost {
+  fill: none;
+  stroke: #f4efe6;
+  stroke-width: 3;
+}
+
+.settle-ghost-wrap {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0.4;
+}
+
+.settle-ring {
+  fill: none;
+  stroke: #f4efe6;
+  stroke-width: 5;
+  stroke-linecap: square;
 }
 
 .settle-wave {
-  display: block;
-  width: 100%;
-  height: 100%;
+  fill: #f4efe6;
+  fill-opacity: 0;
+  stroke: #f4efe6;
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
-.settle-meter {
-  position: absolute;
-  right: 0.6rem;
-  bottom: 0.55rem;
-  left: 0.6rem;
-  height: 2px;
-  background: rgb(255 255 255 / 0.12);
+.settle-bolt {
+  fill: none;
+  stroke: #ff6a00;
+  stroke-width: 4;
+  stroke-linejoin: miter;
+  stroke-linecap: square;
 }
 
-.settle-meter b {
-  display: block;
-  height: 100%;
-  background: var(--sats);
-  box-shadow: 0 0 8px var(--sats);
+.settle-bolt-fill {
+  fill: #ff6a00;
+  opacity: 0;
 }
 
-.settle-mark {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  display: grid;
-  width: 2.4rem;
-  height: 2.4rem;
-  place-items: center;
-  border: 1px solid var(--cyan);
-  color: var(--cyan);
-  transform: translate(-50%, -50%);
+.settle-btc {
+  fill: none;
+  stroke: #ff6a00;
+  stroke-width: 4.2;
+  stroke-linejoin: miter;
+  stroke-linecap: square;
 }
 
-.settle-mark svg {
-  width: 1.2rem;
-  height: 1.2rem;
+.settle-hemi {
+  opacity: 0;
 }
 
-.arcade-pay-panel .settle-kicker {
-  color: #0b6e6a;
+.settle-hemi-l {
+  fill: rgb(244 239 230 / 0.14);
 }
 
-.arcade-pay-panel .settle-title {
-  color: #ff7a18;
+.settle-hemi-r {
+  fill: rgb(255 106 0 / 0.16);
 }
 
-.arcade-pay-panel .settle-ritual[data-phase="settled"] .settle-title {
-  color: #0b6e6a;
+.settle-slash {
+  stroke: #ff6a00;
+  stroke-width: 3;
+  stroke-linecap: square;
 }
 
-.arcade-pay-panel .settle-sub {
+.settle-slash-wrap {
+  opacity: 0;
+}
+
+.settle-stamp-wrap {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.settle-stamp {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  fill: #ff6a00;
+}
+
+.settle-ritual[data-reduced="true"] .settle-ghost-wrap,
+.settle-ritual[data-reduced="true"] .settle-slash-wrap {
+  opacity: 0;
+}
+
+.settle-ritual[data-reduced="true"] .settle-hemi,
+.settle-ritual[data-reduced="true"] .settle-bolt-fill,
+.settle-ritual[data-reduced="true"] .settle-stamp-wrap {
+  opacity: 1;
+}
+
+.settle-ritual[data-reduced="true"] .settle-wave {
+  fill-opacity: 1;
+}
+
+.graf-invoice-pane .settle-mark-svg {
+  width: min(9.75rem, 62vw);
+  height: min(9.75rem, 62vw);
+}
+
+.arcade-pay-panel .settle-sub,
+.story-pay-panel .settle-sub {
   color: #5a4030;
 }
 
-.story-pay-panel .settle-kicker {
-  color: #6a4a22;
-}
-
-.story-pay-panel .settle-title {
-  color: #ff7a18;
-}
-
-.story-pay-panel .settle-ritual[data-phase="settled"] .settle-title {
-  color: #0b6e6a;
-}
-
-.story-pay-panel .settle-sub {
-  color: #6a4a22;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .settle-wave {
-    display: none;
+  .settle-ghost-wrap,
+  .settle-slash-wrap {
+    opacity: 0;
   }
 }
 

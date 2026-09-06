@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["liquid-gooey", "vgpu"],
+  transpilePackages: ["liquid-gooey", "vgpu", "animejs"],
   async redirects() {
     return [
       {

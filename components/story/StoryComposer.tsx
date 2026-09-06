@@ -296,10 +296,7 @@ export function StoryComposer({
           />
           <div className="story-pay-panel">
             {settling ? (
-              <SettleRitual
-                subtitle={`one sentence · ${STORY_PRICE_SATS} sats`}
-                onComplete={finishSettle}
-              />
+              <SettleRitual machine="story" onComplete={finishSettle} />
             ) : (
             <>
             <p className="story-pay-kicker">lightning seal</p>

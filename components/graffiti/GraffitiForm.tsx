@@ -396,10 +396,7 @@ export function GraffitiForm({
       {step === "invoice" ? (
         <div id="graf-invoice" className="graf-invoice-pane">
           {settling ? (
-            <SettleRitual
-              subtitle={`spray · ${GRAFFITI_PRICE_SATS} sats · ${GRAFFITI_TTL_HOURS}h`}
-              onComplete={finishSettle}
-            />
+            <SettleRitual machine="graffiti" onComplete={finishSettle} />
           ) : (
             <>
               <p className="graf-invoice-kicker">

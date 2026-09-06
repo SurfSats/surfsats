@@ -504,6 +504,7 @@ export function TabApp({
           invoiceError={invoiceError}
           memo={`${ARCADE_CREDITS_PER_PAY} credits · THE TAB · SurfSats Arcade`}
           titleId="arcade-pay-title-tab"
+          machine="tab"
           settling={settling}
           onSettled={finishSettle}
           onCopy={() => void copyInvoice()}

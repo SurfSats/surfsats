@@ -7,6 +7,7 @@ import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual } from "@/components/pay/SettleRitual";
 import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
 import { COPY } from "@/lib/copy";
+import type { SettleMachine } from "@/lib/settle-ritual";
 
 export function ArcadeInvoice({
   qrSrc,
@@ -20,6 +21,7 @@ export function ArcadeInvoice({
   invoiceError,
   memo = `${ARCADE_CREDITS_PER_PAY} credits · WAVE RUNNER · SurfSats Arcade`,
   titleId = "arcade-pay-title",
+  machine = "arcade",
   settling = false,
   onSettled,
   onCopy,
@@ -38,6 +40,7 @@ export function ArcadeInvoice({
   invoiceError: string | null;
   memo?: string;
   titleId?: string;
+  machine?: SettleMachine;
   settling?: boolean;
   onSettled?: () => void;
   onCopy: () => void;
@@ -58,7 +61,7 @@ export function ArcadeInvoice({
       />
       <div className="arcade-pay-panel">
         {settling && onSettled ? (
-          <SettleRitual subtitle={memo} titleId={titleId} onComplete={onSettled} />
+          <SettleRitual machine={machine} titleId={titleId} onComplete={onSettled} />
         ) : (
           <>
         <h2 id={titleId} className="arcade-pay-title">

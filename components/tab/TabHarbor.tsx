@@ -581,6 +581,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
           invoiceError={invoiceError}
           memo={`${TAB_CREDITS_PER_PAY} credits · isolated pool · THE TAB`}
           titleId="tab-pay-title"
+          machine="tab"
           settling={settling}
           onSettled={finishSettle}
           onCopy={() => void copyInvoice()}
