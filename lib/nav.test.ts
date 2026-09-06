@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { footerLinks, kitNavLinks, primaryNavLinks } from "./nav.ts";
+import { footerLinks, kitNavLinks, primaryNavLinks, readoutNavLinks } from "./nav.ts";
 
 test("DIRTY FIAT footer dest is /fiat, not /dirty-fiat", () => {
   const hit = footerLinks.find((link) =>
@@ -28,4 +28,10 @@ test("kit nav includes the sandbox", () => {
   const hit = kitNavLinks.find((link) => link.href === "/sandbox");
   assert.ok(hit);
   assert.equal(hit.label, "Sandbox");
+});
+
+test("readouts include chain telemetry", () => {
+  const hit = readoutNavLinks.find((link) => link.href === "/chain");
+  assert.ok(hit);
+  assert.equal(hit.label, "Chain");
 });

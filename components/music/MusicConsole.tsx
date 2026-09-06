@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LiveStream } from "@/components/jukebox/LiveStream";
+import { WavlakeV4VStrip } from "@/components/radio/WavlakeV4VStrip";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { RadioDeck } from "@/components/music/RadioDeck";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -78,6 +79,9 @@ export function MusicConsole() {
               located on a pirate ship sailing in international waters
             </p>
             <LiveStream />
+            <div className="mt-4">
+              <WavlakeV4VStrip />
+            </div>
           </div>
         </>
       }

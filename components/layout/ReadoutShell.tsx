@@ -3,10 +3,11 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { readoutNavLinks } from "@/lib/nav";
 
-export type ReadoutName = "tidechain" | "lineup" | "signal" | "fiat";
+export type ReadoutName = "tidechain" | "chain" | "lineup" | "signal" | "fiat";
 
 const HREF: Record<ReadoutName, string> = {
   tidechain: "/tidechain",
+  chain: "/chain",
   lineup: "/lineup",
   signal: "/signal",
   fiat: "/fiat",

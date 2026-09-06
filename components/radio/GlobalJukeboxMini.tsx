@@ -2,6 +2,7 @@
 
 import { Play, Radio, Square, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { WavlakeV4VStrip } from "@/components/radio/WavlakeV4VStrip";
 import { BrutalistButton } from "@/components/ui/BrutalistButton";
 import { TerminalCard } from "@/components/ui/TerminalCard";
 import { cn } from "@/lib/cn";
@@ -207,6 +208,9 @@ export function GlobalJukeboxMini({
             )}
           </BrutalistButton>
         </div>
+      </div>
+      <div className="mt-4">
+        <WavlakeV4VStrip />
       </div>
     </TerminalCard>
   );

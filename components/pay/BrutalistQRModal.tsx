@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { BrutalistButton } from "@/components/ui/BrutalistButton";
 import { TerminalCard } from "@/components/ui/TerminalCard";
 import { useSurfSatsWebLN } from "@/components/pay/useSurfSatsWebLN";
+import { useNWC } from "@/hooks/useNWC";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 
 type BrutalistQRModalProps = {
@@ -34,6 +35,10 @@ export function BrutalistQRModal({
   );
   const { isConnected, isConnecting, connectWallet, send21SatZap, error } =
     useSurfSatsWebLN();
+  const nwc = useNWC();
+  const [nwcDraft, setNwcDraft] = useState("");
+  const [nwcError, setNwcError] = useState<string | null>(null);
+  const [nwcOpen, setNwcOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !bolt11Invoice) return;
@@ -72,21 +77,31 @@ export function BrutalistQRModal({
     }
   }
 
+  async function settle(preimage: string) {
+    setFlash(true);
+    onPreimageConfirmed?.(preimage);
+    window.setTimeout(() => {
+      setFlash(false);
+      setZapping(false);
+      onClose();
+    }, 400);
+  }
+
   async function handleZap() {
-    if (!isConnected) {
-      await connectWallet();
-      return;
-    }
     setZapping(true);
     try {
+      if (nwc.isConnected) {
+        const paid = await nwc.payInvoice(bolt11Invoice);
+        await settle(paid.preimage);
+        return;
+      }
+      if (!isConnected) {
+        setZapping(false);
+        await connectWallet();
+        return;
+      }
       await send21SatZap(bolt11Invoice, (preimage) => {
-        setFlash(true);
-        onPreimageConfirmed?.(preimage);
-        window.setTimeout(() => {
-          setFlash(false);
-          setZapping(false);
-          onClose();
-        }, 400);
+        void settle(preimage);
       });
     } catch {
       setZapping(false);
@@ -94,12 +109,25 @@ export function BrutalistQRModal({
     }
   }
 
+  function handleNwcPair() {
+    setNwcError(null);
+    try {
+      nwc.connect(nwcDraft);
+      setNwcDraft("");
+      setNwcOpen(false);
+    } catch (err) {
+      setNwcError(err instanceof Error ? err.message : "NWC_PAIR_FAILED");
+    }
+  }
+
   const preview = bolt11Invoice.slice(0, 36);
-  const zapLabel = isConnected
-    ? `ONE-TAP ${amountSats} SAT DROP`
-    : isConnecting
-      ? "CONNECTING…"
-      : "CONNECT WALLET";
+  const zapLabel = nwc.isConnected
+    ? `NWC ${amountSats} SAT DROP`
+    : isConnected
+      ? `ONE-TAP ${amountSats} SAT DROP`
+      : isConnecting
+        ? "CONNECTING…"
+        : "CONNECT WALLET";
 
   return createPortal(
     <div
@@ -219,6 +247,55 @@ export function BrutalistQRModal({
               <Zap className="h-4 w-4 fill-void" />
               {zapLabel}
             </BrutalistButton>
+          </div>
+
+          <div className="mt-3 border-t border-zinc-raw pt-3">
+            {nwc.isConnected ? (
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-mono text-[10px] tracking-telemetry text-terminal-green uppercase">
+                  NWC_PAIRED
+                </p>
+                <BrutalistButton
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => nwc.disconnect()}
+                >
+                  DISCONNECT
+                </BrutalistButton>
+              </div>
+            ) : (
+              <>
+                <BrutalistButton
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setNwcOpen((open) => !open)}
+                >
+                  {nwcOpen ? "HIDE_NWC" : "PAIR_NWC"}
+                </BrutalistButton>
+                {nwcOpen ? (
+                  <div className="mt-2 flex flex-col gap-2">
+                    <input
+                      value={nwcDraft}
+                      onChange={(event) => setNwcDraft(event.target.value)}
+                      placeholder="nostr+walletconnect://..."
+                      className="w-full border border-zinc-raw bg-void px-3 py-2 font-mono text-[10px] text-salt focus:border-violet focus:outline-none"
+                    />
+                    <BrutalistButton
+                      size="sm"
+                      variant="primary"
+                      onClick={handleNwcPair}
+                    >
+                      SAVE_PAIRING
+                    </BrutalistButton>
+                    {nwcError ? (
+                      <p className="font-mono text-[10px] tracking-telemetry text-amber uppercase">
+                        {nwcError}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+              </>
+            )}
           </div>
         </TerminalCard>
       </div>

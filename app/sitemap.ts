@@ -13,6 +13,7 @@ const routes = [
   "/tab",
   "/graffiti",
   "/tidechain",
+  "/chain",
   "/lineup",
   "/signal",
   "/tools",

@@ -10,6 +10,7 @@ export const primaryNavLinks: NavLink[] = [
 
 export const readoutNavLinks: NavLink[] = [
   { href: "/tidechain", label: "Tidechain" },
+  { href: "/chain", label: "Chain" },
   { href: "/lineup", label: "Lineup" },
   { href: "/signal", label: "Signal" },
   { href: "/fiat", label: "DIRTY FIAT" },
@@ -46,6 +47,7 @@ export const COMPACT_HEADER_PREFIXES = [
   "/tab",
   "/story",
   "/tidechain",
+  "/chain",
   "/lineup",
 ] as const;
 

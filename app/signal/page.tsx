@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ReadoutShell } from "@/components/layout/ReadoutShell";
+import { ZapThreadsFeed } from "@/components/nostr/ZapThreadsFeed";
 import { FeedWire } from "@/components/news/FeedWire";
 import { HandpickedCard } from "@/components/news/HandpickedCard";
 import { SignalWriting } from "@/components/news/SignalWriting";
@@ -77,6 +78,11 @@ export default async function SignalPage() {
 
         <section id="wire" className="signal-band">
           <FeedWire items={feedItems} sources={sources} />
+        </section>
+
+        <section id="zapthreads" className="signal-band">
+          <p className="signal-band-label">zapthreads</p>
+          <ZapThreadsFeed anchorTag="surfsats_dispatches" />
         </section>
       </div>
     </ReadoutShell>

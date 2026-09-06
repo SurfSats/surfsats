@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { ZapThreadsFeed } from "@/components/nostr/ZapThreadsFeed";
 import { StoryApp } from "@/components/story/StoryApp";
+import { Container } from "@/components/ui/Container";
 import { pageMeta } from "@/lib/seo";
 import { STORY_PRICE_SATS } from "@/lib/story";
 
@@ -24,6 +26,14 @@ export default function StoryPage() {
         <div className="story-bg-scrim" />
       </div>
       <StoryApp />
+      <section className="relative z-[1] bg-void">
+        <Container className="py-8 sm:py-10">
+          <p className="mb-6 font-mono text-[11px] tracking-telemetry text-zinc-raw uppercase">
+            ZAPTHREADS // STORY_CHAIN
+          </p>
+          <ZapThreadsFeed anchorTag="surfsats_story_chain" />
+        </Container>
+      </section>
     </div>
   );
 }
