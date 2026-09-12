@@ -8241,6 +8241,10 @@ body:has(.tab-page) .site-watermark {
   display: none;
 }
 
+.tab-sit-stage {
+  display: contents;
+}
+
 .tab-stage-night {
   position: absolute;
   inset: 0;
@@ -8258,6 +8262,8 @@ body:has(.tab-page) .site-watermark {
 .tab-vignette {
   position: absolute;
   inset: 0;
+  z-index: 0;
+  pointer-events: none;
   background:
     radial-gradient(ellipse at 24% 72%, transparent 0 42%, rgba(0, 0, 0, 0.32) 82%),
     linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, transparent 40%, rgba(0, 0, 0, 0.28) 100%),

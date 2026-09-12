@@ -9,6 +9,7 @@ import { payFetch } from "@/lib/pay-fetch";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
+import { TabSitBeat } from "@/components/tab/TabSitBeat";
 import { TabTalk } from "@/components/tab/TabTalk";
 import {
   loadBarTree,
@@ -47,6 +48,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
   const [treeError, setTreeError] = useState(!initialTree);
   const [node, setNode] = useState<BarNode | null>(null);
   const [mode, setMode] = useState<Mode>("idle");
+  const [sitBeat, setSitBeat] = useState(0);
   const [flags, setFlags] = useState<string[]>([]);
   const [highScores, setHighScores] = useState<TabHighScore[]>([]);
   const [lastPlayers, setLastPlayers] = useState<TabRecent[]>([]);
@@ -200,6 +202,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
             setMode("idle");
             setPaymentHash("");
             setPaymentRequest("");
+            setSitBeat((n) => n + 1);
             void loadBoards();
           });
           return;
@@ -397,8 +400,12 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
           </p>
         }
         stage={
-          <>
-            <div className="tab-stage-night" aria-hidden="true">
+          <TabSitBeat beat={sitBeat}>
+            <div
+              className="tab-stage-night"
+              aria-hidden="true"
+              data-tab-sit=""
+            >
               <Image
                 src="/tab/art/tab-night.jpg"
                 alt=""
@@ -407,9 +414,12 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                 sizes="(max-width: 1023px) 100vw, 65vw"
                 className="tab-night-img"
               />
-              <div className="tab-vignette" />
             </div>
-            <figure className={`tab-keep is-${face}`}>
+            <div className="tab-vignette" aria-hidden="true" data-tab-sit="" />
+            <figure
+              className={`tab-keep is-${face}`}
+              data-tab-sit-fade=""
+            >
               <Image
                 src={portrait}
                 alt=""
@@ -419,7 +429,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                 priority
               />
             </figure>
-          </>
+          </TabSitBeat>
         }
         tabs={[
           { id: "sit", label: "SIT" },
