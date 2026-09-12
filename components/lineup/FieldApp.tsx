@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { LineupCanvas, hoverCopy } from "@/components/lineup/LineupCanvas";
 import { useLineupSnapshot } from "@/components/lineup/useLineupSnapshot";
 import { useMempoolFeed } from "@/components/lineup/useMempoolFeed";
+import { HudWake } from "@/components/layout/HudWake";
 import {
   MEMPOOL_SITE,
   asTxid,
@@ -90,7 +91,7 @@ export function FieldApp({ initial }: { initial: LineupSnapshot }) {
 
   return (
     <div className="lineup-field">
-      <header className="lineup-hud">
+      <HudWake as="header" className="lineup-hud">
         <h1 className="lineup-kicker">LINEUP · value on the wire</h1>
         <p className="lineup-hud-line">
           <span>
@@ -124,7 +125,7 @@ export function FieldApp({ initial }: { initial: LineupSnapshot }) {
             autoComplete="off"
           />
         </form>
-      </header>
+      </HudWake>
 
       <div className="lineup-stage">
         <LineupCanvas
@@ -154,11 +155,11 @@ export function FieldApp({ initial }: { initial: LineupSnapshot }) {
         ) : null}
       </div>
 
-      <nav className="lineup-rail" aria-label="Recent blocks">
+      <HudWake as="nav" className="lineup-rail" aria-label="Recent blocks">
         {rail.map((block) => (
           <SealedSeal key={block.hash} block={block} />
         ))}
-      </nav>
+      </HudWake>
     </div>
   );
 }

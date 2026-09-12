@@ -2344,6 +2344,21 @@ body {
   min-height: 0;
 }
 
+[data-hud-wake]:not(.is-in) {
+  opacity: 0;
+}
+
+[data-hud-wake].is-in {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-hud-wake] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .signal-kicker {
   margin: 0;
   max-width: 36rem;

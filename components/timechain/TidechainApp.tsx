@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { TideClock, swellLabel } from "@/components/timechain/TideClock";
 import { useTimechainSnapshot } from "@/components/timechain/useTimechainSnapshot";
+import { HudWake } from "@/components/layout/HudWake";
 import { cn } from "@/lib/cn";
 import { COPY } from "@/lib/copy";
 import {
@@ -58,7 +59,7 @@ export function TidechainApp({ initial }: { initial: TimechainSnapshot }) {
   }
 
   return (
-    <div className="tidechain-monitor">
+    <HudWake className="tidechain-monitor">
       <header className="tide-hud">
         <h1 className="tide-hero">the chain is the clock</h1>
         <p className="tide-hud-line">
@@ -167,7 +168,7 @@ export function TidechainApp({ initial }: { initial: TimechainSnapshot }) {
         </span>
         <span>the chain is the clock</span>
       </footer>
-    </div>
+    </HudWake>
   );
 }
 
