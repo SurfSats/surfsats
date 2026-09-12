@@ -3170,7 +3170,14 @@ body:has(.graffiti-page) .site-watermark {
 .graf-inner {
   display: inline-block;
   max-width: 100%;
-  animation: graf-in 0.55s ease-out both;
+}
+
+.graf-write-on:not(.is-in) {
+  clip-path: inset(0 100% 0 0);
+}
+
+.graf-write-on.is-in {
+  clip-path: none;
 }
 
 .graf-ghost {
@@ -3244,12 +3251,6 @@ body:has(.graffiti-page) .site-watermark {
 
 .graf-fresh {
   z-index: 5;
-}
-
-.graf-fresh .graf-inner {
-  animation:
-    graf-in 0.45s ease-out both,
-    graf-pulse 0.95s ease-in-out 0.4s 4;
 }
 
 @keyframes graf-in {
@@ -8848,6 +8849,7 @@ body:has(.tab-page) .site-watermark {
   .tube-glow,
   .graf-inner,
   .graf-fresh .graf-inner,
+  .graf-write-on,
   .graf-wait-dot,
   .swell-art img,
   .floor-object,
