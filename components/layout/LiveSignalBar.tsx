@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { animate } from "animejs/animation";
+import { set as setStyle } from "animejs/utils";
 import { Container } from "@/components/ui/Container";
 import { useTimechainSnapshot } from "@/components/timechain/useTimechainSnapshot";
 import { cn } from "@/lib/cn";
 import { swellFromPct } from "@/lib/swell";
 import { hiddenTickerIds } from "@/lib/ticker-fit";
+import {
+  tickerTickMotion,
+  tickerValueChanged,
+} from "@/lib/ticker-tick";
 import {
   type TimechainSnapshot,
   formatChange,
@@ -209,13 +215,81 @@ function visualTickerTokens(tape: HTMLElement) {
     });
 }
 
-function SwellTicker({ pct }: { pct: number | null }) {
-  if (pct === null) return <span>swell=unknown</span>;
-  const swell = swellFromPct(pct);
+type Tickable = {
+  pause: () => unknown;
+  cancel: () => unknown;
+};
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function TickerPulse({
+  value,
+  className,
+  children,
+}: {
+  value: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  const nodeRef = useRef<HTMLSpanElement>(null);
+  const prevRef = useRef<string | null>(null);
+  const tweenRef = useRef<Tickable | null>(null);
+
+  useLayoutEffect(() => {
+    const prior = prevRef.current;
+    prevRef.current = value;
+    const node = nodeRef.current;
+    if (!node || !tickerValueChanged(prior, value)) return;
+
+    const priorTween = tweenRef.current;
+    if (priorTween) {
+      priorTween.pause();
+      priorTween.cancel();
+      tweenRef.current = null;
+    }
+    setStyle(node, { opacity: 1 });
+
+    const motion = tickerTickMotion({
+      reducedMotion: prefersReducedMotion(),
+    });
+    if (motion.kind === "instant") return;
+
+    const tween = animate(node, {
+      opacity: [1, motion.opacity[1], 1],
+      duration: motion.duration,
+      ease: "inOutQuad",
+      loop: false,
+    });
+    tweenRef.current = tween;
+    return () => {
+      tween.pause();
+      tween.cancel();
+      if (tweenRef.current === tween) tweenRef.current = null;
+    };
+  }, [value]);
+
   return (
-    <span className={swell.direction === "up" ? "text-cyan" : "text-magenta"}>
-      swell={swell.direction}
+    <span ref={nodeRef} className={className} data-ticker-val={value}>
+      {children}
     </span>
+  );
+}
+
+function SwellTicker({ pct }: { pct: number | null }) {
+  if (pct === null) {
+    return <TickerPulse value="swell=unknown">swell=unknown</TickerPulse>;
+  }
+  const swell = swellFromPct(pct);
+  const text = `swell=${swell.direction}`;
+  return (
+    <TickerPulse
+      value={text}
+      className={swell.direction === "up" ? "text-cyan" : "text-magenta"}
+    >
+      {text}
+    </TickerPulse>
   );
 }
 
@@ -253,12 +327,14 @@ function Item({
           tone === "sats" && "text-sats",
         )}
       >
-        {value}
-        {hint ? (
-          <span className="ml-1 font-mono text-[9px] font-medium tracking-[0.12em] text-muted">
-            {hint}
-          </span>
-        ) : null}
+        <TickerPulse value={value}>
+          {value}
+          {hint ? (
+            <span className="ml-1 font-mono text-[9px] font-medium tracking-[0.12em] text-muted">
+              {hint}
+            </span>
+          ) : null}
+        </TickerPulse>
       </dd>
     </div>
   );
