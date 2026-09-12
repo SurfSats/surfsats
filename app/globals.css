@@ -6686,6 +6686,10 @@ html[data-arcade-play="wave"] .cab-crt-live .cab-crt-scan {
   overscroll-behavior: contain;
 }
 
+.arcade-pay[data-leaving] {
+  pointer-events: none;
+}
+
 .arcade-pay-scrim {
   position: absolute;
   inset: 0;
