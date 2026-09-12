@@ -1312,6 +1312,11 @@ body {
   .home-walk-arrow {
     animation: none;
   }
+
+  [data-floor-enter] {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .floor-section {
@@ -1323,6 +1328,18 @@ body {
   grid-template-columns: 1fr;
   gap: 0.85rem;
   margin-top: 1.75rem;
+}
+
+[data-floor-enter] {
+  opacity: 0;
+}
+
+[data-floor-enter]:not(.is-in) {
+  transition: none;
+}
+
+[data-floor-enter].is-in {
+  opacity: 1;
 }
 
 .floor-object {

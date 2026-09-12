@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FloorEntrance } from "@/components/home/FloorEntrance";
 import { SwellScorecard } from "@/components/home/SwellScorecard";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -116,6 +117,7 @@ export function FeaturedTools({
               <FloorObject key={machine.href} machine={machine} />
             ))}
           </div>
+          <FloorEntrance />
         </Container>
       </section>
 
@@ -139,11 +141,12 @@ export function FeaturedTools({
             title="The signal"
             description="Clocks and feeds. Useful. Not the main event."
           />
-          <div className="mt-8 grid items-stretch gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="floor-readout mt-8 grid items-stretch gap-3 sm:grid-cols-2 xl:grid-cols-5">
             {readouts.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
+                data-floor-enter=""
                 className="panel panel-hover group flex min-w-0 flex-col p-4 sm:p-5"
               >
                 <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em]">
@@ -183,6 +186,7 @@ function FloorObject({
   return (
     <Link
       href={machine.href}
+      data-floor-enter=""
       className={cn(
         "floor-object group",
         machine.accent === "sats" && "floor-object-sats",
