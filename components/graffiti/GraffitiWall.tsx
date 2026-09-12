@@ -1,6 +1,10 @@
+"use client";
+
 import type { MouseEvent } from "react";
 import { GraffitiTag } from "@/components/graffiti/GraffitiTag";
+import { TagWriteOn } from "@/components/graffiti/TagWriteOn";
 import { cn } from "@/lib/cn";
+import { shouldWriteOnTag } from "@/lib/tag-write-on";
 import { COPY } from "@/lib/copy";
 import {
   type GraffitiColor,
@@ -125,8 +129,19 @@ export function GraffitiWall({
           {quiet ? <p className="graf-quiet">{COPY.emptyFeed}</p> : null}
 
           {marks.map((mark) => {
-            const fresh = freshId === mark.id;
+            const fresh = shouldWriteOnTag({
+              markId: mark.id,
+              freshId,
+            });
             const lit = highlightId === mark.id;
+            const tag = (
+              <GraffitiTag
+                text={mark.text}
+                style={mark.style}
+                color={mark.color}
+                className="text-lg sm:text-3xl"
+              />
+            );
             return (
               <div
                 key={mark.id}
@@ -142,14 +157,11 @@ export function GraffitiWall({
                   transform: `rotate(${mark.rotate}deg) scale(${mark.scale})`,
                 }}
               >
-                <div className="graf-inner">
-                  <GraffitiTag
-                    text={mark.text}
-                    style={mark.style}
-                    color={mark.color}
-                    className="text-lg sm:text-3xl"
-                  />
-                </div>
+                {fresh ? (
+                  <TagWriteOn markId={mark.id}>{tag}</TagWriteOn>
+                ) : (
+                  <div className="graf-inner">{tag}</div>
+                )}
               </div>
             );
           })}
