@@ -1,16 +1,24 @@
 "use client";
 
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { animate } from "animejs/animation";
 import { createTimeline } from "animejs/timeline";
 import { createDrawable } from "animejs/svg";
-import { set as setStyle, stagger } from "animejs/utils";
+import { set as setStyle } from "animejs/utils";
 import {
+  SETTLE_CHECK_AT,
+  SETTLE_CHECK_COLOR,
+  SETTLE_CHECK_DRAW_MS,
+  SETTLE_CHECK_MS,
+  SETTLE_CHECK_PATH,
+  SETTLE_CHECK_PATH_WIDTH,
+  SETTLE_CHECK_RING,
+  SETTLE_CHECK_VIEWBOX,
+  SETTLE_FILL_MS,
+  SETTLE_FILL_STYLE,
   SETTLE_HOLD_MS,
-  SETTLE_MS,
-  SETTLE_SETTLED_AT,
-  SETTLE_SETTLING_AT,
+  SETTLE_RING_MS,
   SETTLE_WAIT_MS,
+  drawWave,
   settleCopy,
   type SettleMachine,
   type SettlePhase,
@@ -23,7 +31,7 @@ type Tickable = {
 
 let host: HTMLElement | null = null;
 let timeline: Tickable | null = null;
-let pulse: Tickable | null = null;
+let raf = 0;
 let holdTimer = 0;
 
 export function useSettleHandoff() {
@@ -67,10 +75,68 @@ export function reset() {
     window.clearTimeout(holdTimer);
     holdTimer = 0;
   }
-  stop(pulse);
-  pulse = null;
+  if (raf) {
+    window.cancelAnimationFrame(raf);
+    raf = 0;
+  }
   stop(timeline);
   timeline = null;
+}
+
+function paintPlate(
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  progress: number,
+  time: number,
+) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  if (w <= 0 || h <= 0) return;
+  const pw = Math.floor(w * dpr);
+  const ph = Math.floor(h * dpr);
+  if (canvas.width !== pw || canvas.height !== ph) {
+    canvas.width = pw;
+    canvas.height = ph;
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  drawWave(ctx, { width: w, height: h, progress, time });
+}
+
+function playCheck({
+  root,
+  onComplete,
+}: {
+  root: HTMLElement;
+  onComplete: () => void;
+}) {
+  const ring = q<SVGCircleElement>(root, "[data-settle-ring]");
+  const mark = q<SVGPathElement>(root, "[data-settle-check]");
+  const ringDraw = ring ? createDrawable(ring) : [];
+  const markDraw = mark ? createDrawable(mark) : [];
+  if (ringDraw.length) setStyle(ringDraw, { draw: "0 0" });
+  if (markDraw.length) setStyle(markDraw, { draw: "0 0" });
+
+  const tl = createTimeline({
+    defaults: { ease: "outCubic" },
+    autoplay: true,
+  });
+  timeline = tl;
+  if (ringDraw.length) {
+    tl.add(ringDraw, { draw: ["0 0", "0 1"], duration: SETTLE_RING_MS }, 0);
+  }
+  if (markDraw.length) {
+    tl.add(
+      markDraw,
+      { draw: ["0 0", "0 1"], duration: SETTLE_CHECK_DRAW_MS },
+      SETTLE_CHECK_AT,
+    );
+  }
+
+  holdTimer = window.setTimeout(() => {
+    holdTimer = 0;
+    onComplete();
+  }, SETTLE_CHECK_MS + SETTLE_HOLD_MS);
 }
 
 export function play({
@@ -87,39 +153,20 @@ export function play({
   if (!root) return;
 
   const reduced = prefersReducedMotion();
-  const apply = (phase: SettlePhase) => {
-    root.dataset.phase = phase;
-    onPhase?.(phase);
+  let phase: SettlePhase | null = null;
+  const apply = (next: SettlePhase) => {
+    if (phase === next) return;
+    phase = next;
+    root.dataset.phase = next;
+    onPhase?.(next);
   };
 
   apply("waiting");
   root.dataset.machine = machine;
   root.dataset.reduced = reduced ? "true" : "false";
-
-  const ghost = q<SVGGElement>(root, "[data-settle-ghost]");
-  const slash = q<SVGGElement>(root, "[data-settle-slash]");
-  const stamp = q<SVGGElement>(root, "[data-settle-stamp]");
-  const ring = q<SVGPathElement>(root, "[data-settle-ring]");
-  const bolt = q<SVGPathElement>(root, "[data-settle-bolt]");
-  const wave = q<SVGPathElement>(root, "[data-settle-wave]");
-  const btc = q<SVGPathElement>(root, "[data-settle-btc]");
-  const boltFill = q<SVGPathElement>(root, "[data-settle-bolt-fill]");
-  const hemiL = q<SVGPathElement>(root, "[data-settle-hemi-l]");
-  const hemiR = q<SVGPathElement>(root, "[data-settle-hemi-r]");
-  const fills = [boltFill, hemiL, hemiR].filter(
-    (node): node is SVGPathElement => Boolean(node),
-  );
-  const drawables = [ring, bolt, wave, btc].filter(
-    (node): node is SVGPathElement => Boolean(node),
-  );
+  root.dataset.style = SETTLE_FILL_STYLE;
 
   if (reduced) {
-    if (ghost) setStyle(ghost, { opacity: 0, scale: 1 });
-    if (slash) setStyle(slash, { opacity: 0, translateY: 0 });
-    if (stamp) setStyle(stamp, { opacity: 1, scale: 1 });
-    for (const node of drawables) setStyle(node, { opacity: 1 });
-    for (const node of fills) setStyle(node, { opacity: 1 });
-    if (wave) setStyle(wave, { fillOpacity: 1 });
     apply("settled");
     holdTimer = window.setTimeout(() => {
       holdTimer = 0;
@@ -128,155 +175,67 @@ export function play({
     return;
   }
 
-  if (ghost) {
-    pulse = animate(ghost, {
-      opacity: [0.32, 0.78],
-      scale: [1, 1.05],
-      duration: 860,
-      ease: "inOutSine",
-      alternate: true,
-      loop: true,
-    });
-  }
+  const canvas = q<HTMLCanvasElement>(root, "[data-settle-canvas]");
+  const ctx = canvas?.getContext("2d") ?? null;
+  const started = performance.now();
+  let checkStarted = false;
 
-  const ringDraw = ring ? createDrawable(ring) : [];
-  const boltDraw = bolt ? createDrawable(bolt) : [];
-  const markDraw = [wave, btc].flatMap((node) =>
-    node ? createDrawable(node) : [],
-  );
+  const tick = (now: number) => {
+    const elapsed = now - started;
+    const fillElapsed = Math.max(0, elapsed - SETTLE_WAIT_MS);
+    const progress = Math.min(1, fillElapsed / SETTLE_FILL_MS);
 
-  const tl = createTimeline({
-    defaults: { ease: "outCubic", duration: 400 },
-    autoplay: true,
-  });
-  timeline = tl;
+    if (elapsed < SETTLE_WAIT_MS) {
+      apply("waiting");
+    } else if (progress < 1) {
+      apply("settling");
+    }
 
-  if (slash) {
-    tl.add(
-      slash,
-      {
-        opacity: [0, 1],
-        translateY: ["-42%", "0%"],
-        duration: 220,
-        ease: "inQuad",
-      },
-      SETTLE_WAIT_MS,
-    );
-  }
-  tl.call(() => {
-    stop(pulse);
-    pulse = ghost
-      ? animate(ghost, { opacity: 0, scale: 1.02, duration: 180, ease: "outQuad" })
-      : null;
-  }, SETTLE_WAIT_MS);
-  if (ringDraw.length) {
-    tl.add(ringDraw, { draw: ["0 0", "0 1"], duration: 680, ease: "inOutQuad" }, 480);
-  }
-  if (boltDraw.length) {
-    tl.add(boltDraw, { draw: ["0 0", "0 1"], duration: 620, ease: "inOutQuad" }, 700);
-  }
-  if (markDraw.length) {
-    tl.add(
-      markDraw,
-      {
-        draw: ["0 0", "0 1"],
-        duration: 700,
-        delay: stagger(140),
-        ease: "inOutQuad",
-      },
-      900,
-    );
-  }
-  tl.call(() => apply("settling"), SETTLE_SETTLING_AT);
-  if (fills.length) {
-    tl.add(fills, { opacity: [0, 1], duration: 480, ease: "outQuad" }, SETTLE_SETTLING_AT);
-  }
-  if (wave) {
-    tl.add(wave, { fillOpacity: [0, 1], duration: 420, ease: "outQuad" }, SETTLE_SETTLING_AT);
-  }
-  tl.call(() => apply("settled"), SETTLE_SETTLED_AT);
-  if (stamp) {
-    tl.add(
-      stamp,
-      { opacity: [0, 1], scale: [1.7, 1], duration: 280, ease: "outBack" },
-      SETTLE_SETTLED_AT + 40,
-    );
-  }
-  tl.call(onComplete, SETTLE_MS + SETTLE_HOLD_MS);
+    if (canvas && ctx) {
+      paintPlate(canvas, ctx, progress, elapsed / 1000);
+    }
+
+    if (progress >= 1) {
+      raf = 0;
+      if (!checkStarted) {
+        checkStarted = true;
+        apply("settled");
+        playCheck({ root, onComplete });
+      }
+      return;
+    }
+
+    raf = window.requestAnimationFrame(tick);
+  };
+
+  raf = window.requestAnimationFrame(tick);
 }
 
-function CutMark() {
+function SettleCheck() {
   return (
     <svg
-      className="settle-mark-svg"
-      viewBox="0 0 200 200"
+      className="settle-check-svg"
+      viewBox={SETTLE_CHECK_VIEWBOX}
       aria-hidden="true"
     >
-      <defs>
-        <clipPath id="settle-disk">
-          <circle cx="100" cy="100" r="84" />
-        </clipPath>
-      </defs>
-
-      <circle className="settle-plate" cx="100" cy="100" r="94" />
-
-      <g data-settle-ghost className="settle-ghost-wrap">
-        <circle className="settle-ghost" cx="100" cy="100" r="86" />
-      </g>
-
-      <g clipPath="url(#settle-disk)">
-        <path
-          data-settle-hemi-l
-          className="settle-hemi settle-hemi-l"
-          d="M100 16 A84 84 0 0 0 100 184 Z"
-        />
-        <path
-          data-settle-hemi-r
-          className="settle-hemi settle-hemi-r"
-          d="M100 16 A84 84 0 0 1 100 184 Z"
-        />
-      </g>
-
-      <path
+      <circle
         data-settle-ring
-        className="settle-ring settle-draw"
-        d="M100 14 A86 86 0 1 1 99.99 14"
-      />
-
-      <path
-        data-settle-wave
-        className="settle-wave settle-draw"
-        d="M30 150 C34 120 50 104 70 110 C86 115 90 132 78 140 C96 124 114 112 116 86 C118 62 98 50 82 60 C64 72 60 96 70 116 C54 104 36 116 30 150 Z"
-      />
-
-      <path
-        data-settle-bolt-fill
-        className="settle-bolt-fill"
-        d="M120 16 94 94 H124 L80 184 134 104 H104 Z"
+        cx={SETTLE_CHECK_RING.cx}
+        cy={SETTLE_CHECK_RING.cy}
+        r={SETTLE_CHECK_RING.r}
+        fill="none"
+        stroke={SETTLE_CHECK_COLOR}
+        strokeWidth={SETTLE_CHECK_RING.width}
       />
       <path
-        data-settle-bolt
-        className="settle-bolt settle-draw"
-        d="M112 20 94 98 H126 L90 180"
+        data-settle-check
+        d={SETTLE_CHECK_PATH}
+        fill="none"
+        stroke={SETTLE_CHECK_COLOR}
+        strokeWidth={SETTLE_CHECK_PATH_WIDTH}
+        strokeLinecap="square"
+        strokeLinejoin="miter"
       />
-
-      <path
-        data-settle-btc
-        className="settle-btc settle-draw"
-        d="M138 54 V146 M147 54 V146 M147 68 H164 C178 68 180 94 166 96 H147 M147 96 H168 C184 96 186 130 168 132 H147"
-      />
-
-      <g data-settle-slash className="settle-slash-wrap">
-        <line className="settle-slash" x1="176" y1="6" x2="24" y2="196" />
-      </g>
-
-      <g transform="translate(100 108) rotate(-18)">
-        <g data-settle-stamp className="settle-stamp-wrap">
-          <text className="settle-stamp" textAnchor="middle" dominantBaseline="middle">
-            SETTLED
-          </text>
-        </g>
-      </g>
     </svg>
   );
 }
@@ -317,20 +276,32 @@ export function SettleRitual({
       className="settle-ritual"
       data-phase={phase}
       data-machine={machine}
+      data-style={SETTLE_FILL_STYLE}
     >
-      <h2
-        id={titleId}
-        className="settle-title"
-        data-settle-title
-        aria-live="polite"
-      >
-        {copy.title}
-      </h2>
-      <p className="settle-sub" data-settle-sub>
-        {copy.subtitle}
-      </p>
-      <div className="settle-plate-well">
-        <CutMark />
+      <canvas data-settle-canvas className="settle-canvas" aria-hidden="true" />
+      <div className="settle-hud">
+        <div className="settle-hud-top">
+          <p className="settle-kicker" data-settle-kicker>
+            {copy.kicker}
+          </p>
+          <p className="settle-clock" data-settle-clock>
+            {copy.clock}
+          </p>
+        </div>
+        <h2
+          id={titleId}
+          className="settle-title"
+          data-settle-title
+          aria-live="polite"
+        >
+          {copy.title}
+        </h2>
+        <p className="settle-sub" data-settle-sub>
+          {copy.subtitle}
+        </p>
+      </div>
+      <div className="settle-check" data-settle-check-wrap>
+        <SettleCheck />
       </div>
     </div>
   );
