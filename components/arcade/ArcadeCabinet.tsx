@@ -5,9 +5,9 @@ import {
   ARCADE_ALIAS_MAX,
   ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
-  formatCredits,
   sanitizeAlias,
 } from "@/lib/arcade";
+import { CreditLed } from "@/components/arcade/CreditLed";
 import type { RefObject } from "react";
 import {
   ArcadeScreen,
@@ -136,7 +136,7 @@ export function ArcadeCabinet({
             ) : null}
             <div className="cab-led">
               <p>CREDITS</p>
-              <p className="cab-led-num">{formatCredits(credits)}</p>
+              <CreditLed credits={credits} />
             </div>
           </div>
 

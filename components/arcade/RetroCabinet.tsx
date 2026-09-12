@@ -7,10 +7,10 @@ import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import type { RetroPad } from "@/components/arcade/retroGames";
 import {
   RETRO_GAMES,
-  formatCredits,
   sanitizeAlias,
   type RetroGameId,
 } from "@/lib/arcade";
+import { CreditLed } from "@/components/arcade/CreditLed";
 
 export function RetroCabinet({
   alias,
@@ -117,7 +117,7 @@ export function RetroCabinet({
             ) : null}
             <div className="cab-led">
               <p>CREDITS</p>
-              <p className="cab-led-num">{formatCredits(credits)}</p>
+              <CreditLed credits={credits} />
             </div>
           </div>
 

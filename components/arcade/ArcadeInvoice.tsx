@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef } from "react";
+import { animate } from "animejs/animation";
 import { InvoiceBurst } from "@/components/pay/InvoiceBurst";
 import { InvoiceHint } from "@/components/pay/InvoiceHint";
 import { InvoiceQr } from "@/components/pay/InvoiceQr";
@@ -7,6 +9,7 @@ import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual } from "@/components/pay/SettleRitual";
 import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
 import { COPY } from "@/lib/copy";
+import { INVOICE_FADE_MS } from "@/lib/credit-tick";
 import type { SettleMachine } from "@/lib/settle-ritual";
 
 export function ArcadeInvoice({
@@ -50,9 +53,49 @@ export function ArcadeInvoice({
 }) {
   const live =
     Boolean(paymentRequest) && paymentRequest.toLowerCase().startsWith("ln");
+  const rootRef = useRef<HTMLDivElement>(null);
+  const handed = useRef(false);
+
+  function handoff() {
+    if (!onSettled || handed.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      handed.current = true;
+      onSettled();
+      return;
+    }
+    const node = rootRef.current;
+    if (!node) {
+      handed.current = true;
+      onSettled();
+      return;
+    }
+    node.setAttribute("data-leaving", "");
+    animate(node, {
+      opacity: [1, 0],
+      duration: INVOICE_FADE_MS,
+      ease: "outCubic",
+      loop: false,
+      onComplete: () => {
+        if (handed.current) return;
+        handed.current = true;
+        onSettled();
+      },
+    });
+    window.setTimeout(() => {
+      if (handed.current) return;
+      handed.current = true;
+      onSettled();
+    }, INVOICE_FADE_MS + 80);
+  }
 
   return (
-    <div className="arcade-pay" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+    <div
+      ref={rootRef}
+      className="arcade-pay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       <button
         type="button"
         className="arcade-pay-scrim"
@@ -61,7 +104,7 @@ export function ArcadeInvoice({
       />
       <div className="arcade-pay-panel">
         {settling && onSettled ? (
-          <SettleRitual machine={machine} titleId={titleId} onComplete={onSettled} />
+          <SettleRitual machine={machine} titleId={titleId} onComplete={handoff} />
         ) : (
           <>
         <h2 id={titleId} className="arcade-pay-title">
