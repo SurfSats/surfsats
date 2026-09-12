@@ -1,7 +1,10 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { animate } from "animejs/animation";
+import { set as setStyle } from "animejs/utils";
 import { cn } from "@/lib/cn";
+import { DECK_WIPE_NARROW_MQ, deckWipeMotion } from "@/lib/deck-wipe";
 
 export type ConsoleTab = {
   id: string;
@@ -26,6 +29,21 @@ function skin(name: string | undefined, structural: string, graf: string) {
   return name === "graffiti" ? `${structural} ${graf}` : structural;
 }
 
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function isNarrow() {
+  return window.matchMedia(DECK_WIPE_NARROW_MQ).matches;
+}
+
+function clearWipe(node: HTMLElement) {
+  setStyle(node, { opacity: 1, translateX: 0 });
+  node.style.removeProperty("opacity");
+  node.style.removeProperty("transform");
+  node.style.removeProperty("translate");
+}
+
 export function ConsoleShell({
   className,
   name,
@@ -38,6 +56,50 @@ export function ConsoleShell({
   footer,
   deckLabel = "Deck",
 }: ConsoleShellProps) {
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const prevTab = useRef<string | null>(null);
+  const safetyRef = useRef(0);
+
+  useEffect(() => {
+    const node = bodyRef.current;
+    if (!node) return;
+
+    const prior = prevTab.current;
+    if (prior === null) {
+      prevTab.current = tab;
+      return;
+    }
+    if (prior === tab) return;
+    prevTab.current = tab;
+
+    const motion = deckWipeMotion({
+      narrow: isNarrow(),
+      reducedMotion: prefersReducedMotion(),
+    });
+    if (motion.kind === "instant") {
+      clearWipe(node);
+      return;
+    }
+
+    window.clearTimeout(safetyRef.current);
+    animate(node, {
+      opacity: [0, 1],
+      ...(motion.x === 0 ? {} : { translateX: [motion.x, 0] }),
+      duration: motion.duration,
+      ease: motion.ease,
+      loop: false,
+      composition: "replace",
+      onComplete: () => {
+        window.clearTimeout(safetyRef.current);
+        clearWipe(node);
+      },
+    });
+    safetyRef.current = window.setTimeout(
+      () => clearWipe(node),
+      motion.duration + 80,
+    );
+  }, [tab]);
+
   return (
     <div
       className={cn(skin(name, "console-page", "graffiti-page"), className)}
@@ -81,7 +143,11 @@ export function ConsoleShell({
             ))}
           </nav>
 
-          <div className={skin(name, "console-deck-body", "graffiti-deck-body")}>
+          <div
+            ref={bodyRef}
+            className={skin(name, "console-deck-body", "graffiti-deck-body")}
+            data-deck-wipe=""
+          >
             {children}
           </div>
 
