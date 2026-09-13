@@ -29,14 +29,24 @@ export const navGroups: NavGroup[] = [
 /** Flat public destinations for footer (and any other full-list maps). */
 export const navLinks: NavLink[] = navGroups.flatMap((group) => group.links);
 
-export const footerGroups: NavGroup[] = navGroups.map((group) =>
-  group.id === "kit"
-    ? {
-        ...group,
-        links: [...group.links, { href: "/about", label: "About" }],
-      }
-    : group,
-);
+export const footerGroups: NavGroup[] = navGroups.map((group) => {
+  if (group.id === "kit") {
+    return {
+      ...group,
+      links: [...group.links, { href: "/about", label: "About" }],
+    };
+  }
+  if (group.id === "machines") {
+    const links = group.links.filter((link) => link.href !== "/glass");
+    const graffitiAt = links.findIndex((link) => link.href === "/graffiti");
+    const glass = group.links.find((link) => link.href === "/glass");
+    if (glass && graffitiAt >= 0) {
+      links.splice(graffitiAt + 1, 0, glass);
+    }
+    return { ...group, links };
+  }
+  return group;
+});
 
 export const footerLinks: NavLink[] = footerGroups.flatMap((group) => group.links);
 

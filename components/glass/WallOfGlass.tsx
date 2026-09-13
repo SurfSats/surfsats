@@ -64,7 +64,7 @@ export function WallOfGlass() {
           Wall of Glass
         </h1>
         <p className="mt-4 max-w-xl font-mono text-sm leading-relaxed text-stone-300">
-          21 sats burns a callsign onto this pane. No desks. Names are not
+          21 sats burns a callsign onto this pane. No accounts. Names are not
           owned. Two browsers can both be HOPE. One row.
         </p>
 

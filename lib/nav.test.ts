@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { footerLinks, primaryNavLinks } from "./nav.ts";
+import { footerGroups, footerLinks, primaryNavLinks } from "./nav.ts";
 
 test("DIRTY FIAT footer dest is /fiat, not /dirty-fiat", () => {
   const hit = footerLinks.find((link) =>
@@ -18,6 +18,15 @@ test("machines nav includes GLASS", () => {
   const hit = primaryNavLinks.find((link) => link.href === "/glass");
   assert.ok(hit);
   assert.equal(hit.label, "GLASS");
+});
+
+test("footer machines list has GLASS next to GRAFFITI", () => {
+  const machines = footerGroups.find((group) => group.id === "machines");
+  assert.ok(machines);
+  const hrefs = machines.links.map((link) => link.href);
+  const graffitiAt = hrefs.indexOf("/graffiti");
+  assert.ok(graffitiAt >= 0);
+  assert.equal(hrefs[graffitiAt + 1], "/glass");
 });
 
 test("machines nav has one radio/jukebox/music entry", () => {
