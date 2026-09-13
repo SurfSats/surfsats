@@ -18,6 +18,7 @@ import {
   sanitizeAlias,
 } from "@/lib/arcade";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
+import { verbPressProps } from "@/lib/verb-press";
 
 const BouncingBitties = dynamic(
   () =>
@@ -398,6 +399,7 @@ export function BittiesShell() {
               <button
                 type="button"
                 className="cab-insert cab-insert-primary"
+                {...verbPressProps}
                 disabled={!aliasOk || pending || paying}
                 onClick={() => void requestInvoice()}
               >

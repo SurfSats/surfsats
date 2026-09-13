@@ -13,6 +13,7 @@ import {
 import { createPortal } from "react-dom";
 import { Liquid } from "liquid-gooey";
 import { cn } from "@/lib/cn";
+import { verbPressProps } from "@/lib/verb-press";
 import {
   isActivePath,
   isReadoutPath,
@@ -400,6 +401,7 @@ export function GooeyDropSats({
         <Link
           href="/music?tab=jukebox"
           onClick={onNavigate}
+          {...verbPressProps}
           className={cn(
             pillLayout,
             "nav-glass nav-glass-drop font-semibold backdrop-blur-[10px] backdrop-saturate-[160%]",

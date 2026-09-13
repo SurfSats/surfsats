@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
+import { verbPressProps } from "@/lib/verb-press";
 
 const HERO_STILL = "/home-hero-still.jpg";
 
@@ -51,7 +52,7 @@ export function Hero() {
             SMASH THE ARCADE · 21 SATS
           </Link>
         </div>
-        <a href="#the-floor" className="home-walk">
+        <a href="#the-floor" className="home-walk" {...verbPressProps}>
           Walk the floor
           <svg
             className="home-walk-arrow"

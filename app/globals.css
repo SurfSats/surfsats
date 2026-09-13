@@ -2036,6 +2036,15 @@ body {
   box-shadow: 5px 5px 0 var(--magenta);
 }
 
+[data-verb-press] {
+  transform-origin: center;
+  transition: transform 80ms cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+[data-verb-press]:active {
+  transform: scale(0.97);
+}
+
 .glitch-hover:hover {
   text-shadow:
     2px 0 var(--magenta),
@@ -8850,6 +8859,12 @@ body:has(.tab-page) .site-watermark {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-verb-press],
+  [data-verb-press]:active {
+    transform: none;
+    transition: none;
+  }
+
   .tab-caret {
     animation: none;
   }

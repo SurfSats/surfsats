@@ -6,6 +6,7 @@ import { GraffitiForm } from "@/components/graffiti/GraffitiForm";
 import { GraffitiHow } from "@/components/graffiti/GraffitiHow";
 import { GraffitiWall } from "@/components/graffiti/GraffitiWall";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
+import { verbPressProps } from "@/lib/verb-press";
 import {
   GRAFFITI_HERO_BAND,
   GRAFFITI_PRICE_SATS,
@@ -209,6 +210,7 @@ export function GraffitiApp() {
           <button
             type="button"
             className="graffiti-spray-fab"
+            {...verbPressProps}
             onClick={() => {
               setTab("spray");
               window.requestAnimationFrame(() => {

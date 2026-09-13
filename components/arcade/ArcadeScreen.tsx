@@ -5,6 +5,7 @@ import {
   WaveRunner,
   type WaveRunnerHandle,
 } from "@/components/arcade/WaveRunner";
+import { verbPressProps } from "@/lib/verb-press";
 import {
   ARCADE_ALIAS_MAX,
   ARCADE_CREDITS_PER_PAY,
@@ -130,7 +131,7 @@ export function ArcadeScreen({
 
       {mode === "attract" ? (
         <div className="cab-crt-attract">
-          <button type="button" className="cab-crt-verb" onClick={onInsert}>
+          <button type="button" className="cab-crt-verb" {...verbPressProps} onClick={onInsert}>
             <p className="cab-crt-insert cab-crt-blink">
               INSERT {ARCADE_PRICE_SATS} SATS
             </p>

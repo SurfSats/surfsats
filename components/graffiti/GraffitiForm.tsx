@@ -9,6 +9,7 @@ import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import { cn } from "@/lib/cn";
 import { COPY } from "@/lib/copy";
+import { verbPressProps } from "@/lib/verb-press";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 import { payFetch } from "@/lib/pay-fetch";
 import {
@@ -459,6 +460,7 @@ export function GraffitiForm({
                     type="button"
                     onClick={() => void copyInvoice()}
                     className="graf-invoice-btn"
+                    {...verbPressProps}
                   >
                     {COPY.copyInvoice}
                   </button>
@@ -476,6 +478,7 @@ export function GraffitiForm({
                     <a
                       href={`lightning:${paymentRequest}`}
                       className="graf-invoice-btn graf-open-wallet"
+                      {...verbPressProps}
                     >
                       {COPY.openWallet}
                     </a>

@@ -6,6 +6,7 @@ import {
   CrtCallsign,
   type ArcadeScreenMode,
 } from "@/components/arcade/ArcadeScreen";
+import { verbPressProps } from "@/lib/verb-press";
 import {
   ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
@@ -118,6 +119,7 @@ export function RetroScreen({
           <button
             type="button"
             className="cab-crt-verb"
+            {...verbPressProps}
             onClick={game ? onInsert : undefined}
           >
             <p className="cab-crt-insert cab-crt-blink">

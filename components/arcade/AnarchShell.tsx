@@ -20,6 +20,7 @@ import {
   sanitizeAlias,
 } from "@/lib/arcade";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
+import { verbPressProps } from "@/lib/verb-press";
 
 type SessionCache = {
   playerId: string;
@@ -419,6 +420,7 @@ export function AnarchShell() {
               <button
                 type="button"
                 className="cab-insert cab-insert-primary"
+                {...verbPressProps}
                 disabled={!aliasOk || pending || paying}
                 onClick={() => void requestInvoice()}
               >

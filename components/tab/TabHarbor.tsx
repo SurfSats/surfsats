@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
 import { COPY } from "@/lib/copy";
+import { verbPressProps } from "@/lib/verb-press";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 import { payFetch } from "@/lib/pay-fetch";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
@@ -489,6 +490,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                       <button
                         type="button"
                         className="tab-sit"
+                        {...verbPressProps}
                         onClick={() => void sit()}
                       >
                         {actClosed ? "SIT AGAIN" : "SIT"}
@@ -498,6 +500,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                       <button
                         type="button"
                         className="tab-insert"
+                        {...verbPressProps}
                         disabled={
                           !aliasOk ||
                           pending ||

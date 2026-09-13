@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TerminalLabel } from "@/components/ui/TerminalLabel";
 import { cn } from "@/lib/cn";
+import { verbPressProps } from "@/lib/verb-press";
 import {
   FUNDING_URL,
   NOWPLAYING_POLL_MS,
@@ -252,6 +253,7 @@ export function LiveStream() {
           <div className="ship-rx">
             <button
               type="button"
+              {...verbPressProps}
               className={cn(
                 "ship-rx-play",
                 playing && "is-on",

@@ -11,6 +11,7 @@ import {
   sanitizeAlias,
 } from "@/lib/arcade";
 import type { BarEnding, BarNode, BarTree } from "@/lib/bar-tree";
+import { verbPressProps } from "@/lib/verb-press";
 
 export function TabCabinet({
   alias,
@@ -84,7 +85,7 @@ export function TabCabinet({
         <div className="cab-coin" id="arcade-coin-tab">
           <div className="cab-coin-top">
             {canSit ? (
-              <button type="button" className="cab-play" onClick={onSit}>
+              <button type="button" className="cab-play" {...verbPressProps} onClick={onSit}>
                 SIT
                 <span>1 CREDIT</span>
               </button>
@@ -92,6 +93,7 @@ export function TabCabinet({
               <button
                 type="button"
                 className="cab-insert cab-insert-primary"
+                {...verbPressProps}
                 disabled={insertLocked}
                 onClick={onInsert}
               >

@@ -8,6 +8,7 @@ import {
   sanitizeAlias,
 } from "@/lib/arcade";
 import { CreditLed } from "@/components/arcade/CreditLed";
+import { verbPressProps } from "@/lib/verb-press";
 import type { RefObject } from "react";
 import {
   ArcadeScreen,
@@ -121,6 +122,7 @@ export function ArcadeCabinet({
               <button
                 type="button"
                 className="cab-insert cab-insert-primary cab-till-insert"
+                {...verbPressProps}
                 disabled={!aliasOk || pending || paying}
                 onClick={onInsert}
               >

@@ -9,6 +9,7 @@ import { OneTapZap } from "@/components/pay/OneTapZap";
 import { SettleRitual } from "@/components/pay/SettleRitual";
 import { ARCADE_CREDITS_PER_PAY, ARCADE_PRICE_SATS } from "@/lib/arcade";
 import { COPY } from "@/lib/copy";
+import { verbPressProps } from "@/lib/verb-press";
 import { INVOICE_FADE_MS } from "@/lib/credit-tick";
 import type { SettleMachine } from "@/lib/settle-ritual";
 
@@ -160,6 +161,7 @@ export function ArcadeInvoice({
               <button
                 type="button"
                 className="arcade-pay-btn"
+                {...verbPressProps}
                 onClick={onCopy}
                 disabled={!live}
               >
