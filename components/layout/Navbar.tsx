@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { GlassChip } from "@/components/glass/GlassChip";
 import { SfxToggle } from "@/components/layout/SfxToggle";
 import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
@@ -43,6 +44,7 @@ export function Navbar() {
         </nav>
 
         <GooeyDropSats className="max-lg:hidden" />
+        <GlassChip className="max-lg:hidden" />
         <SfxToggle />
 
         <button
@@ -92,6 +94,7 @@ export function Navbar() {
                 />
               </div>
             ))}
+            <GlassChip />
             <GooeyDropSats onNavigate={() => setOpen(false)} />
           </Container>
         </div>

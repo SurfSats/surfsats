@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { canServeLightning, publicErrorMessage, publicErrorStatus } from "@/lib/alby";
-import { createBottleInvoice } from "@/lib/bottle-payments";
+import {
+  createBottleInvoice,
+  pendingBottleFromBody,
+} from "@/lib/bottle-payments";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(request: Request) {
   if (!canServeLightning()) {
     return NextResponse.json(
       { error: "lightning is offline right now" },
@@ -13,8 +16,21 @@ export async function POST() {
     );
   }
 
+  let body: unknown = {};
   try {
-    const invoice = await createBottleInvoice();
+    const text = await request.text();
+    body = text ? JSON.parse(text) : {};
+  } catch {
+    return NextResponse.json({ error: "invalid request" }, { status: 400 });
+  }
+
+  const parsed = pendingBottleFromBody(body);
+  if ("error" in parsed) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+
+  try {
+    const invoice = await createBottleInvoice(parsed.callsign);
     return NextResponse.json({
       payment_request: invoice.paymentRequest,
       payment_hash: invoice.paymentHash,

@@ -31,6 +31,7 @@ async function checkHash(paymentHash: string) {
     return NextResponse.json({
       paid: result.paid,
       line: result.line ?? null,
+      etch: result.etch ?? null,
     });
   } catch (error) {
     storyLog("error", "check.settle_failed", {

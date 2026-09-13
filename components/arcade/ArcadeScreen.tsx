@@ -6,8 +6,8 @@ import {
   type WaveRunnerHandle,
 } from "@/components/arcade/WaveRunner";
 import { verbPressProps } from "@/lib/verb-press";
+import { CallsignField } from "@/components/glass/CallsignField";
 import {
-  ARCADE_ALIAS_MAX,
   ARCADE_CREDITS_PER_PAY,
   ARCADE_GAME_LABEL,
   ARCADE_PRICE_SATS,
@@ -151,27 +151,18 @@ export function ArcadeScreen({
 }
 
 export function CrtCallsign({
-  alias,
-  onAlias,
   disabled = false,
 }: {
-  alias: string;
-  onAlias: (value: string) => void;
+  alias?: string;
+  onAlias?: (value: string) => void;
   disabled?: boolean;
 }) {
   return (
-    <label className="cab-crt-alias">
-      <span>CALLSIGN · REQUIRED</span>
-      <input
-        value={alias}
-        maxLength={ARCADE_ALIAS_MAX}
-        onChange={(event) => onAlias(event.target.value)}
-        placeholder="YOUR ALIAS"
-        autoCapitalize="characters"
-        autoComplete="off"
-        spellCheck={false}
-        disabled={disabled}
-      />
-    </label>
+    <CallsignField
+      className="cab-crt-alias"
+      label="CALLSIGN · REQUIRED"
+      placeholder="HOPE"
+      disabled={disabled}
+    />
   );
 }

@@ -18,6 +18,8 @@ import {
   type ArcadePlayer,
 } from "@/lib/arcade";
 import { arcadeLog, hashRef } from "@/lib/arcade-log";
+import type { CallsignEtch } from "@/lib/callsign";
+import { rememberSettledCallsign } from "@/lib/callsign-store";
 import {
   arcadeStoreKind,
   findArcadeGrant,
@@ -135,6 +137,7 @@ export async function settleArcadePayment(paymentHash: string): Promise<{
   ok: boolean;
   already: boolean;
   player: ArcadePlayer | null;
+  etch: CallsignEtch | null;
 }> {
   const existing = await findArcadeGrant(paymentHash);
   if (existing) {
@@ -143,34 +146,41 @@ export async function settleArcadePayment(paymentHash: string): Promise<{
       hash: hashRef(paymentHash),
       store: arcadeStoreKind(),
     });
+    const playerNext = player ?? {
+      playerId: existing.playerId,
+      alias: existing.alias,
+      credits: existing.credits,
+    };
+    const etch = await rememberSettledCallsign({
+      callsign: playerNext.alias,
+      paymentHash,
+      machine: "arcade",
+    });
     return {
       paid: true,
       ok: true,
       already: true,
-      player: player ?? {
-        playerId: existing.playerId,
-        alias: existing.alias,
-        credits: existing.credits,
-      },
+      player: playerNext,
+      etch,
     };
   }
 
   const invoice = await getAlbyInvoice(paymentHash);
   if (!isInvoiceSettled(invoice)) {
-    return { paid: false, ok: false, already: false, player: null };
+    return { paid: false, ok: false, already: false, player: null, etch: null };
   }
   if (!isArcadeInvoiceAmount(invoice)) {
     arcadeLog("warn", "settle.wrong_amount", {
       hash: hashRef(paymentHash),
     });
-    return { paid: false, ok: false, already: false, player: null };
+    return { paid: false, ok: false, already: false, player: null, etch: null };
   }
 
   const pending =
     (await getArcadePending(paymentHash)) ??
     parseArcadePayload(invoice.metadata);
   if (!pending) {
-    return { paid: true, ok: false, already: false, player: null };
+    return { paid: true, ok: false, already: false, player: null, etch: null };
   }
 
   const result = await grantArcadeCredits({
@@ -180,11 +190,17 @@ export async function settleArcadePayment(paymentHash: string): Promise<{
     machine: pending.machine || ARCADE_MACHINE_WAVE,
     game: pending.game,
   });
+  const etch = await rememberSettledCallsign({
+    callsign: result.player.alias,
+    paymentHash,
+    machine: "arcade",
+  });
   return {
     paid: true,
     ok: true,
     already: result.already,
     player: result.player,
+    etch,
   };
 }
 

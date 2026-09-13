@@ -17,6 +17,9 @@ import {
   type BarNode,
   type BarTree,
 } from "@/lib/bar-tree";
+import { CallsignField } from "@/components/glass/CallsignField";
+import { parseCallsignEtch } from "@/lib/callsign";
+import { useGlassAlias } from "@/lib/useGlass";
 import { formatTimeAgo } from "@/lib/arcade";
 import {
   TAB_CREDITS_PER_PAY,
@@ -42,8 +45,8 @@ const FACE_SRC: Record<NonNullable<BarNode["face"]>, string> = {
 export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { alias, setAlias, markEtched } = useGlassAlias();
   const [playerId, setPlayerId] = useState("");
-  const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
   const [tree, setTree] = useState<BarTree | null>(initialTree);
   const [treeError, setTreeError] = useState(!initialTree);
@@ -82,7 +85,6 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
         ? cached.playerId
         : window.crypto.randomUUID();
     setPlayerId(id);
-    if (cached?.alias) setAlias(cached.alias);
     setReady(true);
   }, []);
 
@@ -134,8 +136,8 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
       alias?: string;
     };
     if (typeof data.credits === "number") setCredits(data.credits);
-    if (data.alias) setAlias((current) => current || data.alias || "");
-  }, []);
+    if (data.alias && !alias) setAlias(data.alias);
+  }, [alias, setAlias]);
 
   useEffect(() => {
     if (!playerId) return;
@@ -191,11 +193,14 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
           paid?: boolean;
           ok?: boolean;
           credits?: number;
+          etch?: unknown;
           error?: string;
         };
         if (cancelled) return;
         if (data.paid && data.ok) {
           const creditsNext = data.credits ?? 0;
+          const etch = parseCallsignEtch(data.etch);
+          if (etch) markEtched(etch);
           setInvoiceError(null);
           setWaiting(false);
           beginSettle(() => {
@@ -228,7 +233,7 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, bindCheck, expired, loadBoards, mode, paymentHash, settling]);
+  }, [beginSettle, bindCheck, expired, loadBoards, markEtched, mode, paymentHash, settling]);
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
@@ -470,21 +475,14 @@ export function TabHarbor({ initialTree }: { initialTree: BarTree | null }) {
                 )}
 
                 <div className="tab-coin">
-                  <label className="tab-alias">
-                    <span>CALLSIGN · 2–16</span>
-                    <input
-                      value={alias}
-                      maxLength={16}
-                      onChange={(event) => setAlias(event.target.value)}
-                      placeholder="YOUR ALIAS"
-                      autoCapitalize="characters"
-                      autoComplete="off"
-                      spellCheck={false}
-                      disabled={
-                        (mode === "sitting" && !actClosed) || mode === "invoice"
-                      }
-                    />
-                  </label>
+                  <CallsignField
+                    className="tab-alias"
+                    label="CALLSIGN · 2–16"
+                    placeholder="HOPE"
+                    disabled={
+                      (mode === "sitting" && !actClosed) || mode === "invoice"
+                    }
+                  />
                   <div className="tab-coin-row">
                     {credits > 0 && aliasOk && (mode !== "sitting" || actClosed) ? (
                       <button

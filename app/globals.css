@@ -763,6 +763,38 @@ body {
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
 }
 
+.bottle-callsign {
+  display: flex;
+  width: min(16rem, 100%);
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.7rem auto 0;
+  text-align: left;
+}
+
+.bottle-callsign span {
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #c9b8a4;
+}
+
+.bottle-callsign input {
+  border: 1px solid #5a4030;
+  background: #080808;
+  padding: 0.5rem 0.6rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffb14a;
+  outline: none;
+}
+
+.bottle-callsign input:focus {
+  border-color: #ff7a18;
+}
+
 .bottle-hodl {
   margin: 0.12rem 0 0;
   font-family: var(--font-mono), ui-monospace, monospace;
@@ -3507,6 +3539,31 @@ body:has(.graffiti-page) .site-watermark {
   background: transparent;
   border: 0;
   box-shadow: none;
+}
+
+.graf-callsign span {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a8a29e;
+}
+
+.graf-callsign input {
+  width: 100%;
+  border: 1px solid #44403c;
+  background: rgb(0 0 0 / 0.7);
+  padding: 0.7rem 0.75rem;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #efe6d4;
+  outline: none;
+}
+
+.graf-callsign input:focus {
+  border-color: #f59e0b;
 }
 
 .graf-style-grid {
@@ -9115,4 +9172,148 @@ body:has(.shack-stage) .site-watermark {
     left: 0.65rem;
     bottom: 0.7rem;
   }
+}
+
+.glass-chip {
+  display: inline-flex;
+  max-width: 11.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(61, 255, 243, 0.35);
+  background: rgb(8 8 11 / 0.55);
+  padding: 0.35rem 0.6rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glass-chip.is-etched {
+  border-color: rgba(255, 122, 24, 0.55);
+  color: var(--sats);
+}
+
+.glass-chip:hover {
+  border-color: var(--cyan);
+  color: #fff;
+}
+
+.glass-wall {
+  position: relative;
+  min-height: 70vh;
+  overflow: hidden;
+}
+
+.glass-wall-bg {
+  position: absolute;
+  inset: 0;
+}
+
+.glass-wall-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(0.25) contrast(1.05);
+}
+
+.glass-wall-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgb(8 8 11 / 0.72), rgb(8 8 11 / 0.88)),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgb(0 0 0 / 0.12) 3px
+    );
+}
+
+.glass-plaque {
+  border: 1px solid rgba(239, 230, 212, 0.18);
+  background: rgb(8 8 11 / 0.62);
+  padding: 1.1rem 1.15rem;
+  backdrop-filter: blur(8px);
+}
+
+.glass-plaque-kicker {
+  margin-bottom: 0.85rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sats);
+}
+
+.glass-wall-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.glass-wall-list a {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.55rem 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+}
+
+.glass-wall-name {
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  color: #efe6d4;
+}
+
+.glass-wall-meta {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.glass-wall-list a:hover .glass-wall-name {
+  color: var(--sats);
+}
+
+.glass-wall-empty,
+.glass-wall-error {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.glass-wall-error {
+  color: #f87171;
+}
+
+.glass-wipe,
+.glass-back {
+  display: inline-flex;
+  margin-top: 1rem;
+  border: 1px solid rgba(61, 255, 243, 0.35);
+  background: transparent;
+  padding: 0.55rem 0.8rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.glass-wipe:hover,
+.glass-back:hover {
+  border-color: var(--sats);
+  color: var(--sats);
 }

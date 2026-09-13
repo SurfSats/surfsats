@@ -110,6 +110,16 @@ test("store mappers match the settlement copy", () => {
   assert.equal(graf.text, "anon sprayed 'HOPE' on Graffiti");
   assert.equal(graf.id, "graffiti:gh");
   assert.equal(graf.href, "/graffiti");
+  assert.equal(
+    tapeFromGraffiti({
+      id: "m2",
+      text: "stay humble",
+      createdAt: "2026-09-05T12:00:00Z",
+      paymentHash: "gh2",
+      callsign: "HOPE",
+    }).text,
+    "HOPE sprayed 'stay humble' on Graffiti",
+  );
 
   const radio = tapeFromRadio({
     id: "b1",

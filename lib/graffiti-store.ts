@@ -36,6 +36,7 @@ type MarkRow = {
   scale: unknown;
   created_at: unknown;
   expires_at: unknown;
+  callsign: unknown;
 };
 
 export function graffitiStoreKind() {
@@ -84,6 +85,10 @@ async function ensureNeonSchema() {
       )`;
       await db`CREATE INDEX IF NOT EXISTS graffiti_marks_expires_at
         ON graffiti_marks (expires_at)`;
+      await db`ALTER TABLE graffiti_pending
+        ADD COLUMN IF NOT EXISTS callsign TEXT`;
+      await db`ALTER TABLE graffiti_marks
+        ADD COLUMN IF NOT EXISTS callsign TEXT`;
     })().catch((error) => {
       schemaReady = null;
       throw error;
@@ -132,6 +137,7 @@ function markFromRow(row: MarkRow): GraffitiMark | null {
     return null;
   }
   const paymentHash = String(row.payment_hash ?? "").trim();
+  const callsign = String(row.callsign ?? "").trim();
   return {
     id,
     text,
@@ -144,6 +150,7 @@ function markFromRow(row: MarkRow): GraffitiMark | null {
     rotate,
     scale,
     ...(paymentHash ? { paymentHash } : {}),
+    ...(callsign ? { callsign } : {}),
   };
 }
 
@@ -153,7 +160,7 @@ async function neonSavePending(pending: PendingGraffiti) {
   await db`
     INSERT INTO graffiti_pending (
       payment_hash, text, style, color, created_at,
-      top, left_pos, rotate, scale
+      top, left_pos, rotate, scale, callsign
     )
     VALUES (
       ${pending.paymentHash},
@@ -164,7 +171,8 @@ async function neonSavePending(pending: PendingGraffiti) {
       ${pending.top ?? null},
       ${pending.left ?? null},
       ${pending.rotate ?? null},
-      ${pending.scale ?? null}
+      ${pending.scale ?? null},
+      ${pending.callsign ?? null}
     )
     ON CONFLICT (payment_hash) DO UPDATE SET
       text = EXCLUDED.text,
@@ -174,7 +182,8 @@ async function neonSavePending(pending: PendingGraffiti) {
       top = EXCLUDED.top,
       left_pos = EXCLUDED.left_pos,
       rotate = EXCLUDED.rotate,
-      scale = EXCLUDED.scale
+      scale = EXCLUDED.scale,
+      callsign = EXCLUDED.callsign
   `;
   return pending;
 }
@@ -184,7 +193,7 @@ async function neonGetPending(paymentHash: string) {
   const db = sql();
   const rows = await db`
     SELECT payment_hash, text, style, color, created_at,
-           top, left_pos, rotate, scale
+           top, left_pos, rotate, scale, callsign
     FROM graffiti_pending
     WHERE payment_hash = ${paymentHash}
     LIMIT 1
@@ -199,6 +208,7 @@ async function neonGetPending(paymentHash: string) {
   const left = num(row.left_pos);
   const rotate = num(row.rotate);
   const scale = num(row.scale);
+  const callsign = String(row.callsign ?? "").trim();
   return {
     paymentHash: String(row.payment_hash ?? paymentHash),
     text,
@@ -209,6 +219,7 @@ async function neonGetPending(paymentHash: string) {
     ...(left != null ? { left } : {}),
     ...(rotate != null ? { rotate } : {}),
     ...(scale != null ? { scale } : {}),
+    ...(callsign ? { callsign } : {}),
   } satisfies PendingGraffiti;
 }
 
@@ -222,7 +233,7 @@ async function neonSavePaidMark(mark: GraffitiMark) {
   await db`
     INSERT INTO graffiti_marks (
       id, payment_hash, text, style, color,
-      top, left_pos, rotate, scale, created_at, expires_at
+      top, left_pos, rotate, scale, created_at, expires_at, callsign
     )
     VALUES (
       ${mark.id},
@@ -235,7 +246,8 @@ async function neonSavePaidMark(mark: GraffitiMark) {
       ${mark.rotate},
       ${mark.scale},
       ${mark.createdAt},
-      ${mark.expiresAt}
+      ${mark.expiresAt},
+      ${mark.callsign ?? null}
     )
     ON CONFLICT (payment_hash) DO NOTHING
   `;
@@ -250,7 +262,7 @@ async function neonGetPaidMarks() {
   const rows = await db`
     SELECT
       id, payment_hash, text, style, color,
-      top, left_pos, rotate, scale, created_at, expires_at
+      top, left_pos, rotate, scale, created_at, expires_at, callsign
     FROM graffiti_marks
     WHERE expires_at > NOW()
     ORDER BY created_at ASC
@@ -266,7 +278,7 @@ async function neonFindPaidByHash(paymentHash: string) {
   const rows = await db`
     SELECT
       id, payment_hash, text, style, color,
-      top, left_pos, rotate, scale, created_at, expires_at
+      top, left_pos, rotate, scale, created_at, expires_at, callsign
     FROM graffiti_marks
     WHERE payment_hash = ${paymentHash}
     LIMIT 1

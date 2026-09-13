@@ -10,11 +10,12 @@ import { SettleRitual, useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import { COPY } from "@/lib/copy";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
+import { CallsignField } from "@/components/glass/CallsignField";
+import { parseCallsignEtch } from "@/lib/callsign";
+import { useGlass } from "@/lib/useGlass";
 import {
-  STORY_ALIAS_MAX,
   STORY_MAX_CHARS,
   STORY_PRICE_SATS,
-  sanitizeStoryAlias,
   sanitizeStoryLine,
   type StoryLine,
 } from "@/lib/story";
@@ -28,8 +29,8 @@ export function StoryComposer({
 }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { glass, markEtched } = useGlass();
   const [text, setText] = useState("");
-  const [alias, setAlias] = useState("");
   const [step, setStep] = useState<Step>("compose");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,8 +45,7 @@ export function StoryComposer({
   const [expired, setExpired] = useState(false);
 
   const lineCheck = sanitizeStoryLine(text);
-  const aliasCheck = sanitizeStoryAlias(alias);
-  const canPay = lineCheck.ok && aliasCheck.ok && !pending;
+  const canPay = lineCheck.ok && Boolean(glass?.callsign) && !pending;
   const used = text.length;
 
   useEffect(() => {
@@ -100,11 +100,14 @@ export function StoryComposer({
         const data = (await response.json()) as {
           paid?: boolean;
           line?: StoryLine | null;
+          etch?: unknown;
           error?: string;
         };
         if (cancelled) return;
         if (data.paid && data.line) {
           const line = data.line;
+          const etch = parseCallsignEtch(data.etch);
+          if (etch) markEtched(etch);
           setInvoiceError(null);
           setWaiting(false);
           beginSettle(() => {
@@ -135,17 +138,16 @@ export function StoryComposer({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, bindCheck, expired, onPaid, paymentHash, settling, step]);
+  }, [beginSettle, bindCheck, expired, markEtched, onPaid, paymentHash, settling, step]);
 
   async function requestInvoice() {
     const nextLine = sanitizeStoryLine(text);
-    const nextAlias = sanitizeStoryAlias(alias);
     if (!nextLine.ok) {
       setError(nextLine.reason);
       return;
     }
-    if (!nextAlias.ok) {
-      setError(nextAlias.reason);
+    if (!glass?.callsign) {
+      setError("SET CALLSIGN FIRST · 2–16 CHARS");
       return;
     }
     setError(null);
@@ -162,7 +164,8 @@ export function StoryComposer({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: nextLine.text,
-          alias: nextAlias.alias,
+          alias: glass.callsign,
+          callsign: glass.callsign,
         }),
       });
       const data = (await response.json()) as {
@@ -260,17 +263,12 @@ export function StoryComposer({
               placeholder="Write what happens next…"
             />
           </label>
-          <label className="story-field">
-            <span>callsign · optional</span>
-            <input
-              value={alias}
-              maxLength={STORY_ALIAS_MAX}
-              onChange={(event) => setAlias(event.target.value)}
-              placeholder="anon"
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </label>
+          <CallsignField
+            className="story-field"
+            label="CALLSIGN"
+            placeholder="HOPE"
+            disabled={pending}
+          />
           {error ? <p className="story-error">{error}</p> : null}
           {step === "done" ? (
             <p className="story-done">Your line is in the book.</p>

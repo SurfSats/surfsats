@@ -44,6 +44,7 @@ export type GraffitiMark = {
   rotate: number;
   scale: number;
   paymentHash?: string;
+  callsign?: string;
 };
 
 export type GraffitiPlacement = {
@@ -63,6 +64,7 @@ export type PendingGraffiti = {
   left?: number;
   rotate?: number;
   scale?: number;
+  callsign?: string;
 };
 
 export const GRAFFITI_META_KIND = "surfsats-graffiti";
@@ -197,6 +199,7 @@ export function createMark(
     paidAt?: number;
     paymentHash?: string;
     placement?: GraffitiPlacement | null;
+    callsign?: string;
   },
 ) {
   const created = options?.paidAt ?? Date.now();
@@ -205,6 +208,7 @@ export function createMark(
   const placement = options?.placement
     ? sanitizePlacement(options.placement)
     : placeMark(paymentHash);
+  const callsign = options?.callsign?.trim();
   return {
     id,
     text,
@@ -214,6 +218,7 @@ export function createMark(
     expiresAt: new Date(created + GRAFFITI_TTL_MS).toISOString(),
     paymentHash,
     ...placement,
+    ...(callsign ? { callsign } : {}),
   } satisfies GraffitiMark;
 }
 

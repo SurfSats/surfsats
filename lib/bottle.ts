@@ -9,11 +9,13 @@ export type BottlePull = {
   line: string;
   createdAt: string;
   paymentHash?: string;
+  alias?: string;
 };
 
 export type BottlePending = {
   paymentHash: string;
   createdAt: string;
+  callsign?: string;
 };
 
 export function pickBottleLine(lines: string[], recent: string[]) {

@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import {
-  ARCADE_ALIAS_MAX,
   ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
   sanitizeAlias,
 } from "@/lib/arcade";
+import { CallsignField } from "@/components/glass/CallsignField";
 import { CreditLed } from "@/components/arcade/CreditLed";
 import { verbPressProps } from "@/lib/verb-press";
 import type { RefObject } from "react";
@@ -143,19 +143,12 @@ export function ArcadeCabinet({
           </div>
 
           {mode !== "playing" && !canPlay ? (
-            <label className="cab-alias cab-till-alias">
-              <span>CALLSIGN · REQUIRED</span>
-              <input
-                value={alias}
-                maxLength={ARCADE_ALIAS_MAX}
-                onChange={(event) => onAlias(event.target.value)}
-                placeholder="YOUR ALIAS"
-                autoCapitalize="characters"
-                autoComplete="off"
-                spellCheck={false}
-                disabled={paying || pending}
-              />
-            </label>
+            <CallsignField
+              className="cab-alias cab-till-alias"
+              label="CALLSIGN · REQUIRED"
+              placeholder="HOPE"
+              disabled={paying || pending}
+            />
           ) : null}
 
           {!aliasOk && !canPlay ? (

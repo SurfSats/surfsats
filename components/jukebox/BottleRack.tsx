@@ -8,6 +8,9 @@ import { InvoiceQr } from "@/components/pay/InvoiceQr";
 import { OneTapZap } from "@/components/pay/OneTapZap";
 import { payFetch } from "@/lib/pay-fetch";
 import { useCheckNow } from "@/components/pay/useWebLn";
+import { CallsignField } from "@/components/glass/CallsignField";
+import { parseCallsignEtch } from "@/lib/callsign";
+import { useGlass } from "@/lib/useGlass";
 import { BOTTLE_PRICE_SATS, type BottlePull } from "@/lib/bottle";
 import { COPY } from "@/lib/copy";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
@@ -19,6 +22,7 @@ type Face = "idle" | "crack" | "message";
 
 export function BottleStage() {
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { glass, markEtched } = useGlass();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentRequest, setPaymentRequest] = useState("");
@@ -58,10 +62,13 @@ export function BottleStage() {
         const data = (await response.json()) as {
           paid?: boolean;
           pull?: BottlePull | null;
+          etch?: unknown;
           error?: string;
         };
         if (cancelled) return;
         if (data.paid && data.pull) {
+          const etch = parseCallsignEtch(data.etch);
+          if (etch) markEtched(etch);
           const line = data.pull.line;
           setWaiting(false);
           setPaymentHash("");
@@ -90,10 +97,14 @@ export function BottleStage() {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [bindCheck, paymentHash]);
+  }, [bindCheck, markEtched, paymentHash]);
 
   async function pullBottle() {
     if (pending || paymentHash) return;
+    if (!glass?.callsign) {
+      setError("SET CALLSIGN FIRST · 2–16 CHARS");
+      return;
+    }
     setError(null);
     setReveal(null);
     setFace("idle");
@@ -101,6 +112,8 @@ export function BottleStage() {
     try {
       const response = await payFetch("/api/jukebox/bottle/invoice", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callsign: glass.callsign }),
       });
       const data = (await response.json()) as {
         error?: string;
@@ -150,7 +163,7 @@ export function BottleStage() {
       <button
         type="button"
         className={face === "message" ? "bottle-hit is-message" : "bottle-hit"}
-        disabled={pending || paying || face === "crack"}
+        disabled={pending || paying || face === "crack" || !glass?.callsign}
         onClick={() => void pullBottle()}
         aria-label={`Pull a bottle, ${BOTTLE_PRICE_SATS} sats`}
       >
@@ -184,6 +197,12 @@ export function BottleStage() {
         <Image src="/bottle-crack.png" alt="" width={640} height={860} unoptimized />
         <Image src="/bottle-message.png" alt="" width={1168} height={784} unoptimized />
       </div>
+      <CallsignField
+        className="bottle-callsign"
+        label="CALLSIGN"
+        placeholder="HOPE"
+        disabled={pending || paying}
+      />
       <p className="bottle-caption">
         {pending
           ? COPY.validating

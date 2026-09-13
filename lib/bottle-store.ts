@@ -49,6 +49,10 @@ async function ensureNeonSchema() {
       )`;
       await db`CREATE INDEX IF NOT EXISTS bottle_pulls_created_at
         ON bottle_pulls (created_at DESC)`;
+      await db`ALTER TABLE bottle_pending
+        ADD COLUMN IF NOT EXISTS callsign TEXT`;
+      await db`ALTER TABLE bottle_pulls
+        ADD COLUMN IF NOT EXISTS alias TEXT`;
     })().catch((error) => {
       schemaReady = null;
       throw error;
@@ -72,11 +76,13 @@ function pullFromRow(row: Record<string, unknown>): BottlePull | null {
   const createdAt = iso(row.created_at);
   if (!id || !createdAt) return null;
   const paymentHash = String(row.payment_hash ?? "").trim();
+  const alias = String(row.alias ?? "").trim();
   return {
     id,
     line,
     createdAt,
     ...(paymentHash ? { paymentHash } : {}),
+    ...(alias ? { alias } : {}),
   };
 }
 
@@ -142,10 +148,11 @@ export async function saveBottlePending(pending: BottlePending) {
     await ensureNeonSchema();
     const db = sql();
     await db`
-      INSERT INTO bottle_pending (payment_hash, created_at)
-      VALUES (${pending.paymentHash}, ${pending.createdAt})
+      INSERT INTO bottle_pending (payment_hash, created_at, callsign)
+      VALUES (${pending.paymentHash}, ${pending.createdAt}, ${pending.callsign ?? null})
       ON CONFLICT (payment_hash) DO UPDATE SET
-        created_at = EXCLUDED.created_at
+        created_at = EXCLUDED.created_at,
+        callsign = EXCLUDED.callsign
     `;
     bottleLog("info", "pending.saved", {
       hash: hashRef(pending.paymentHash),
@@ -170,16 +177,18 @@ export async function getBottlePending(paymentHash: string) {
     await ensureNeonSchema();
     const db = sql();
     const rows = await db`
-      SELECT payment_hash, created_at
+      SELECT payment_hash, created_at, callsign
       FROM bottle_pending
       WHERE payment_hash = ${paymentHash}
       LIMIT 1
     `;
     const row = rows[0];
     if (!row) return null;
+    const callsign = String(row.callsign ?? "").trim();
     return {
       paymentHash: String(row.payment_hash ?? paymentHash),
       createdAt: iso(row.created_at) || new Date().toISOString(),
+      ...(callsign ? { callsign } : {}),
     } satisfies BottlePending;
   }
   await loadStore();
@@ -191,7 +200,7 @@ export async function findBottleByHash(paymentHash: string) {
     await ensureNeonSchema();
     const db = sql();
     const rows = await db`
-      SELECT id, payment_hash, line, created_at
+      SELECT id, payment_hash, line, created_at, alias
       FROM bottle_pulls
       WHERE payment_hash = ${paymentHash}
       LIMIT 1
@@ -213,12 +222,13 @@ export async function saveBottlePull(pull: BottlePull) {
     await ensureNeonSchema();
     const db = sql();
     await db`
-      INSERT INTO bottle_pulls (id, payment_hash, line, created_at)
+      INSERT INTO bottle_pulls (id, payment_hash, line, created_at, alias)
       VALUES (
         ${pull.id},
         ${paymentHash},
         ${pull.line},
-        ${pull.createdAt}
+        ${pull.createdAt},
+        ${pull.alias ?? null}
       )
       ON CONFLICT (payment_hash) DO NOTHING
     `;
@@ -250,7 +260,7 @@ export async function getRecentBottlePulls(limit = BOTTLE_RECENT) {
     await ensureNeonSchema();
     const db = sql();
     const rows = await db`
-      SELECT id, payment_hash, line, created_at
+      SELECT id, payment_hash, line, created_at, alias
       FROM bottle_pulls
       ORDER BY created_at DESC
       LIMIT 12

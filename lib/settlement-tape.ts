@@ -74,8 +74,10 @@ export function tapeFromGraffiti(mark: {
   text: string;
   createdAt: string;
   paymentHash?: string;
+  callsign?: string;
+  alias?: string;
 }): TapeEvent {
-  const actor = formatTapeActor(null);
+  const actor = formatTapeActor(mark.callsign ?? mark.alias);
   return {
     id: `graffiti:${mark.paymentHash || mark.id}`,
     machine: "graffiti",

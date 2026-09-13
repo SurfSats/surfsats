@@ -13,6 +13,8 @@ import {
   sanitizeAlias,
   type TabPlayer,
 } from "@/lib/tab";
+import type { CallsignEtch } from "@/lib/callsign";
+import { rememberSettledCallsign } from "@/lib/callsign-store";
 import { hashRef, tabLog } from "@/lib/tab-log";
 import {
   findTabGrant,
@@ -105,6 +107,7 @@ export async function settleTabPayment(paymentHash: string): Promise<{
   ok: boolean;
   already: boolean;
   player: TabPlayer | null;
+  etch: CallsignEtch | null;
 }> {
   const existing = await findTabGrant(paymentHash);
   if (existing) {
@@ -113,15 +116,22 @@ export async function settleTabPayment(paymentHash: string): Promise<{
       hash: hashRef(paymentHash),
       store: tabStoreKind(),
     });
+    const playerNext = player ?? {
+      playerId: existing.playerId,
+      alias: existing.alias,
+      credits: existing.credits,
+    };
+    const etch = await rememberSettledCallsign({
+      callsign: playerNext.alias,
+      paymentHash,
+      machine: "tab",
+    });
     return {
       paid: true,
       ok: true,
       already: true,
-      player: player ?? {
-        playerId: existing.playerId,
-        alias: existing.alias,
-        credits: existing.credits,
-      },
+      player: playerNext,
+      etch,
     };
   }
 
@@ -129,20 +139,20 @@ export async function settleTabPayment(paymentHash: string): Promise<{
   const invoice = await getAlbyInvoice(paymentHash);
   const meta = parseTabPayload(invoice.metadata);
   if (!pending && !meta) {
-    return { paid: false, ok: false, already: false, player: null };
+    return { paid: false, ok: false, already: false, player: null, etch: null };
   }
 
   if (!isInvoiceSettled(invoice)) {
-    return { paid: false, ok: false, already: false, player: null };
+    return { paid: false, ok: false, already: false, player: null, etch: null };
   }
   if (!isTabInvoiceAmount(invoice)) {
     tabLog("warn", "settle.wrong_amount", { hash: hashRef(paymentHash) });
-    return { paid: false, ok: false, already: false, player: null };
+    return { paid: false, ok: false, already: false, player: null, etch: null };
   }
 
   const claim = pending ?? meta;
   if (!claim) {
-    return { paid: true, ok: false, already: false, player: null };
+    return { paid: true, ok: false, already: false, player: null, etch: null };
   }
 
   const result = await grantTabCredits({
@@ -150,11 +160,17 @@ export async function settleTabPayment(paymentHash: string): Promise<{
     playerId: claim.playerId,
     alias: claim.alias,
   });
+  const etch = await rememberSettledCallsign({
+    callsign: result.player.alias,
+    paymentHash,
+    machine: "tab",
+  });
   return {
     paid: true,
     ok: true,
     already: result.already,
     player: result.player,
+    etch,
   };
 }
 

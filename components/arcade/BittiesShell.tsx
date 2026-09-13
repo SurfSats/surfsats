@@ -4,11 +4,13 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { CallsignField } from "@/components/glass/CallsignField";
 import { payFetch } from "@/lib/pay-fetch";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
+import { parseCallsignEtch } from "@/lib/callsign";
+import { useGlassAlias } from "@/lib/useGlass";
 import {
-  ARCADE_ALIAS_MAX,
   ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
   ARCADE_STORAGE_KEY,
@@ -38,8 +40,8 @@ type Mode = "attract" | "invoice" | "ready" | "playing";
 export function BittiesShell() {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { alias, setAlias, markEtched } = useGlassAlias();
   const [playerId, setPlayerId] = useState("");
-  const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
   const [mode, setMode] = useState<Mode>("attract");
   const [pending, setPending] = useState(false);
@@ -76,7 +78,6 @@ export function BittiesShell() {
         ? cached.playerId
         : window.crypto.randomUUID();
     setPlayerId(id);
-    if (cached?.alias) setAlias(cached.alias);
     setReady(true);
   }, []);
 
@@ -102,10 +103,8 @@ export function BittiesShell() {
       alias?: string;
     };
     if (typeof data.credits === "number") setCredits(data.credits);
-    if (data.alias) {
-      setAlias((current) => current || data.alias || "");
-    }
-  }, []);
+    if (data.alias && !alias) setAlias(data.alias);
+  }, [alias, setAlias]);
 
   useEffect(() => {
     if (!playerId) return;
@@ -157,11 +156,14 @@ export function BittiesShell() {
           paid?: boolean;
           ok?: boolean;
           credits?: number;
+          etch?: unknown;
           error?: string;
         };
         if (cancelled) return;
         if (data.paid && data.ok) {
           const creditsNext = data.credits ?? 0;
+          const etch = parseCallsignEtch(data.etch);
+          if (etch) markEtched(etch);
           setInvoiceError(null);
           setWaiting(false);
           beginSettle(() => {
@@ -195,7 +197,7 @@ export function BittiesShell() {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, bindCheck, expired, mode, paymentHash, settling]);
+  }, [beginSettle, bindCheck, expired, markEtched, mode, paymentHash, settling]);
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
@@ -372,19 +374,12 @@ export function BittiesShell() {
             <p className="anarch-copy">Art & sfx · Kenney · CC0</p>
           </div>
           <div className="anarch-till">
-            <label className="cab-alias">
-              <span>CALLSIGN · REQUIRED</span>
-              <input
-                value={alias}
-                maxLength={ARCADE_ALIAS_MAX}
-                onChange={(event) => setAlias(event.target.value)}
-                placeholder="YOUR ALIAS"
-                autoCapitalize="characters"
-                autoComplete="off"
-                spellCheck={false}
-                disabled={paying || pending}
-              />
-            </label>
+            <CallsignField
+              className="cab-alias"
+              label="CALLSIGN · REQUIRED"
+              placeholder="HOPE"
+              disabled={paying || pending}
+            />
             {canPlay || screenMode === "ready" ? (
               <button
                 type="button"

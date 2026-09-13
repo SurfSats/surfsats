@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
+import { CallsignField } from "@/components/glass/CallsignField";
 import { payFetch } from "@/lib/pay-fetch";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
+import { parseCallsignEtch } from "@/lib/callsign";
+import { useGlassAlias } from "@/lib/useGlass";
 import {
   ANARCH_BUILD_HTML,
   ANARCH_BUILD_JS,
   ANARCH_BUILD_WASM,
   ANARCH_GAME_ID,
-  ARCADE_ALIAS_MAX,
   ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
   ARCADE_STORAGE_KEY,
@@ -45,8 +47,8 @@ async function anarchFilesPresent() {
 export function AnarchShell() {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { alias, setAlias, markEtched } = useGlassAlias();
   const [playerId, setPlayerId] = useState("");
-  const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
   const [mode, setMode] = useState<Mode>("attract");
   const [pending, setPending] = useState(false);
@@ -84,7 +86,6 @@ export function AnarchShell() {
         ? cached.playerId
         : window.crypto.randomUUID();
     setPlayerId(id);
-    if (cached?.alias) setAlias(cached.alias);
     setReady(true);
     void anarchFilesPresent().then(setBuildOk);
   }, []);
@@ -111,10 +112,8 @@ export function AnarchShell() {
       alias?: string;
     };
     if (typeof data.credits === "number") setCredits(data.credits);
-    if (data.alias) {
-      setAlias((current) => current || data.alias || "");
-    }
-  }, []);
+    if (data.alias && !alias) setAlias(data.alias);
+  }, [alias, setAlias]);
 
   useEffect(() => {
     if (!playerId) return;
@@ -166,11 +165,14 @@ export function AnarchShell() {
           paid?: boolean;
           ok?: boolean;
           credits?: number;
+          etch?: unknown;
           error?: string;
         };
         if (cancelled) return;
         if (data.paid && data.ok) {
           const creditsNext = data.credits ?? 0;
+          const etch = parseCallsignEtch(data.etch);
+          if (etch) markEtched(etch);
           setInvoiceError(null);
           setWaiting(false);
           beginSettle(() => {
@@ -204,7 +206,7 @@ export function AnarchShell() {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, bindCheck, expired, mode, paymentHash, settling]);
+  }, [beginSettle, bindCheck, expired, markEtched, mode, paymentHash, settling]);
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
@@ -393,19 +395,12 @@ export function AnarchShell() {
             ) : null}
           </div>
           <div className="anarch-till">
-            <label className="cab-alias">
-              <span>CALLSIGN · REQUIRED</span>
-              <input
-                value={alias}
-                maxLength={ARCADE_ALIAS_MAX}
-                onChange={(event) => setAlias(event.target.value)}
-                placeholder="YOUR ALIAS"
-                autoCapitalize="characters"
-                autoComplete="off"
-                spellCheck={false}
-                disabled={paying || pending}
-              />
-            </label>
+            <CallsignField
+              className="cab-alias"
+              label="CALLSIGN · REQUIRED"
+              placeholder="HOPE"
+              disabled={paying || pending}
+            />
             {canPlay || screenMode === "ready" ? (
               <button
                 type="button"

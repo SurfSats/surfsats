@@ -6,6 +6,7 @@ import { LiveSignalBar } from "@/components/layout/LiveSignalBar";
 import { Navbar } from "@/components/layout/Navbar";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { Watermark } from "@/components/layout/Watermark";
+import { GlassProvider } from "@/lib/useGlass";
 import { OG_HOME, SITE_ORIGIN, pageMeta } from "@/lib/seo";
 import { getTimechainSnapshot } from "@/lib/timechain";
 import "./globals.css";
@@ -59,13 +60,15 @@ export default async function RootLayout({
         <Watermark />
         <div className="crt-overlay" aria-hidden="true" />
         <div className="noise-overlay" aria-hidden="true" />
-        <SiteChrome>
-          <Navbar />
-          <LiveSignalBar initial={snapshot} />
-          <LiveSettlementTape />
-        </SiteChrome>
-        <main className="relative z-0 min-w-0 flex-1">{children}</main>
-        <Footer />
+        <GlassProvider>
+          <SiteChrome>
+            <Navbar />
+            <LiveSignalBar initial={snapshot} />
+            <LiveSettlementTape />
+          </SiteChrome>
+          <main className="relative z-0 min-w-0 flex-1">{children}</main>
+          <Footer />
+        </GlassProvider>
       </body>
     </html>
   );

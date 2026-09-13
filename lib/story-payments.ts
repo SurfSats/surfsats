@@ -6,11 +6,13 @@ import {
   isInvoiceSettled,
   type AlbyInvoice,
 } from "@/lib/alby";
+import { readCallsign, sanitizeCallsign } from "@/lib/callsign";
+import type { CallsignEtch } from "@/lib/callsign";
+import { rememberSettledCallsign } from "@/lib/callsign-store";
 import {
   STORY_META_KIND,
   STORY_PRICE_SATS,
   createStoryLine,
-  sanitizeStoryAlias,
   sanitizeStoryLine,
   type StoryLine,
 } from "@/lib/story";
@@ -41,9 +43,9 @@ export function parseStoryPayload(value: unknown): StoryInvoicePayload | null {
   }
   const clean = sanitizeStoryLine(String(record.text ?? ""));
   if (!clean.ok) return null;
-  const alias = sanitizeStoryAlias(String(record.alias ?? ""));
-  if (!alias.ok) return null;
-  return { text: clean.text, alias: alias.alias };
+  const alias = readCallsign(record.callsign ?? record.alias);
+  if (!alias) return null;
+  return { text: clean.text, alias };
 }
 
 export function isStoryInvoiceAmount(invoice: AlbyInvoice) {
@@ -104,6 +106,7 @@ export async function createStoryInvoice(input: StoryInvoicePayload) {
 export async function settleStoryPayment(paymentHash: string): Promise<{
   paid: boolean;
   line: StoryLine | null;
+  etch: CallsignEtch | null;
 }> {
   const existing = await findStoryByHash(paymentHash);
   if (existing) {
@@ -112,21 +115,26 @@ export async function settleStoryPayment(paymentHash: string): Promise<{
       hash: hashRef(paymentHash),
       store: storyStoreKind(),
     });
-    return { paid: true, line: existing };
+    const etch = await rememberSettledCallsign({
+      callsign: existing.alias,
+      paymentHash,
+      machine: "story",
+    });
+    return { paid: true, line: existing, etch };
   }
 
   const invoice = await getAlbyInvoice(paymentHash);
   if (!isInvoiceSettled(invoice)) {
-    return { paid: false, line: null };
+    return { paid: false, line: null, etch: null };
   }
   if (!isStoryInvoiceAmount(invoice)) {
-    return { paid: false, line: null };
+    return { paid: false, line: null, etch: null };
   }
 
   const pending =
     (await getStoryPending(paymentHash)) ?? parseStoryPayload(invoice.metadata);
   if (!pending) {
-    return { paid: true, line: null };
+    return { paid: true, line: null, etch: null };
   }
 
   const paidAt = invoice.settled_at
@@ -137,7 +145,12 @@ export async function settleStoryPayment(paymentHash: string): Promise<{
     paymentHash,
   });
   await saveStoryLine(line);
-  return { paid: true, line };
+  const etch = await rememberSettledCallsign({
+    callsign: line.alias,
+    paymentHash,
+    machine: "story",
+  });
+  return { paid: true, line, etch };
 }
 
 export function pendingStoryFromBody(
@@ -149,7 +162,7 @@ export function pendingStoryFromBody(
   const record = body as Record<string, unknown>;
   const clean = sanitizeStoryLine(String(record.text ?? ""));
   if (!clean.ok) return { error: clean.reason };
-  const alias = sanitizeStoryAlias(String(record.alias ?? ""));
-  if (!alias.ok) return { error: alias.reason };
-  return { text: clean.text, alias: alias.alias };
+  const parsed = sanitizeCallsign(String(record.callsign ?? record.alias ?? ""));
+  if (!parsed.ok) return { error: "SET CALLSIGN FIRST · 2–16 CHARS" };
+  return { text: clean.text, alias: parsed.callsign };
 }

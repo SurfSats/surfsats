@@ -8,6 +8,8 @@ import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import type { WaveRunnerHandle } from "@/components/arcade/WaveRunner";
+import { parseCallsignEtch } from "@/lib/callsign";
+import { useGlass } from "@/lib/useGlass";
 import {
   ARCADE_CREDITS_PER_PAY,
   ARCADE_GAME_ID,
@@ -34,8 +36,9 @@ export function ArcadeApp({
 }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { glass, setCallsign, markEtched } = useGlass();
+  const alias = glass?.callsign ?? "";
   const [playerId, setPlayerId] = useState("");
-  const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
   const [highScores, setHighScores] = useState<ArcadeHighScore[]>([]);
   const [mode, setMode] = useState<ArcadeScreenMode>("attract");
@@ -71,7 +74,6 @@ export function ArcadeApp({
         ? cached.playerId
         : window.crypto.randomUUID();
     setPlayerId(id);
-    if (cached?.alias) setAlias(cached.alias);
     setReady(true);
   }, []);
 
@@ -105,10 +107,8 @@ export function ArcadeApp({
       alias?: string;
     };
     if (typeof data.credits === "number") setCredits(data.credits);
-    if (data.alias) {
-      setAlias((current) => current || data.alias || "");
-    }
-  }, []);
+    if (data.alias && !alias) setCallsign(data.alias);
+  }, [alias, setCallsign]);
 
   useEffect(() => {
     if (!playerId) return;
@@ -164,11 +164,14 @@ export function ArcadeApp({
           paid?: boolean;
           ok?: boolean;
           credits?: number;
+          etch?: unknown;
           error?: string;
         };
         if (cancelled) return;
         if (data.paid && data.ok) {
           const creditsNext = data.credits ?? 0;
+          const etch = parseCallsignEtch(data.etch);
+          if (etch) markEtched(etch);
           setInvoiceError(null);
           setWaiting(false);
           beginSettle(() => {
@@ -200,7 +203,7 @@ export function ArcadeApp({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, bindCheck, expired, loadBoards, mode, paymentHash, settling]);
+  }, [beginSettle, bindCheck, expired, loadBoards, markEtched, mode, paymentHash, settling]);
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
@@ -216,7 +219,7 @@ export function ArcadeApp({
       setError("SET CALLSIGN FIRST · 2–16 CHARS");
       return;
     }
-    setAlias(next.alias);
+    setCallsign(next.alias);
     setError(null);
     setPending(true);
     setPaymentHash("");
@@ -276,7 +279,7 @@ export function ArcadeApp({
       return;
     }
     setError(null);
-    setAlias(next.alias);
+    setCallsign(next.alias);
     startLock.current = true;
     try {
       const response = await fetch("/api/arcade/play", {
@@ -459,7 +462,7 @@ export function ArcadeApp({
         scoreRank={scoreRank}
         scoreCopied={scoreCopied}
         gameRef={gameRef}
-        onAlias={setAlias}
+        onAlias={setCallsign}
         onInsert={() => void requestInvoice()}
         onPlay={() => void play()}
         onHop={hop}

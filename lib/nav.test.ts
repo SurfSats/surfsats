@@ -14,6 +14,12 @@ test("DIRTY FIAT footer dest is /fiat, not /dirty-fiat", () => {
   );
 });
 
+test("machines nav includes GLASS", () => {
+  const hit = primaryNavLinks.find((link) => link.href === "/glass");
+  assert.ok(hit);
+  assert.equal(hit.label, "GLASS");
+});
+
 test("machines nav has one radio/jukebox/music entry", () => {
   const hits = primaryNavLinks.filter(
     (link) =>

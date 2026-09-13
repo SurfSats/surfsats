@@ -6,6 +6,9 @@ import {
   isInvoiceSettled,
   type AlbyInvoice,
 } from "@/lib/alby";
+import { readCallsign } from "@/lib/callsign";
+import type { CallsignEtch } from "@/lib/callsign";
+import { rememberSettledCallsign } from "@/lib/callsign-store";
 import {
   GRAFFITI_META_KIND,
   GRAFFITI_PRICE_SATS,
@@ -33,6 +36,7 @@ export type GraffitiInvoicePayload = {
   text: string;
   style: GraffitiStyle;
   color: GraffitiColor;
+  callsign: string;
   placement?: GraffitiPlacement;
 };
 
@@ -66,11 +70,14 @@ export function parseGraffitiPayload(
   }
   const clean = sanitizeGraffiti(String(record.text ?? ""));
   if (!clean.ok) return null;
+  const callsign = readCallsign(record.callsign ?? record.alias);
+  if (!callsign) return null;
   const placement = placementFromRecord(record);
   return {
     text: clean.text,
     style: record.style,
     color: record.color,
+    callsign,
     ...(placement ? { placement } : {}),
   };
 }
@@ -81,6 +88,7 @@ async function createInvoice(input: GraffitiInvoicePayload) {
     text: input.text,
     style: input.style,
     color: input.color,
+    callsign: input.callsign,
     ...(input.placement
       ? {
           top: input.placement.top,
@@ -115,6 +123,7 @@ export async function createGraffitiInvoice(input: GraffitiInvoicePayload) {
     text: input.text,
     style: input.style,
     color: input.color,
+    callsign: input.callsign,
     createdAt: new Date().toISOString(),
     ...(input.placement
       ? {
@@ -141,6 +150,7 @@ export async function createGraffitiInvoice(input: GraffitiInvoicePayload) {
 export async function settleGraffitiPayment(paymentHash: string): Promise<{
   paid: boolean;
   mark: GraffitiMark | null;
+  etch: CallsignEtch | null;
 }> {
   const existing = await findPaidByHash(paymentHash);
   if (existing) {
@@ -149,18 +159,23 @@ export async function settleGraffitiPayment(paymentHash: string): Promise<{
       hash: hashRef(paymentHash),
       store: graffitiStoreKind(),
     });
-    return { paid: true, mark: existing };
+    const etch = await rememberSettledCallsign({
+      callsign: existing.callsign,
+      paymentHash,
+      machine: "graffiti",
+    });
+    return { paid: true, mark: existing, etch };
   }
 
   const invoice = await getAlbyInvoice(paymentHash);
   if (!isInvoiceSettled(invoice)) {
-    return { paid: false, mark: null };
+    return { paid: false, mark: null, etch: null };
   }
   if (!isGraffitiInvoiceAmount(invoice)) {
     graffitiLog("warn", "settle.wrong_amount", {
       hash: hashRef(paymentHash),
     });
-    return { paid: false, mark: null };
+    return { paid: false, mark: null, etch: null };
   }
 
   const mark = await promotePaidInvoice(invoice);
@@ -176,7 +191,14 @@ export async function settleGraffitiPayment(paymentHash: string): Promise<{
       });
     }
   }
-  return { paid: true, mark };
+  const etch = mark
+    ? await rememberSettledCallsign({
+        callsign: mark.callsign,
+        paymentHash,
+        machine: "graffiti",
+      })
+    : null;
+  return { paid: true, mark, etch };
 }
 
 async function promotePaidInvoice(invoice: AlbyInvoice) {
@@ -204,6 +226,7 @@ async function promotePaidInvoice(invoice: AlbyInvoice) {
     paidAt: Number.isFinite(paidAt) ? paidAt : Date.now(),
     paymentHash,
     placement,
+    callsign: pending.callsign,
   });
   await savePaidMark(mark);
   return mark;
@@ -225,11 +248,14 @@ export function pendingFromBody(
   }
   const clean = sanitizeGraffiti(String(record.text ?? ""));
   if (!clean.ok) return { error: clean.reason };
+  const callsign = readCallsign(record.callsign ?? record.alias);
+  if (!callsign) return { error: "SET CALLSIGN FIRST · 2–16 CHARS" };
   const placement = placementFromRecord(record);
   return {
     text: clean.text,
     style: record.style,
     color: record.color,
+    callsign,
     ...(placement ? { placement } : {}),
   };
 }

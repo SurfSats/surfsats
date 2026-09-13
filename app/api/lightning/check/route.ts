@@ -31,6 +31,7 @@ async function checkHash(paymentHash: string) {
     return NextResponse.json({
       paid: result.paid,
       mark: result.mark ?? null,
+      etch: result.etch ?? null,
     });
   } catch (error) {
     graffitiLog("error", "check.settle_failed", {

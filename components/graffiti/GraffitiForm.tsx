@@ -12,6 +12,9 @@ import { COPY } from "@/lib/copy";
 import { verbPressProps } from "@/lib/verb-press";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 import { payFetch } from "@/lib/pay-fetch";
+import { CallsignField } from "@/components/glass/CallsignField";
+import { parseCallsignEtch } from "@/lib/callsign";
+import { useGlass } from "@/lib/useGlass";
 import {
   GRAFFITI_MAX_CHARS,
   GRAFFITI_PRICE_SATS,
@@ -63,6 +66,8 @@ export function GraffitiForm({
 }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { glass, markEtched } = useGlass();
+  const callsignOk = Boolean(glass?.callsign);
   const [step, setStep] = useState<Step>("compose");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -134,11 +139,14 @@ export function GraffitiForm({
         const data = (await response.json()) as {
           paid?: boolean;
           mark?: GraffitiMark | null;
+          etch?: unknown;
           error?: string;
         };
         if (cancelled) return;
         if (data.paid && data.mark) {
           const mark = data.mark;
+          const etch = parseCallsignEtch(data.etch);
+          if (etch) markEtched(etch);
           setInvoiceError(null);
           setWaiting(false);
           beginSettle(() => {
@@ -169,12 +177,17 @@ export function GraffitiForm({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, bindCheck, expired, onPaid, paymentHash, settling, step]);
+  }, [beginSettle, bindCheck, expired, markEtched, onPaid, paymentHash, settling, step]);
 
   async function requestInvoice() {
     const next = sanitizeGraffiti(text);
     if (!next.ok) {
       setError(next.reason);
+      setStep("compose");
+      return;
+    }
+    if (!glass?.callsign) {
+      setError("SET CALLSIGN FIRST · 2–16 CHARS");
       setStep("compose");
       return;
     }
@@ -186,6 +199,7 @@ export function GraffitiForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: next.text,
+          callsign: glass.callsign,
           style,
           color,
           ...(placement
@@ -291,6 +305,12 @@ export function GraffitiForm({
             Hope stays.
           </p>
 
+          <CallsignField
+            className="graf-callsign mt-5 block"
+            label="CALLSIGN"
+            disabled={pending}
+          />
+
           <label className="mt-5 block">
             <span className="mb-1.5 flex justify-between text-[11px] uppercase tracking-[0.16em] text-stone-400">
               <span>message</span>
@@ -385,7 +405,7 @@ export function GraffitiForm({
 
           <button
             type="button"
-            disabled={pending || !check.ok}
+            disabled={pending || !check.ok || !callsignOk}
             onClick={() => void requestInvoice()}
             className="mt-5 min-h-12 w-full bg-amber-500 px-5 py-3.5 text-sm font-bold uppercase tracking-[0.12em] text-black disabled:opacity-40"
           >

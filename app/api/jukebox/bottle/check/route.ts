@@ -31,6 +31,7 @@ async function checkHash(paymentHash: string) {
     return NextResponse.json({
       paid: result.paid,
       pull: result.pull ?? null,
+      etch: result.etch ?? null,
     });
   } catch (error) {
     bottleLog("error", "check.settle_failed", {

@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { TabScreen } from "@/components/arcade/TabScreen";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
+import { CallsignField } from "@/components/glass/CallsignField";
 import {
-  ARCADE_ALIAS_MAX,
   ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
   formatCredits,
@@ -127,19 +127,12 @@ export function TabCabinet({
             </button>
           ) : null}
 
-          <label className="cab-alias">
-            <span>CALLSIGN · REQUIRED</span>
-            <input
-              value={alias}
-              maxLength={ARCADE_ALIAS_MAX}
-              onChange={(event) => onAlias(event.target.value)}
-              placeholder="YOUR ALIAS"
-              autoCapitalize="characters"
-              autoComplete="off"
-              spellCheck={false}
-              disabled={paying || sitting}
-            />
-          </label>
+          <CallsignField
+            className="cab-alias"
+            label="CALLSIGN · REQUIRED"
+            placeholder="HOPE"
+            disabled={paying || sitting}
+          />
 
           {!aliasOk && !canSit && tree ? (
             <p className="cab-hint">ENTER CALLSIGN (2–16) THEN INSERT COIN</p>

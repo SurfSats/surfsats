@@ -6,6 +6,7 @@ export const primaryNavLinks: NavLink[] = [
   { href: "/tab", label: "TAB" },
   { href: "/graffiti", label: "Graffiti" },
   { href: "/story", label: "Story" },
+  { href: "/glass", label: "GLASS" },
 ];
 
 export const readoutNavLinks: NavLink[] = [
@@ -44,6 +45,7 @@ export const COMPACT_HEADER_PREFIXES = [
   "/arcade",
   "/tab",
   "/story",
+  "/glass",
   "/tidechain",
   "/lineup",
 ] as const;

@@ -43,6 +43,7 @@ async function checkHash(paymentHash: string) {
       credits: result.player?.credits ?? 0,
       alias: result.player?.alias ?? "",
       playerId: result.player?.playerId ?? null,
+      etch: result.etch ?? null,
     });
   } catch (error) {
     tabLog("error", "check.settle_failed", {

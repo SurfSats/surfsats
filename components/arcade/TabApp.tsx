@@ -21,6 +21,8 @@ import {
   type ArcadeHighScore,
   type ArcadeRecentPlay,
 } from "@/lib/arcade";
+import { parseCallsignEtch } from "@/lib/callsign";
+import { useGlassAlias } from "@/lib/useGlass";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 import {
   loadBarTree,
@@ -44,8 +46,8 @@ export function TabApp({
 }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
+  const { alias, setAlias, markEtched } = useGlassAlias();
   const [playerId, setPlayerId] = useState("");
-  const [alias, setAlias] = useState("");
   const [credits, setCredits] = useState(0);
   const [highScores, setHighScores] = useState<ArcadeHighScore[]>([]);
   const [lastPlayers, setLastPlayers] = useState<ArcadeRecentPlay[]>([]);
@@ -82,7 +84,6 @@ export function TabApp({
         ? cached.playerId
         : window.crypto.randomUUID();
     setPlayerId(id);
-    if (cached?.alias) setAlias(cached.alias);
     setReady(true);
   }, []);
 
@@ -132,10 +133,8 @@ export function TabApp({
       alias?: string;
     };
     if (typeof data.credits === "number") setCredits(data.credits);
-    if (data.alias) {
-      setAlias((current) => current || data.alias || "");
-    }
-  }, []);
+    if (data.alias && !alias) setAlias(data.alias);
+  }, [alias, setAlias]);
 
   useEffect(() => {
     if (!playerId) return;
@@ -201,11 +200,14 @@ export function TabApp({
           paid?: boolean;
           ok?: boolean;
           credits?: number;
+          etch?: unknown;
           error?: string;
         };
         if (cancelled) return;
         if (data.paid && data.ok) {
           const creditsNext = data.credits ?? 0;
+          const etch = parseCallsignEtch(data.etch);
+          if (etch) markEtched(etch);
           setInvoiceError(null);
           setWaiting(false);
           beginSettle(() => {
@@ -237,7 +239,7 @@ export function TabApp({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, bindCheck, expired, loadBoards, mode, paymentHash, settling]);
+  }, [beginSettle, bindCheck, expired, loadBoards, markEtched, mode, paymentHash, settling]);
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";

@@ -1,3 +1,5 @@
+import { sanitizeCallsign } from "./callsign.ts";
+
 export const ARCADE_PRICE_SATS = 21;
 export const ARCADE_CREDITS_PER_PAY = 3;
 export const ARCADE_GAME_ID = "wave-runner";
@@ -15,8 +17,10 @@ export const ARCADE_STORAGE_KEY = "surfsats.arcade.v1";
 export const RETRO_STORAGE_KEY = "surfsats.arcade.retro.v1";
 export const TAB_STORAGE_KEY = "surfsats.arcade.tab.v1";
 export const ARCADE_META_KIND = "surfsats-arcade";
-export const ARCADE_ALIAS_MIN = 2;
-export const ARCADE_ALIAS_MAX = 16;
+export {
+  CALLSIGN_MIN as ARCADE_ALIAS_MIN,
+  CALLSIGN_MAX as ARCADE_ALIAS_MAX,
+} from "./callsign.ts";
 
 export const ARCADE_MACHINE_WAVE = "wave";
 export const ARCADE_MACHINE_RETRO = "retro";
@@ -90,17 +94,9 @@ export type ArcadeRecentPlay = {
 };
 
 export function sanitizeAlias(raw: string) {
-  const alias = raw.trim().replace(/\s+/g, "_").toUpperCase();
-  if (alias.length < ARCADE_ALIAS_MIN) {
-    return { ok: false as const, reason: "alias too short" };
-  }
-  if (alias.length > ARCADE_ALIAS_MAX) {
-    return { ok: false as const, reason: "alias too long" };
-  }
-  if (!/^[A-Z0-9][A-Z0-9_-]*$/.test(alias)) {
-    return { ok: false as const, reason: "letters, numbers, _ or -" };
-  }
-  return { ok: true as const, alias };
+  const parsed = sanitizeCallsign(raw);
+  if (!parsed.ok) return parsed;
+  return { ok: true as const, alias: parsed.callsign };
 }
 
 export function isPlayerId(value: unknown): value is string {
