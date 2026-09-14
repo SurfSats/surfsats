@@ -150,21 +150,42 @@ test("standing up through a closeout slam wipes out", () => {
   assert.equal(game.reason, "closeout");
 });
 
-test("wipeout with lives left respawns on the same wave", () => {
+test("next life starts on an open face, not the kill section", () => {
   const game = emptyGame(480, 360, 11);
-  spawnAhead(game);
-  for (let i = 0; i < 40; i += 1) step(game, 1 / 60);
-  const scroll = game.scroll;
-  const seed = game.seed;
-  const sections = game.sections.length;
+  const px = Math.round(Math.min(128, Math.max(52, game.w * 0.22)));
+  game.scroll = 900;
+  game.speed = MAX_SPEED;
+  game.t = 40;
+  game.barrelS = 3.2;
+  game.rail = 0.8;
+  game.energy = 0.9;
+  game.sections = [
+    {
+      kind: "closeout",
+      x0: 800,
+      x1: 1200,
+      steep: 0.8,
+      tube: 64,
+      telegraphX: 820,
+    },
+  ];
+  game.nextX = 1200;
   game.dead = true;
   game.reason = "closeout";
   respawnGame(game);
   assert.equal(game.dead, false);
-  assert.equal(game.seed, seed);
-  assert.equal(game.scroll, scroll);
-  assert.ok(game.sections.length >= sections - 2);
-  assert.ok(game.rail > 0.2);
+  assert.equal(game.scroll, 0);
+  assert.equal(game.speed, BASE_SPEED);
+  assert.equal(game.barrelS, 0);
+  assert.equal(metersOf(game), 0);
+  assert.equal(game.t, 0);
+  assert.ok(Math.abs(game.rail - 0.55) < 0.001);
+  assert.ok(Math.abs(game.energy - 0.45) < 0.001);
+  const here = sectionAt(game, px);
+  assert.equal(here?.kind, "face");
+  assert.ok(
+    !game.sections.some((sec) => sec.kind === "closeout" && sec.x0 < 200),
+  );
 });
 
 test("later sets spawn more of the wave ahead", () => {

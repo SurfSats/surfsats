@@ -51,6 +51,80 @@ type OceanCache = {
   foam: HTMLCanvasElement;
 };
 
+type WaveSkin = {
+  rider: HTMLImageElement | null;
+  board: HTMLImageElement | null;
+  foam: HTMLImageElement | null;
+  lip: HTMLImageElement | null;
+  barrel: HTMLImageElement | null;
+  closeout: HTMLImageElement | null;
+  water: HTMLImageElement | null;
+};
+
+const SKIN_DIR = "/arcade/wave-runner";
+const SKIN_FILES = [
+  "rider",
+  "board",
+  "foam",
+  "lip",
+  "barrel",
+  "closeout",
+  "water",
+] as const;
+
+function emptySkin(): WaveSkin {
+  return {
+    rider: null,
+    board: null,
+    foam: null,
+    lip: null,
+    barrel: null,
+    closeout: null,
+    water: null,
+  };
+}
+
+function loadSkinImage(name: string) {
+  return new Promise<HTMLImageElement | null>((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = `${SKIN_DIR}/${name}.png`;
+  });
+}
+
+async function loadWaveSkin() {
+  const skin = emptySkin();
+  const loaded = await Promise.all(
+    SKIN_FILES.map(async (name) => [name, await loadSkinImage(name)] as const),
+  );
+  for (const [name, img] of loaded) skin[name] = img;
+  return skin;
+}
+
+function riderFrame(game: Game) {
+  if (game.dead) return 4;
+  if (game.tucked) return 3;
+  if (!game.grounded || game.hop > 2) return 2;
+  if (game.pumping) return 1;
+  return 0;
+}
+
+function drawClippedImage(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  if (w <= 1 || h <= 1) return;
+  ctx.save();
+  ctx.clip();
+  ctx.drawImage(img, x, y, w, h);
+  ctx.restore();
+}
+
 function bakeSky(w: number, h: number) {
   const c = document.createElement("canvas");
   c.width = w;
@@ -173,7 +247,12 @@ function troughYAt(game: Game, screenX: number) {
   return surfaceY(game, game.scroll + screenX, 0.06);
 }
 
-function drawFace(ctx: CanvasRenderingContext2D, game: Game, foam: HTMLCanvasElement) {
+function drawFace(
+  ctx: CanvasRenderingContext2D,
+  game: Game,
+  foam: HTMLCanvasElement,
+  skin: WaveSkin,
+) {
   const W = game.w;
   const H = game.h;
   ctx.beginPath();
@@ -181,11 +260,22 @@ function drawFace(ctx: CanvasRenderingContext2D, game: Game, foam: HTMLCanvasEle
   for (let x = 0; x <= W; x += 6) ctx.lineTo(x, troughYAt(game, x));
   ctx.lineTo(W, H);
   ctx.closePath();
-  const mass = ctx.createLinearGradient(0, H * 0.5, 0, H);
-  mass.addColorStop(0, "#0a3040");
-  mass.addColorStop(1, "#041018");
-  ctx.fillStyle = mass;
-  ctx.fill();
+  if (skin.water) {
+    ctx.save();
+    ctx.clip();
+    const iw = Math.max(32, skin.water.width);
+    const ih = Math.max(32, skin.water.height);
+    for (let y = Math.floor(H * 0.4); y < H; y += ih) {
+      for (let x = 0; x < W; x += iw) ctx.drawImage(skin.water, x, y, iw, ih);
+    }
+    ctx.restore();
+  } else {
+    const mass = ctx.createLinearGradient(0, H * 0.5, 0, H);
+    mass.addColorStop(0, "#0a3040");
+    mass.addColorStop(1, "#041018");
+    ctx.fillStyle = mass;
+    ctx.fill();
+  }
 
   ctx.beginPath();
   for (let x = 0; x <= W; x += 5) {
@@ -203,23 +293,32 @@ function drawFace(ctx: CanvasRenderingContext2D, game: Game, foam: HTMLCanvasEle
   ctx.fillStyle = face;
   ctx.fill();
 
-  ctx.beginPath();
-  for (let x = 0; x <= W; x += 4) {
-    if (x === 0) ctx.moveTo(x, lipYAt(game, x) - 2);
-    else ctx.lineTo(x, lipYAt(game, x) - 2);
+  if (skin.lip) {
+    const tile = Math.max(16, skin.lip.width);
+    const hh = Math.max(10, Math.min(28, skin.lip.height));
+    for (let x = 0; x < W; x += tile - 2) {
+      ctx.drawImage(skin.lip, x, lipYAt(game, x) - hh * 0.65, tile, hh);
+    }
+  } else {
+    ctx.beginPath();
+    for (let x = 0; x <= W; x += 4) {
+      if (x === 0) ctx.moveTo(x, lipYAt(game, x) - 2);
+      else ctx.lineTo(x, lipYAt(game, x) - 2);
+    }
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 8;
+    ctx.stroke();
+    ctx.strokeStyle = "#efe6d4";
+    ctx.lineWidth = 3.2;
+    ctx.stroke();
   }
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 8;
-  ctx.stroke();
-  ctx.strokeStyle = "#efe6d4";
-  ctx.lineWidth = 3.2;
-  ctx.stroke();
+  const foamImg = skin.foam ?? foam;
   for (let x = 8; x < W; x += 28) {
-    ctx.drawImage(foam, x - 18, lipYAt(game, x) - 10);
+    ctx.drawImage(foamImg, x - 18, lipYAt(game, x) - 10);
   }
 }
 
-function drawBarrel(ctx: CanvasRenderingContext2D, game: Game) {
+function drawBarrel(ctx: CanvasRenderingContext2D, game: Game, skin: WaveSkin) {
   const seen = new Set<number>();
   for (const sec of game.sections) {
     if (sec.kind !== "barrel") continue;
@@ -236,12 +335,16 @@ function drawBarrel(ctx: CanvasRenderingContext2D, game: Game) {
     const ry = Math.max(22, (trough - lip) * 0.34);
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "#02080e";
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(cx - rx * 0.12, cy, rx * 0.72, ry * 0.7, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(4, 16, 24, 0.92)";
-    ctx.fill();
+    if (skin.barrel) {
+      drawClippedImage(ctx, skin.barrel, cx - rx, cy - ry, rx * 2, ry * 2);
+    } else {
+      ctx.fillStyle = "#02080e";
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(cx - rx * 0.12, cy, rx * 0.72, ry * 0.7, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(4, 16, 24, 0.92)";
+      ctx.fill();
+    }
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
     ctx.strokeStyle = "rgba(61, 255, 243, 0.45)";
@@ -255,7 +358,12 @@ function drawBarrel(ctx: CanvasRenderingContext2D, game: Game) {
   }
 }
 
-function drawCloseout(ctx: CanvasRenderingContext2D, game: Game, foam: HTMLCanvasElement) {
+function drawCloseout(
+  ctx: CanvasRenderingContext2D,
+  game: Game,
+  foam: HTMLCanvasElement,
+  skin: WaveSkin,
+) {
   for (const sec of game.sections) {
     if (sec.kind !== "closeout") continue;
     const x0 = sec.telegraphX - game.scroll;
@@ -276,12 +384,18 @@ function drawCloseout(ctx: CanvasRenderingContext2D, game: Game, foam: HTMLCanva
     }
     ctx.lineTo(x - 16, trough + 10);
     ctx.closePath();
-    ctx.fillStyle = `rgba(239, 230, 212, ${0.35 + u * 0.5 * flash})`;
-    ctx.fill();
-    ctx.fillStyle = `rgba(255, 255, 255, ${0.5 * flash})`;
-    ctx.fill();
-    ctx.drawImage(foam, x - 8, lip - 6);
-    ctx.drawImage(foam, x + 10, lip + 10);
+    if (skin.closeout) {
+      const wallW = 40 + u * 48;
+      drawClippedImage(ctx, skin.closeout, x - 16, lip - 8, wallW, trough - lip + 20);
+    } else {
+      ctx.fillStyle = `rgba(239, 230, 212, ${0.35 + u * 0.5 * flash})`;
+      ctx.fill();
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.5 * flash})`;
+      ctx.fill();
+    }
+    const foamImg = skin.foam ?? foam;
+    ctx.drawImage(foamImg, x - 8, lip - 6);
+    ctx.drawImage(foamImg, x + 10, lip + 10);
     if (u < 0.7) {
       ctx.fillStyle = `rgba(255, 46, 196, ${0.55 + flash * 0.35})`;
       ctx.font = "10px monospace";
@@ -295,6 +409,7 @@ function drawSurfer(
   ctx: CanvasRenderingContext2D,
   game: Game,
   reduce: boolean,
+  skin: WaveSkin,
 ) {
   const px = playerX(game);
   const worldX = game.scroll + px;
@@ -325,14 +440,38 @@ function drawSurfer(
   ctx.ellipse(cx + 4, boardY + 7, tucked ? 22 : 18, 3, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#ff7a18";
-  ctx.beginPath();
-  ctx.ellipse(cx, boardY, tucked ? 26 : 22, tucked ? 4.2 : 3.6, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#ffe08a";
-  ctx.lineWidth = 1.3;
-  ctx.stroke();
+  if (skin.board) {
+    const bw = tucked ? 52 : 44;
+    const bh = tucked ? 10 : 8;
+    ctx.drawImage(skin.board, cx - bw / 2, boardY - bh / 2, bw, bh);
+  } else {
+    ctx.fillStyle = "#ff7a18";
+    ctx.beginPath();
+    ctx.ellipse(cx, boardY, tucked ? 26 : 22, tucked ? 4.2 : 3.6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#ffe08a";
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+  }
 
+  if (skin.rider && skin.rider.width > 4) {
+    const frames = 5;
+    const fw = skin.rider.width / frames;
+    const fh = skin.rider.height;
+    const destW = PLAYER_W * 1.7;
+    const destH = PLAYER_H * 1.35;
+    ctx.drawImage(
+      skin.rider,
+      riderFrame(game) * fw,
+      0,
+      fw,
+      fh,
+      cx - destW / 2,
+      y + bob - 4,
+      destW,
+      destH,
+    );
+  } else {
   ctx.fillStyle = "#041018";
   if (tucked) {
     ctx.beginPath();
@@ -372,6 +511,7 @@ function drawSurfer(
     ctx.beginPath();
     ctx.arc(cx, y + 5 + bob, 5.2, 0, Math.PI * 2);
     ctx.fill();
+  }
   }
 
   if (game.pumping && game.grounded && !tucked) {
@@ -499,12 +639,14 @@ function draw(
     font,
     best,
     ghost,
+    skin,
   }: {
     credits: number;
     reduce: boolean;
     font: string;
     best: number;
     ghost: boolean;
+    skin: WaveSkin;
   },
 ) {
   const W = game.w;
@@ -519,10 +661,10 @@ function draw(
   const drift = ((game.scroll * 0.18) % W + W) % W;
   ctx.drawImage(cache.swell, -drift, 0, W, H);
   ctx.drawImage(cache.swell, W - drift, 0, W, H);
-  drawFace(ctx, game, cache.foam);
-  drawBarrel(ctx, game);
-  drawCloseout(ctx, game, cache.foam);
-  drawSurfer(ctx, game, reduce);
+  drawFace(ctx, game, cache.foam, skin);
+  drawBarrel(ctx, game, skin);
+  drawCloseout(ctx, game, cache.foam, skin);
+  drawSurfer(ctx, game, reduce, skin);
   if (game.flash > 0 && !ghost) {
     ctx.fillStyle = `rgba(255, 46, 196, ${game.flash * 0.28})`;
     ctx.fillRect(0, 0, W, H);
@@ -565,6 +707,10 @@ export const WaveRunner = forwardRef<
     const game = emptyGame(480, VIEW_H, (Date.now() % 1_000_000) | 0);
     if (ghost) primeGhostCourse(game);
     let cache: OceanCache | null = null;
+    let skin = emptySkin();
+    void loadWaveSkin().then((loaded) => {
+      skin = loaded;
+    });
     let bestM = 0;
     try {
       const raw = window.localStorage.getItem(BEST_KEY);
@@ -634,6 +780,7 @@ export const WaveRunner = forwardRef<
         font,
         best: bestM,
         ghost: ghostRef.current,
+        skin,
       });
       if (game.overlay && !reported && !ghostRef.current) {
         reported = true;

@@ -374,6 +374,21 @@ function pickKind(game: Game, rand: number): SectionKind {
   return "face";
 }
 
+export function spawnOpeningFace(game: Game) {
+  const len = 320;
+  game.sections = [
+    {
+      kind: "face",
+      x0: 0,
+      x1: len,
+      steep: 0.26,
+      tube: 52,
+      telegraphX: len,
+    },
+  ];
+  game.nextX = len;
+}
+
 export function spawnAhead(game: Game) {
   const horizon = game.scroll + game.w + 240;
   while (game.nextX < horizon) {
@@ -416,25 +431,12 @@ function wipe(game: Game, reason: WipeReason) {
 }
 
 export function respawnGame(game: Game) {
-  game.dead = false;
-  game.deadT = 0;
-  game.reason = null;
-  game.overlay = false;
-  game.wantLife = false;
-  game.stallT = 0;
-  game.ended = false;
-  game.hop = 0;
-  game.hopV = 0;
-  game.grounded = true;
-  game.tucked = false;
-  game.inBarrel = false;
-  game.pumping = false;
-  game.rail = 0.4;
-  game.energy = 0.38;
-  game.speed = Math.min(game.speed, BASE_SPEED + 36);
-  game.shake = 0;
-  game.flash = 0;
-  game.near = 0;
+  const w = game.w;
+  const h = game.h;
+  const seed = (game.seed + 23) | 0;
+  Object.assign(game, emptyGame(w, h, seed));
+  spawnOpeningFace(game);
+  spawnAhead(game);
 }
 
 export function step(game: Game, dt: number) {
