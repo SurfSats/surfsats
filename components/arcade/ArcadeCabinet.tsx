@@ -25,6 +25,7 @@ export function ArcadeCabinet({
   lastScore,
   lastMeters,
   lastBarrelS,
+  lastReason,
   scoreRank,
   scoreCopied,
   gameRef,
@@ -44,6 +45,7 @@ export function ArcadeCabinet({
   lastScore: number | null;
   lastMeters?: number | null;
   lastBarrelS?: number | null;
+  lastReason?: WaveRun["reason"];
   scoreRank: number | null;
   scoreCopied: boolean;
   gameRef: RefObject<WaveRunnerHandle | null>;
@@ -87,6 +89,7 @@ export function ArcadeCabinet({
               lastScore={lastScore}
               lastMeters={lastMeters}
               lastBarrelS={lastBarrelS}
+              lastReason={lastReason}
               scoreRank={scoreRank}
               scoreCopied={scoreCopied}
               gameRef={gameRef}

@@ -28,6 +28,10 @@ export const WAVE_COPY = {
   wipeout: "WIPEOUT",
   nextLife: "NEXT LIFE",
   insert: "INSERT 21 SATS",
+  stall: "STALL",
+  coachHold: "HOLD climbs the face",
+  coachTap: "TAP on the WHITE LIP",
+  coachDown: "DOWN in the DARK HOLE",
 } as const;
 
 export type SectionKind = "face" | "lip" | "barrel" | "closeout";
@@ -63,6 +67,7 @@ export type Game = {
   reason: WipeReason | null;
   overlay: boolean;
   wantLife: boolean;
+  stallT: number;
   shake: number;
   flash: number;
   near: number;
@@ -170,6 +175,7 @@ export function emptyGame(w = 480, h = VIEW_H, seed = 1): Game {
     reason: null,
     overlay: false,
     wantLife: false,
+    stallT: 0,
     shake: 0,
     flash: 0,
     near: 0,
@@ -278,6 +284,79 @@ export function setTuck(game: Game, on: boolean) {
   game.tucked = on;
 }
 
+export function isStalling(game: Game) {
+  return (
+    game.grounded &&
+    !game.dead &&
+    game.t > 1.2 &&
+    game.rail < 0.22 &&
+    game.energy < 0.28
+  );
+}
+
+export function coachAlpha(t: number) {
+  if (t <= LEARN_SECS) return 1;
+  return Math.max(0, 1 - (t - LEARN_SECS) / 1.15);
+}
+
+export function wipeoutLine(reason: WipeReason | null) {
+  if (reason === "closeout") return "the wall ate you · drop in earlier or tuck";
+  if (reason === "eject") return "spat out of the tube · stay down in the hole";
+  if (reason === "pearl" || reason === "stall" || reason === "lip") {
+    return "nosedived · hold to stay on the face";
+  }
+  return "wiped out";
+}
+
+export function primeGhostCourse(game: Game) {
+  game.sections = [];
+  let x = 40;
+  const kinds: SectionKind[] = [
+    "face",
+    "lip",
+    "barrel",
+    "face",
+    "closeout",
+    "barrel",
+    "face",
+  ];
+  for (const kind of kinds) {
+    const len = 260;
+    const x1 = x + len;
+    game.sections.push({
+      kind,
+      x0: x,
+      x1,
+      steep: kind === "lip" ? 0.72 : 0.48,
+      tube: 72,
+      telegraphX:
+        kind === "closeout" ? Math.max(x, x1 - game.speed * TELEGRAPH_S) : x1,
+    });
+    x = x1;
+  }
+  game.nextX = x;
+}
+
+export function ghostThink(game: Game) {
+  if (game.dead) return;
+  const worldX = game.scroll + playerX(game);
+  const sec = sectionAt(game, worldX);
+  const ahead = sectionAt(game, worldX + Math.max(70, game.speed * 0.55));
+  setPump(game, game.rail < 0.74);
+  const hole =
+    sec?.kind === "barrel" ||
+    ahead?.kind === "barrel" ||
+    (sec?.kind === "closeout" && worldX >= sec.telegraphX);
+  setTuck(game, Boolean(hole && game.rail > 0.28));
+  if (
+    (sec?.kind === "lip" || ahead?.kind === "lip") &&
+    game.rail > 0.66 &&
+    game.grounded
+  ) {
+    hopGame(game);
+  }
+}
+
 function pickKind(game: Game, rand: number): SectionKind {
   const late = game.t > LEARN_SECS + 4;
   const prev = game.sections[game.sections.length - 1];
@@ -342,6 +421,7 @@ export function respawnGame(game: Game) {
   game.reason = null;
   game.overlay = false;
   game.wantLife = false;
+  game.stallT = 0;
   game.ended = false;
   game.hop = 0;
   game.hopV = 0;
@@ -437,7 +517,12 @@ export function step(game: Game, dt: number) {
     return;
   }
 
-  if (game.grounded && game.rail < 0.07 && game.energy < 0.05 && game.t > 3.5) {
+  if (isStalling(game)) {
+    game.stallT += dt;
+  } else {
+    game.stallT = Math.max(0, game.stallT - dt * 2);
+  }
+  if (game.stallT > 0.8 && game.rail < 0.09 && game.energy < 0.1) {
     wipe(game, "pearl");
   }
 

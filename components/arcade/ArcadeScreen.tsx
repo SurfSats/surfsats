@@ -14,6 +14,7 @@ import {
   ARCADE_PRICE_SATS,
   formatScore,
 } from "@/lib/arcade";
+import { wipeoutLine } from "@/lib/wave-runner";
 
 export type ArcadeScreenMode =
   | "attract"
@@ -31,6 +32,7 @@ export function ArcadeScreen({
   lastScore,
   lastMeters,
   lastBarrelS,
+  lastReason,
   scoreRank,
   scoreCopied,
   gameRef,
@@ -52,6 +54,7 @@ export function ArcadeScreen({
   lastScore: number | null;
   lastMeters?: number | null;
   lastBarrelS?: number | null;
+  lastReason?: WaveRun["reason"];
   scoreRank: number | null;
   scoreCopied: boolean;
   gameRef: RefObject<WaveRunnerHandle | null>;
@@ -79,10 +82,11 @@ export function ArcadeScreen({
         .join(" ")}
     >
       <div className="cab-crt-well">
-        {mode === "playing" ? (
+        {mode === "playing" || mode === "attract" ? (
           <WaveRunner
-            ref={gameRef}
+            ref={mode === "playing" ? gameRef : undefined}
             credits={credits}
+            ghost={mode === "attract"}
             onWipeout={onWipeout}
             onNextLife={onNextLife}
           />
@@ -104,6 +108,7 @@ export function ArcadeScreen({
           <p className="cab-crt-sub">
             {Math.floor(lastMeters ?? 0)}m · {(lastBarrelS ?? 0).toFixed(1)}s BARREL
           </p>
+          <p className="cab-crt-sub">{wipeoutLine(lastReason ?? null)}</p>
           <div className="cab-crt-result-actions">
             <button
               type="button"

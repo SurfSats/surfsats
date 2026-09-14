@@ -62,6 +62,7 @@ export function ArcadeApp({
   const [lastScore, setLastScore] = useState<number | null>(null);
   const [lastMeters, setLastMeters] = useState<number | null>(null);
   const [lastBarrelS, setLastBarrelS] = useState<number | null>(null);
+  const [lastReason, setLastReason] = useState<WaveRun["reason"]>(null);
   const [scoreCopied, setScoreCopied] = useState(false);
   const gameRef = useRef<WaveRunnerHandle | null>(null);
   const startLock = useRef(false);
@@ -308,6 +309,7 @@ export function ArcadeApp({
       setLastScore(null);
       setLastMeters(null);
       setLastBarrelS(null);
+      setLastReason(null);
       setMode("playing");
       void loadBoards();
     } catch {
@@ -322,6 +324,7 @@ export function ArcadeApp({
       setLastScore(run.score);
       setLastMeters(run.meters);
       setLastBarrelS(run.barrelS);
+      setLastReason(run.reason);
       setScoreCopied(false);
       const tag = sanitizeAlias(alias);
       const callsign = tag.ok ? tag.alias : alias.trim().toUpperCase() || "anon";
@@ -526,6 +529,7 @@ export function ArcadeApp({
         lastScore={lastScore}
         lastMeters={lastMeters}
         lastBarrelS={lastBarrelS}
+        lastReason={lastReason}
         scoreRank={scoreRank}
         scoreCopied={scoreCopied}
         gameRef={gameRef}

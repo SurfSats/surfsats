@@ -7,8 +7,10 @@ import {
   MAX_SPEED,
   PIXELS_PER_METER,
   WAVE_COPY,
+  coachAlpha,
   emptyGame,
   hopGame,
+  isStalling,
   metersOf,
   respawnGame,
   scoreOf,
@@ -21,6 +23,7 @@ import {
   viewWidth,
   waveOf,
   waveRunnerTapeText,
+  wipeoutLine,
 } from "./wave-runner.ts";
 
 test("first seconds stay near base speed", () => {
@@ -189,5 +192,47 @@ test("copy stays on the wave and never says NFT username account", () => {
   assert.match(blob, /WAVE RUNNER/);
   assert.match(blob, /BARREL/);
   assert.match(blob, /CLOSEOUT/);
+  assert.match(blob, /HOLD climbs the face/);
+  assert.match(blob, /WHITE LIP/);
+  assert.match(blob, /DARK HOLE/);
   assert.doesNotMatch(blob, /NFT|username|account/i);
+});
+
+test("wipeout lines say why you died", () => {
+  assert.equal(
+    wipeoutLine("pearl"),
+    "nosedived · hold to stay on the face",
+  );
+  assert.equal(
+    wipeoutLine("closeout"),
+    "the wall ate you · drop in earlier or tuck",
+  );
+  assert.equal(
+    wipeoutLine("eject"),
+    "spat out of the tube · stay down in the hole",
+  );
+});
+
+test("coach glass is solid for LEARN_SECS then fades", () => {
+  assert.equal(coachAlpha(0), 1);
+  assert.equal(coachAlpha(8), 1);
+  assert.ok(coachAlpha(8.6) < 1);
+  assert.equal(coachAlpha(12), 0);
+});
+
+test("pearl warns with stall before it kills", () => {
+  const game = emptyGame();
+  game.t = 2;
+  game.rail = 0.12;
+  game.energy = 0.1;
+  game.grounded = true;
+  assert.equal(isStalling(game), true);
+  step(game, 0.2);
+  assert.equal(game.dead, false);
+  assert.ok(game.stallT > 0);
+  game.rail = 0.04;
+  game.energy = 0.04;
+  for (let i = 0; i < 50; i += 1) step(game, 1 / 60);
+  assert.equal(game.dead, true);
+  assert.equal(game.reason, "pearl");
 });

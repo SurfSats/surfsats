@@ -15,10 +15,14 @@ import {
   TAP_S,
   VIEW_H,
   WAVE_COPY,
+  coachAlpha,
   emptyGame,
+  ghostThink,
   hopGame,
+  isStalling,
   metersOf,
   playerX,
+  primeGhostCourse,
   respawnGame,
   scoreOf,
   sectionAt,
@@ -26,9 +30,9 @@ import {
   setTuck,
   step,
   surfaceY,
-  tubeRoof,
   viewWidth,
   waveOf,
+  wipeoutLine,
   type Game,
   type WaveRun,
 } from "@/lib/wave-runner";
@@ -46,24 +50,6 @@ type OceanCache = {
   swell: HTMLCanvasElement;
   foam: HTMLCanvasElement;
 };
-
-function roundRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number,
-) {
-  const radius = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.arcTo(x + w, y, x + w, y + h, radius);
-  ctx.arcTo(x + w, y + h, x, y + h, radius);
-  ctx.arcTo(x, y + h, x, y, radius);
-  ctx.arcTo(x, y, x + w, y, radius);
-  ctx.closePath();
-}
 
 function bakeSky(w: number, h: number) {
   const c = document.createElement("canvas");
@@ -179,109 +165,130 @@ function blip(kind: "hop" | "wipe" | "barrel") {
   window.setTimeout(() => void ctx.close(), 420);
 }
 
-function drawFace(ctx: CanvasRenderingContext2D, game: Game) {
+function lipYAt(game: Game, screenX: number) {
+  return surfaceY(game, game.scroll + screenX, 0.94);
+}
+
+function troughYAt(game: Game, screenX: number) {
+  return surfaceY(game, game.scroll + screenX, 0.06);
+}
+
+function drawFace(ctx: CanvasRenderingContext2D, game: Game, foam: HTMLCanvasElement) {
   const W = game.w;
   const H = game.h;
   ctx.beginPath();
   ctx.moveTo(0, H);
-  for (let x = 0; x <= W; x += 6) {
-    ctx.lineTo(x, surfaceY(game, game.scroll + x, 0.02));
-  }
+  for (let x = 0; x <= W; x += 6) ctx.lineTo(x, troughYAt(game, x));
   ctx.lineTo(W, H);
   ctx.closePath();
-  const deep = ctx.createLinearGradient(0, H * 0.55, 0, H);
-  deep.addColorStop(0, "rgba(10, 48, 62, 0.95)");
-  deep.addColorStop(1, "rgba(4, 16, 24, 0.98)");
-  ctx.fillStyle = deep;
+  const mass = ctx.createLinearGradient(0, H * 0.5, 0, H);
+  mass.addColorStop(0, "#0a3040");
+  mass.addColorStop(1, "#041018");
+  ctx.fillStyle = mass;
   ctx.fill();
 
   ctx.beginPath();
   for (let x = 0; x <= W; x += 5) {
-    const y = surfaceY(game, game.scroll + x, 0.92);
-    if (x === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+    if (x === 0) ctx.moveTo(x, lipYAt(game, x));
+    else ctx.lineTo(x, lipYAt(game, x));
   }
-  for (let x = W; x >= 0; x -= 5) {
-    ctx.lineTo(x, surfaceY(game, game.scroll + x, 0.08));
-  }
+  for (let x = W; x >= 0; x -= 5) ctx.lineTo(x, troughYAt(game, x));
   ctx.closePath();
-  const face = ctx.createLinearGradient(0, H * 0.28, 0, H * 0.82);
-  face.addColorStop(0, "rgba(180, 245, 255, 0.55)");
-  face.addColorStop(0.22, "rgba(61, 255, 243, 0.42)");
-  face.addColorStop(0.55, "rgba(18, 90, 110, 0.92)");
-  face.addColorStop(1, "rgba(8, 28, 40, 0.98)");
+  const face = ctx.createLinearGradient(0, H * 0.22, W * 0.35, H * 0.78);
+  face.addColorStop(0, "#c8fff6");
+  face.addColorStop(0.18, "#7cffb2");
+  face.addColorStop(0.42, "#3dfff3");
+  face.addColorStop(0.72, "#14708a");
+  face.addColorStop(1, "#0a2430");
   ctx.fillStyle = face;
   ctx.fill();
 
   ctx.beginPath();
-  for (let x = 0; x <= W; x += 5) {
-    const y = surfaceY(game, game.scroll + x, 0.92);
-    if (x === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+  for (let x = 0; x <= W; x += 4) {
+    if (x === 0) ctx.moveTo(x, lipYAt(game, x) - 2);
+    else ctx.lineTo(x, lipYAt(game, x) - 2);
   }
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 8;
+  ctx.stroke();
   ctx.strokeStyle = "#efe6d4";
-  ctx.lineWidth = 2.4;
+  ctx.lineWidth = 3.2;
   ctx.stroke();
-  ctx.beginPath();
-  for (let x = 0; x <= W; x += 5) {
-    const y = surfaceY(game, game.scroll + x, 0.92) + 4;
-    if (x === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+  for (let x = 8; x < W; x += 28) {
+    ctx.drawImage(foam, x - 18, lipYAt(game, x) - 10);
   }
-  ctx.strokeStyle = "#3dfff3";
-  ctx.lineWidth = 2.2;
-  ctx.stroke();
 }
 
 function drawBarrel(ctx: CanvasRenderingContext2D, game: Game) {
-  const W = game.w;
-  let drawing = false;
-  ctx.beginPath();
-  for (let x = 0; x <= W; x += 6) {
-    const worldX = game.scroll + x;
-    const sec = sectionAt(game, worldX);
-    const tube = sec && (sec.kind === "barrel" || (sec.kind === "closeout" && worldX >= sec.telegraphX));
-    if (!tube) {
-      if (drawing) {
-        ctx.lineTo(x, surfaceY(game, worldX, 0.12));
-        drawing = false;
-      }
-      continue;
-    }
-    const roof = tubeRoof(game, worldX);
-    const floor = surfaceY(game, worldX, 0.18);
-    if (!drawing) {
-      ctx.moveTo(x, floor);
-      drawing = true;
-    }
-    ctx.lineTo(x, roof);
+  const seen = new Set<number>();
+  for (const sec of game.sections) {
+    if (sec.kind !== "barrel") continue;
+    if (seen.has(sec.x0)) continue;
+    seen.add(sec.x0);
+    const x0 = sec.x0 - game.scroll;
+    const x1 = sec.x1 - game.scroll;
+    if (x1 < -20 || x0 > game.w + 20) continue;
+    const cx = (x0 + x1) / 2;
+    const lip = lipYAt(game, cx);
+    const trough = troughYAt(game, cx);
+    const cy = lip + (trough - lip) * 0.42;
+    const rx = Math.min(86, Math.max(36, (x1 - x0) * 0.32));
+    const ry = Math.max(22, (trough - lip) * 0.34);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#02080e";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx - rx * 0.12, cy, rx * 0.72, ry * 0.7, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(4, 16, 24, 0.92)";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(61, 255, 243, 0.45)";
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(cx + rx * 0.15, cy - ry * 0.08, rx * 0.92, ry * 0.86, 0, -0.4, 1.1);
+    ctx.strokeStyle = "rgba(239, 230, 212, 0.35)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
-  for (let x = W; x >= 0; x -= 6) {
-    const worldX = game.scroll + x;
-    const sec = sectionAt(game, worldX);
-    const tube = sec && (sec.kind === "barrel" || (sec.kind === "closeout" && worldX >= sec.telegraphX));
-    if (!tube) continue;
-    ctx.lineTo(x, surfaceY(game, worldX, 0.18));
-  }
-  ctx.closePath();
-  ctx.fillStyle = "rgba(2, 8, 14, 0.72)";
-  ctx.fill();
 }
 
-function drawTelegraph(ctx: CanvasRenderingContext2D, game: Game, foam: HTMLCanvasElement) {
-  const px = playerX(game);
-  const worldX = game.scroll + px;
-  const sec = sectionAt(game, worldX);
-  if (!sec || sec.kind !== "closeout" || worldX < sec.telegraphX) return;
-  const u = Math.min(1, (worldX - sec.telegraphX) / Math.max(1, sec.x1 - sec.telegraphX));
-  const x = px + 40 + u * 80;
-  ctx.fillStyle = `rgba(239, 230, 212, ${0.2 + u * 0.45})`;
-  ctx.fillRect(x, surfaceY(game, game.scroll + x, 0.7) - 8, 18 + u * 40, 70);
-  ctx.drawImage(foam, x - 8, surfaceY(game, game.scroll + x, 0.82) - 6);
-  ctx.fillStyle = `rgba(255, 46, 196, ${0.15 + u * 0.35})`;
-  ctx.font = "10px monospace";
-  ctx.textAlign = "center";
-  ctx.fillText(WAVE_COPY.closeout, x + 20, surfaceY(game, game.scroll + x, 0.9) - 16);
+function drawCloseout(ctx: CanvasRenderingContext2D, game: Game, foam: HTMLCanvasElement) {
+  for (const sec of game.sections) {
+    if (sec.kind !== "closeout") continue;
+    const x0 = sec.telegraphX - game.scroll;
+    const x1 = sec.x1 - game.scroll;
+    if (x1 < 0 || x0 > game.w) continue;
+    const worldX = game.scroll + playerX(game);
+    if (worldX < sec.telegraphX) continue;
+    const u = Math.min(1, Math.max(0, (worldX - sec.telegraphX) / Math.max(1, sec.x1 - sec.telegraphX)));
+    const x = x0 + u * Math.max(24, x1 - x0);
+    const lip = lipYAt(game, x);
+    const trough = troughYAt(game, x);
+    const flash = 0.55 + 0.45 * Math.abs(Math.sin(game.t * 22));
+    ctx.beginPath();
+    ctx.moveTo(x - 10, lip - 8);
+    for (let i = 0; i <= 8; i += 1) {
+      const yy = lip + ((trough - lip) * i) / 8;
+      ctx.lineTo(x + (i % 2 === 0 ? 28 + u * 36 : 8) + Math.sin(game.t * 30 + i) * 6, yy);
+    }
+    ctx.lineTo(x - 16, trough + 10);
+    ctx.closePath();
+    ctx.fillStyle = `rgba(239, 230, 212, ${0.35 + u * 0.5 * flash})`;
+    ctx.fill();
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.5 * flash})`;
+    ctx.fill();
+    ctx.drawImage(foam, x - 8, lip - 6);
+    ctx.drawImage(foam, x + 10, lip + 10);
+    if (u < 0.7) {
+      ctx.fillStyle = `rgba(255, 46, 196, ${0.55 + flash * 0.35})`;
+      ctx.font = "10px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(WAVE_COPY.closeout, x + 8, lip - 14);
+    }
+  }
 }
 
 function drawSurfer(
@@ -291,73 +298,133 @@ function drawSurfer(
 ) {
   const px = playerX(game);
   const worldX = game.scroll + px;
-  const sit = surfaceY(game, worldX, game.rail) - PLAYER_H;
-  const y = sit - game.hop + (game.dead ? Math.min(48, game.deadT * 110) : 0);
-  const spin = game.dead ? game.deadT * 10 : 0;
   const tucked = game.tucked && !game.dead;
-  ctx.save();
-  ctx.translate(px + PLAYER_W / 2, y + PLAYER_H / 2);
-  ctx.rotate(spin);
-  ctx.translate(-(px + PLAYER_W / 2), -(y + PLAYER_H / 2));
+  const sit = surfaceY(game, worldX, tucked ? Math.min(game.rail, 0.62) : game.rail) - PLAYER_H;
+  const pop = game.hop;
+  const y = sit - pop + (game.dead ? Math.min(52, game.deadT * 120) : 0);
+  const tilt = game.dead
+    ? game.deadT * 9
+    : pop > 2
+      ? -0.35
+      : tucked
+        ? 0.18
+        : game.pumping
+          ? -0.08
+          : 0;
+  const bob = game.grounded && !reduce && !tucked ? Math.sin(game.t * 9) * 1.1 : 0;
+  const cx = px + PLAYER_W / 2;
+  const boardY = y + PLAYER_H - (tucked ? 8 : 5) + bob;
 
-  const bob = game.grounded && !reduce && !tucked ? Math.sin(game.t * 10) * 1.1 : 0;
-  const boardY = y + PLAYER_H - (tucked ? 10 : 6) + bob;
-  ctx.fillStyle = "rgba(4, 16, 24, 0.35)";
+  ctx.save();
+  ctx.translate(cx, boardY);
+  ctx.rotate(tilt);
+  ctx.translate(-cx, -boardY);
+
+  ctx.fillStyle = "rgba(4, 16, 24, 0.4)";
   ctx.beginPath();
-  ctx.ellipse(px + PLAYER_W / 2, boardY + 8, tucked ? 20 : 16, 3.2, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx + 4, boardY + 7, tucked ? 22 : 18, 3, 0, 0, Math.PI * 2);
   ctx.fill();
+
   ctx.fillStyle = "#ff7a18";
-  roundRect(ctx, px - (tucked ? 12 : 8), boardY, PLAYER_W + (tucked ? 24 : 16), 6, 3);
+  ctx.beginPath();
+  ctx.ellipse(cx, boardY, tucked ? 26 : 22, tucked ? 4.2 : 3.6, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#ffe08a";
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 1.3;
   ctx.stroke();
 
-  if (!tucked) {
-    ctx.strokeStyle = "#041018";
-    ctx.lineWidth = 2.4;
+  ctx.fillStyle = "#041018";
+  if (tucked) {
     ctx.beginPath();
-    ctx.moveTo(px + 6, boardY);
-    ctx.lineTo(px + 8, y + 16 + bob);
-    ctx.moveTo(px + PLAYER_W - 4, boardY);
-    ctx.lineTo(px + PLAYER_W - 2, y + 16 + bob);
-    ctx.stroke();
-    ctx.fillStyle = game.pumping ? "#7cffb2" : "#3dfff3";
-    roundRect(ctx, px + 3, y + 8 + bob, PLAYER_W - 6, 14, 3);
+    ctx.ellipse(cx - 4, boardY - 5, 13, 5.5, 0.15, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#ff2ec4";
     ctx.beginPath();
-    ctx.arc(px + PLAYER_W / 2, y + 6 + bob, 6, 0, Math.PI * 2);
+    ctx.arc(cx - 14, boardY - 6, 3.4, 0, Math.PI * 2);
     ctx.fill();
   } else {
-    ctx.fillStyle = "#3dfff3";
-    roundRect(ctx, px + 2, boardY - 8, PLAYER_W + 4, 8, 2);
+    ctx.beginPath();
+    ctx.moveTo(cx - 5, boardY);
+    ctx.lineTo(cx - 7, y + 18 + bob);
+    ctx.lineTo(cx - 2, y + 18 + bob);
+    ctx.closePath();
     ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + 6, boardY);
+    ctx.lineTo(cx + 9, y + 17 + bob);
+    ctx.lineTo(cx + 3, y + 17 + bob);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx - 6, y + 20 + bob);
+    ctx.lineTo(cx + 7, y + 20 + bob);
+    ctx.lineTo(cx + 5, y + 8 + bob);
+    ctx.lineTo(cx - 4, y + 8 + bob);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#041018";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(cx + 4, y + 12 + bob);
+    ctx.quadraticCurveTo(cx + 16, y + 4 + bob, cx + 18, y + 10 + bob);
+    ctx.stroke();
     ctx.fillStyle = "#ff2ec4";
     ctx.beginPath();
-    ctx.arc(px + 8, boardY - 8, 4, 0, Math.PI * 2);
+    ctx.arc(cx, y + 5 + bob, 5.2, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  if (game.grounded && game.pumping) {
-    ctx.fillStyle = "rgba(61, 255, 243, 0.5)";
-    ctx.fillRect(px - 16, boardY + 2, 8, 2);
-    ctx.fillRect(px - 26, boardY, 7, 1.5);
+  if (game.pumping && game.grounded && !tucked) {
+    ctx.strokeStyle = "rgba(61, 255, 243, 0.7)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx - 28, boardY + 1);
+    ctx.lineTo(cx - 16, boardY + 3);
+    ctx.moveTo(cx - 24, boardY - 3);
+    ctx.lineTo(cx - 14, boardY);
+    ctx.stroke();
   }
-  if (game.inBarrel) {
-    ctx.fillStyle = "rgba(61, 255, 243, 0.25)";
-    ctx.fillRect(px - 10, y + 4, PLAYER_W + 28, PLAYER_H);
+  if (isStalling(game)) {
+    ctx.fillStyle = "rgba(239, 230, 212, 0.85)";
+    ctx.beginPath();
+    ctx.ellipse(cx + 20, boardY - 2, 10, 4, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#efe6d4";
+    ctx.font = "8px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(WAVE_COPY.stall, cx + 18, boardY - 10);
   }
   ctx.restore();
 
   if (game.dead) {
-    ctx.fillStyle = "rgba(239, 230, 212, 0.35)";
-    for (let i = 0; i < 8; i += 1) {
-      const ox = px + (i * 11) % 40 - 8;
-      const oy = y + PLAYER_H + 4 + (i % 3) * 5;
-      ctx.fillRect(ox, oy, 6, 2);
+    ctx.fillStyle = "rgba(239, 230, 212, 0.4)";
+    for (let i = 0; i < 10; i += 1) {
+      ctx.fillRect(px + (i * 9) % 42 - 6, y + PLAYER_H + (i % 4) * 4, 7, 2);
     }
   }
+}
+
+function drawCoach(
+  ctx: CanvasRenderingContext2D,
+  game: Game,
+  font: string,
+  ghost: boolean,
+) {
+  const alpha = ghost ? 1 : coachAlpha(game.t);
+  if (alpha <= 0.02) return;
+  const W = game.w;
+  const H = game.h;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.textAlign = "center";
+  ctx.font = pixelFont(11, font);
+  ctx.fillStyle = "#efe6d4";
+  ctx.fillText(WAVE_COPY.coachHold, W / 2, H * 0.14);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(WAVE_COPY.coachTap, W / 2, H * 0.14 + 16);
+  ctx.fillStyle = "#3dfff3";
+  ctx.fillText(WAVE_COPY.coachDown, W / 2, H * 0.14 + 32);
+  ctx.restore();
 }
 
 function drawHud(
@@ -366,6 +433,7 @@ function drawHud(
   credits: number,
   font: string,
   best: number,
+  ghost: boolean,
 ) {
   const W = game.w;
   const H = game.h;
@@ -373,49 +441,50 @@ function drawHud(
   ctx.textAlign = "left";
   ctx.font = pixelFont(9, font);
   ctx.fillStyle = "#7cffb2";
-  ctx.fillText(WAVE_COPY.title, 14, 18);
-  ctx.fillStyle = "#efe6d4";
-  ctx.font = pixelFont(13, font);
-  ctx.fillText(`${meters}m`, 14, 36);
-  ctx.font = pixelFont(9, font);
-  ctx.fillStyle = game.inBarrel ? "#3dfff3" : "rgba(122, 208, 224, 0.9)";
-  ctx.fillText(`${WAVE_COPY.barrel} ${game.barrelS.toFixed(1)}s`, 14, 50);
-  ctx.fillStyle = "rgba(122, 208, 224, 0.7)";
-  ctx.fillText(`SET ${waveOf(game.t)}`, 14, 64);
-
-  ctx.textAlign = "right";
-  ctx.fillStyle = "#ff7a18";
-  ctx.font = pixelFont(11, font);
-  ctx.fillText(String(scoreOf(game)).padStart(6, "0"), W - 14, 22);
-  ctx.fillStyle = "#7ad0e0";
-  ctx.font = pixelFont(9, font);
-  ctx.fillText(`${credits} CR`, W - 14, 38);
-  if (best > 0) {
-    ctx.fillStyle = "rgba(255, 122, 24, 0.8)";
-    ctx.fillText(`BEST ${Math.floor(best)}m`, W - 14, 52);
+  ctx.fillText(ghost ? `${WAVE_COPY.title} · DEMO` : WAVE_COPY.title, 14, 18);
+  if (!ghost) {
+    ctx.fillStyle = "#efe6d4";
+    ctx.font = pixelFont(13, font);
+    ctx.fillText(`${meters}m`, 14, 36);
+    ctx.font = pixelFont(9, font);
+    ctx.fillStyle = game.inBarrel ? "#3dfff3" : "rgba(122, 208, 224, 0.9)";
+    ctx.fillText(`${WAVE_COPY.barrel} ${game.barrelS.toFixed(1)}s`, 14, 50);
+    ctx.fillStyle = "rgba(122, 208, 224, 0.7)";
+    ctx.fillText(`SET ${waveOf(game.t)}`, 14, 64);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#ff7a18";
+    ctx.font = pixelFont(11, font);
+    ctx.fillText(String(scoreOf(game)).padStart(6, "0"), W - 14, 22);
+    ctx.fillStyle = "#7ad0e0";
+    ctx.font = pixelFont(9, font);
+    ctx.fillText(`${credits} CR`, W - 14, 38);
+    if (best > 0) {
+      ctx.fillStyle = "rgba(255, 122, 24, 0.8)";
+      ctx.fillText(`BEST ${Math.floor(best)}m`, W - 14, 52);
+    }
   }
 
-  if (game.overlay) {
+  drawCoach(ctx, game, font, ghost);
+
+  if (game.overlay && !ghost) {
     ctx.fillStyle = "rgba(4, 16, 24, 0.62)";
     ctx.fillRect(0, 0, W, H);
     ctx.textAlign = "center";
     ctx.fillStyle = "#ff2ec4";
     ctx.font = pixelFont(14, font);
-    ctx.fillText(WAVE_COPY.wipeout, W / 2, H * 0.36);
+    ctx.fillText(WAVE_COPY.wipeout, W / 2, H * 0.34);
     ctx.fillStyle = "#efe6d4";
     ctx.font = pixelFont(12, font);
-    ctx.fillText(`${meters}m · ${game.barrelS.toFixed(1)}s ${WAVE_COPY.barrel}`, W / 2, H * 0.44);
-    if (game.reason) {
-      ctx.fillStyle = "#3dfff3";
-      ctx.font = pixelFont(9, font);
-      ctx.fillText(game.reason === "closeout" ? WAVE_COPY.closeout : game.reason.toUpperCase(), W / 2, H * 0.52);
-    }
+    ctx.fillText(`${meters}m · ${game.barrelS.toFixed(1)}s ${WAVE_COPY.barrel}`, W / 2, H * 0.42);
+    ctx.fillStyle = "#3dfff3";
+    ctx.font = pixelFont(10, font);
+    ctx.fillText(wipeoutLine(game.reason), W / 2, H * 0.52);
     ctx.fillStyle = "#ff7a18";
     ctx.font = pixelFont(12, font);
     ctx.fillText(
       credits > 0 ? WAVE_COPY.nextLife : `INSERT ${ARCADE_PRICE_SATS} SATS`,
       W / 2,
-      H * 0.62,
+      H * 0.64,
     );
   }
 }
@@ -429,18 +498,20 @@ function draw(
     reduce,
     font,
     best,
+    ghost,
   }: {
     credits: number;
     reduce: boolean;
     font: string;
     best: number;
+    ghost: boolean;
   },
 ) {
   const W = game.w;
   const H = game.h;
   ctx.clearRect(0, 0, W, H);
   ctx.save();
-  if (game.shake > 0 && !reduce) {
+  if (game.shake > 0 && !reduce && !ghost) {
     const mag = game.shake * 7;
     ctx.translate((Math.random() - 0.5) * mag, (Math.random() - 0.5) * mag);
   }
@@ -448,21 +519,15 @@ function draw(
   const drift = ((game.scroll * 0.18) % W + W) % W;
   ctx.drawImage(cache.swell, -drift, 0, W, H);
   ctx.drawImage(cache.swell, W - drift, 0, W, H);
-  drawFace(ctx, game);
+  drawFace(ctx, game, cache.foam);
   drawBarrel(ctx, game);
-  drawTelegraph(ctx, game, cache.foam);
-  const foamY = surfaceY(game, game.scroll + 40, 0.62);
-  ctx.drawImage(cache.foam, (40 - (game.scroll * 0.4) % 60 + 60) % W, foamY - 4);
+  drawCloseout(ctx, game, cache.foam);
   drawSurfer(ctx, game, reduce);
-  if (game.flash > 0) {
+  if (game.flash > 0 && !ghost) {
     ctx.fillStyle = `rgba(255, 46, 196, ${game.flash * 0.28})`;
     ctx.fillRect(0, 0, W, H);
   }
-  if (game.near > 0 && !game.overlay) {
-    ctx.fillStyle = `rgba(61, 255, 243, ${game.near * 0.1})`;
-    ctx.fillRect(0, 0, W, H);
-  }
-  drawHud(ctx, game, credits, font, best);
+  drawHud(ctx, game, credits, font, best, ghost);
   ctx.restore();
 }
 
@@ -472,16 +537,19 @@ export const WaveRunner = forwardRef<
     onWipeout: (run: WaveRun) => void;
     onNextLife?: () => Promise<boolean>;
     credits?: number;
+    ghost?: boolean;
   }
->(function WaveRunner({ onWipeout, onNextLife, credits = 0 }, ref) {
+>(function WaveRunner({ onWipeout, onNextLife, credits = 0, ghost = false }, ref) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const hopRef = useRef<() => void>(() => undefined);
   const endRef = useRef(onWipeout);
   const lifeRef = useRef(onNextLife);
   const creditsRef = useRef(credits);
+  const ghostRef = useRef(ghost);
   endRef.current = onWipeout;
   lifeRef.current = onNextLife;
   creditsRef.current = credits;
+  ghostRef.current = ghost;
 
   useImperativeHandle(ref, () => ({
     hop: () => hopRef.current(),
@@ -495,6 +563,7 @@ export const WaveRunner = forwardRef<
     if (!gfx) return;
 
     const game = emptyGame(480, VIEW_H, (Date.now() % 1_000_000) | 0);
+    if (ghost) primeGhostCourse(game);
     let cache: OceanCache | null = null;
     let bestM = 0;
     try {
@@ -510,6 +579,7 @@ export const WaveRunner = forwardRef<
     const pointers = new Map<number, { x: number; y: number }>();
 
     hopRef.current = () => {
+      if (ghostRef.current) return;
       if (game.overlay) {
         game.wantLife = true;
         return;
@@ -545,8 +615,16 @@ export const WaveRunner = forwardRef<
       if (!alive || !gfx || !cache || !surface) return;
       const dt = Math.min(0.033, (now - last) / 1000);
       last = now;
-      setPump(game, pumping && !game.dead);
+      if (ghostRef.current) ghostThink(game);
+      else setPump(game, pumping && !game.dead);
       step(game, dt);
+      if (ghostRef.current && game.dead && game.deadT > 0.55) {
+        const w = game.w;
+        const h = game.h;
+        const next = emptyGame(w, h, (game.seed + 17) | 0);
+        Object.assign(game, next);
+        primeGhostCourse(game);
+      }
       if (game.inBarrel && !wasBarrel) blip("barrel");
       wasBarrel = game.inBarrel;
       gfx.setTransform(surface.width / game.w, 0, 0, surface.height / game.h, 0, 0);
@@ -555,8 +633,9 @@ export const WaveRunner = forwardRef<
         reduce,
         font,
         best: bestM,
+        ghost: ghostRef.current,
       });
-      if (game.overlay && !reported) {
+      if (game.overlay && !reported && !ghostRef.current) {
         reported = true;
         if (game.dead && game.deadT > 0) blip("wipe");
         endRef.current({
@@ -586,6 +665,7 @@ export const WaveRunner = forwardRef<
     }
 
     function onKeyDown(event: KeyboardEvent) {
+      if (ghostRef.current) return;
       if (document.body.dataset.arcadeFront === "retro") return;
       if (event.repeat) return;
       if (event.code === "Space" || event.code === "ArrowUp") {
@@ -600,6 +680,7 @@ export const WaveRunner = forwardRef<
     }
 
     function onKeyUp(event: KeyboardEvent) {
+      if (ghostRef.current) return;
       if (document.body.dataset.arcadeFront === "retro") return;
       if (event.code === "Space" || event.code === "ArrowUp") {
         event.preventDefault();
@@ -614,6 +695,7 @@ export const WaveRunner = forwardRef<
     }
 
     function onPointerDown(event: PointerEvent) {
+      if (ghostRef.current) return;
       event.preventDefault();
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       try {

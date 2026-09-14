@@ -5175,13 +5175,21 @@ body:has(.graffiti-page) .site-watermark {
 
 .cab-crt-photo .cab-crt-attract {
   justify-content: flex-end;
-  padding: 0.4rem 0.35rem 0.55rem;
+  padding: 0.25rem 0.35rem 0.4rem;
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.62) 0%,
-    rgba(0, 0, 0, 0.12) 55%,
-    transparent 100%
+    rgba(0, 0, 0, 0.78) 0%,
+    rgba(0, 0, 0, 0.28) 38%,
+    transparent 62%
   );
+}
+
+.cab-crt-photo .cab-crt-attract .cab-crt-insert {
+  font-size: clamp(0.52rem, 6.2cqi, 0.78rem);
+}
+
+.cab-crt-photo .cab-crt-attract .cab-crt-alias {
+  margin-top: 0.2rem;
 }
 
 .cab-crt-photo.cab-crt-live {
@@ -5588,6 +5596,17 @@ body:has(.graffiti-page) .site-watermark {
 
 .cab-crt-live .cab-crt-scan {
   opacity: 0.2;
+}
+
+.cab-crt-photo .cab-crt-well {
+  place-items: stretch;
+}
+
+.cab-crt-photo .wave-runner-canvas {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
 }
 
 .wave-runner-canvas {
