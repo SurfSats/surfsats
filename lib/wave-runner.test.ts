@@ -14,7 +14,6 @@ import {
   scoreOf,
   sectionAt,
   sectionLength,
-  setPump,
   setTuck,
   spawnAhead,
   speedAt,

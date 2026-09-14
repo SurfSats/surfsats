@@ -488,9 +488,10 @@ export const WaveRunner = forwardRef<
   }));
 
   useEffect(() => {
-    const surface = canvasRef.current;
-    if (!surface) return;
-    const gfx = surface.getContext("2d");
+    const el = canvasRef.current;
+    if (!el) return;
+    const canvas: HTMLCanvasElement = el;
+    const gfx = canvas.getContext("2d");
     if (!gfx) return;
 
     const game = emptyGame(480, VIEW_H, (Date.now() % 1_000_000) | 0);
@@ -528,6 +529,8 @@ export const WaveRunner = forwardRef<
         .trim() || "monospace";
 
     function resize() {
+      const surface = canvasRef.current;
+      if (!surface) return;
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       const rect = surface.getBoundingClientRect();
       surface.width = Math.max(1, Math.floor(rect.width * dpr));
@@ -538,7 +541,8 @@ export const WaveRunner = forwardRef<
     }
 
     function loop(now: number) {
-      if (!alive || !gfx || !cache) return;
+      const surface = canvasRef.current;
+      if (!alive || !gfx || !cache || !surface) return;
       const dt = Math.min(0.033, (now - last) / 1000);
       last = now;
       setPump(game, pumping && !game.dead);
@@ -613,7 +617,7 @@ export const WaveRunner = forwardRef<
       event.preventDefault();
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       try {
-        surface.setPointerCapture(event.pointerId);
+        canvasRef.current?.setPointerCapture(event.pointerId);
       } catch {
         // ignore
       }
@@ -646,13 +650,13 @@ export const WaveRunner = forwardRef<
 
     resize();
     const observer = new ResizeObserver(resize);
-    observer.observe(surface);
+    observer.observe(canvas);
     window.addEventListener("keydown", onKeyDown, { passive: false });
     window.addEventListener("keyup", onKeyUp, { passive: false });
-    surface.addEventListener("pointerdown", onPointerDown, { passive: false });
-    surface.addEventListener("pointermove", onPointerMove);
-    surface.addEventListener("pointerup", onPointerUp);
-    surface.addEventListener("pointercancel", onPointerUp);
+    canvas.addEventListener("pointerdown", onPointerDown, { passive: false });
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointercancel", onPointerUp);
     frame = window.requestAnimationFrame(loop);
 
     return () => {
@@ -661,10 +665,10 @@ export const WaveRunner = forwardRef<
       observer.disconnect();
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
-      surface.removeEventListener("pointerdown", onPointerDown);
-      surface.removeEventListener("pointermove", onPointerMove);
-      surface.removeEventListener("pointerup", onPointerUp);
-      surface.removeEventListener("pointercancel", onPointerUp);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointercancel", onPointerUp);
     };
   }, []);
 
