@@ -4,6 +4,8 @@ export const ARCADE_PRICE_SATS = 21;
 export const ARCADE_CREDITS_PER_PAY = 3;
 export const ARCADE_GAME_ID = "wave-runner";
 export const ARCADE_GAME_LABEL = "WAVE RUNNER";
+/** Phase 0: Wave Runner is hidden, not deleted. */
+export const WAVE_RUNNER_LIVE = false;
 export const ANARCH_GAME_ID = "anarch";
 export const ANARCH_GAME_LABEL = "ANARCH";
 export const ANARCH_BUILD_HTML = "/arcade/anarch/anarch.html";
@@ -144,6 +146,19 @@ export function isRetroGameId(value: unknown): value is RetroGameId {
 
 export function retroGameLabel(id: string) {
   return RETRO_GAMES.find((game) => game.id === id)?.label ?? id.toUpperCase();
+}
+
+export function isWaveRunnerDeepLink(value: unknown) {
+  const id = String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-");
+  return (
+    id === "wave" ||
+    id === "waverunner" ||
+    id === "wave-runner" ||
+    id === "wave-run"
+  );
 }
 
 export function normalizePlayGame(raw: string): string | null {

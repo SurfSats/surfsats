@@ -7,13 +7,6 @@ export function ArcadeFloorCards() {
       <p className="arcade-floor-kicker">the floor</p>
       <ul className="arcade-floor-cards">
         <li className="arcade-floor-card">
-          <h2>WAVE RUNNER</h2>
-          <p>Read the set. Pump, hop, tuck. Already on the glass.</p>
-          <a className="arcade-floor-play" href="#cabinet">
-            PLAY
-          </a>
-        </li>
-        <li className="arcade-floor-card">
           <h2>ANARCH</h2>
           <p>90s raycast · public domain · {ARCADE_PRICE_SATS} sats to boot.</p>
           <Link className="arcade-floor-play" href="/arcade/anarch">

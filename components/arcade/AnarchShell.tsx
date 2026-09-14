@@ -384,7 +384,7 @@ export function AnarchShell() {
               90s raycast · drummyfish · CC0 · {ARCADE_PRICE_SATS} sats to boot
             </p>
             <p className="anarch-copy anarch-copy-pool">
-              Shares the Wave Runner credit pool. {ARCADE_CREDITS_PER_PAY}{" "}
+              Shares the arcade credit pool. {ARCADE_CREDITS_PER_PAY}{" "}
               credits per insert. No Anarch scores on HIGH SCORES.
             </p>
             {buildOk === false ? (

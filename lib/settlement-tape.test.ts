@@ -22,7 +22,6 @@ import {
   tapeFromSlab,
   tapeFromStory,
   tapeFromTab,
-  tapeFromWaveRunner,
   TAPE_SEED,
   publishTape,
   storyTapeText,

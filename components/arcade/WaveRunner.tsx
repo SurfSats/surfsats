@@ -26,7 +26,6 @@ import {
   primeGhostCourse,
   respawnGame,
   scoreOf,
-  sectionAt,
   setPump,
   setTuck,
   step,

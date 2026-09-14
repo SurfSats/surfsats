@@ -10,6 +10,8 @@ import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import {
   ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
+  WAVE_RUNNER_LIVE,
+  isWaveRunnerDeepLink,
   type ArcadeHighScore,
   type ArcadeRecentPlay,
 } from "@/lib/arcade";
@@ -24,8 +26,20 @@ type Cabinet = "wave" | "retro";
 type DeckTab = "scores" | "how" | "rules";
 
 export function ArcadeFloor() {
-  const [front, setFront] = useState<Cabinet>("wave");
+  const [front, setFront] = useState<Cabinet>(
+    WAVE_RUNNER_LIVE ? "wave" : "retro",
+  );
   const [tab, setTab] = useState<DeckTab>("scores");
+
+  useEffect(() => {
+    const game = new URLSearchParams(window.location.search).get("game");
+    if (isWaveRunnerDeepLink(game)) {
+      setFront("retro");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("game");
+      window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+  }, []);
 
   useEffect(() => {
     document.body.dataset.arcadeFront = front;
@@ -51,31 +65,35 @@ export function ArcadeFloor() {
           <h1 className="sr-only">SurfSats Lightning Arcade</h1>
           <div className="arcade-haze" aria-hidden="true" />
           <div id="cabinet" className="arcade-cabinet-anchor">
-          <div className="arcade-toggle" role="tablist" aria-label="Cabinet">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={front === "wave"}
-              className={front === "wave" ? "is-on" : undefined}
-              onClick={() => setFront("wave")}
-            >
-              WAVE RUNNER
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={front === "retro"}
-              className={front === "retro" ? "is-on" : undefined}
-              onClick={() => setFront("retro")}
-            >
-              RETRO
-            </button>
-          </div>
+          {WAVE_RUNNER_LIVE ? (
+            <div className="arcade-toggle" role="tablist" aria-label="Cabinet">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={front === "wave"}
+                className={front === "wave" ? "is-on" : undefined}
+                onClick={() => setFront("wave")}
+              >
+                WAVE RUNNER
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={front === "retro"}
+                className={front === "retro" ? "is-on" : undefined}
+                onClick={() => setFront("retro")}
+              >
+                RETRO
+              </button>
+            </div>
+          ) : null}
           <div className={`arcade-pit is-${front}`}>
-            <ArcadeApp
-              front={front === "wave"}
-              onBringForward={() => setFront("wave")}
-            />
+            {WAVE_RUNNER_LIVE ? (
+              <ArcadeApp
+                front={front === "wave"}
+                onBringForward={() => setFront("wave")}
+              />
+            ) : null}
             <RetroApp
               front={front === "retro"}
               onBringForward={() => setFront("retro")}
@@ -105,12 +123,8 @@ export function ArcadeFloor() {
             pool. We don&apos;t HODL.
           </p>
           <p>
-            WAVE RUNNER and RETRO are separate cabinets. Each keeps its own
-            credits and legends.
-          </p>
-          <p>
-            WAVE RUNNER: hold to pump, tap to hop, down to tuck. Read the set.
-            Late drop. Barrel. Closeout. Wipeout.
+            RETRO keeps its own credits and legends. Anarch and Bouncing Bitties
+            are on the floor.
           </p>
           <p>Insert coin on the glass. The CRT is the till.</p>
         </div>
@@ -118,8 +132,7 @@ export function ArcadeFloor() {
       {tab === "rules" ? (
         <div className="arcade-deck-copy">
           <p>
-            {ARCADE_PRICE_SATS} SATS = {ARCADE_CREDITS_PER_PAY} CREDITS · WAVE
-            RUNNER · RETRO
+            {ARCADE_PRICE_SATS} SATS = {ARCADE_CREDITS_PER_PAY} CREDITS · RETRO
           </p>
           <p>EACH MACHINE KEEPS ITS OWN CREDITS AND LEGENDS</p>
         </div>

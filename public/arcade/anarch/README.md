@@ -22,7 +22,7 @@ If these files are missing, drop them in this folder with those names. The
 
 ## Credits on this machine
 
-Anarch shares the Wave Runner Lightning arcade pool. One insert (21 sats) still
+Anarch shares the arcade Lightning pool. One insert (21 sats) still
 grants 3 credits on the same `arcade_players` row. Playing Anarch spends 1
 credit via `/api/arcade/play` with `game=anarch`. Anarch does not post scores
-to WAVE RUNNER HIGH SCORES.
+to the RETRO legends board.

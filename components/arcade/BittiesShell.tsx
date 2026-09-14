@@ -368,7 +368,7 @@ export function BittiesShell() {
               {ARCADE_PRICE_SATS} sats · tap to bounce
             </p>
             <p className="anarch-copy anarch-copy-pool">
-              Shares the Wave Runner credit pool. {ARCADE_CREDITS_PER_PAY}{" "}
+              Shares the arcade credit pool. {ARCADE_CREDITS_PER_PAY}{" "}
               credits per insert. No Bouncing Bitties scores on HIGH SCORES.
             </p>
             <p className="anarch-copy">Art & sfx · Kenney · CC0</p>

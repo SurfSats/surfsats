@@ -13,7 +13,7 @@ Every machine invoices **21 sats** over Lightning. Any wallet. No login.
 | Path | Machine |
 | --- | --- |
 | `/graffiti` | Spray the wall |
-| `/arcade` | Wave Runner, retro cabinets, Anarch, Bouncing Bitties |
+| `/arcade` | Retro cabinets, Anarch, Bouncing Bitties |
 | `/tab` | Sit the tab |
 | `/story` | Write the next line |
 | `/music` | Surf Radio + bottle pulls (`/jukebox` 308s here) |
