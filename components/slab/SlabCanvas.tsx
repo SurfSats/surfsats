@@ -76,11 +76,14 @@ function cellFromPoint(
   canvas: HTMLCanvasElement,
   clientX: number,
   clientY: number,
+  cell: number,
+  originX: number,
+  originY: number,
 ) {
   const rect = canvas.getBoundingClientRect();
-  if (rect.width <= 0 || rect.height <= 0) return null;
-  const x = Math.floor(((clientX - rect.left) / rect.width) * SLAB_WIDTH);
-  const y = Math.floor(((clientY - rect.top) / rect.height) * SLAB_HEIGHT);
+  if (rect.width <= 0 || rect.height <= 0 || cell <= 0) return null;
+  const x = Math.floor((clientX - rect.left - originX) / cell);
+  const y = Math.floor((clientY - rect.top - originY) / cell);
   if (!inBounds(x, y)) return null;
   return { x, y };
 }
@@ -145,6 +148,34 @@ function wetAmount(t: number) {
   return 0.2;
 }
 
+const VOID_COBBLE = "#2b261f";
+
+function wallLayout(paneW: number, paneH: number, zoom: Zoom) {
+  const byWidth = Math.floor(paneW / SLAB_WIDTH);
+  const byHeight = Math.floor(paneH / SLAB_HEIGHT);
+  const fitCell = Math.max(
+    8,
+    byWidth > 0 && byWidth * SLAB_HEIGHT <= paneH
+      ? byWidth
+      : byHeight > 0
+        ? byHeight
+        : SLAB_CELL_PX,
+  );
+  const cell = zoom === "2x" ? fitCell * 2 : fitCell;
+  const gridW = SLAB_WIDTH * cell;
+  const gridH = SLAB_HEIGHT * cell;
+  if (zoom === "2x") {
+    return { cell, ox: 0, oy: 0, canvasW: gridW, canvasH: gridH };
+  }
+  return {
+    cell,
+    ox: Math.floor((paneW - gridW) / 2),
+    oy: Math.floor((paneH - gridH) / 2),
+    canvasW: Math.max(1, paneW),
+    canvasH: Math.max(1, paneH),
+  };
+}
+
 function drawCube(
   ctx: CanvasRenderingContext2D,
   gx: number,
@@ -159,11 +190,13 @@ function drawCube(
     wet: number;
     punch: number;
   },
+  originX: number,
+  originY: number,
 ) {
   const d = Math.max(2, Math.round(S * 0.22));
   const inset = opts.punch * d;
-  const ox = gx * S + inset * 0.35;
-  const oy = gy * S + inset * 0.65;
+  const ox = originX + gx * S + inset * 0.35;
+  const oy = originY + gy * S + inset * 0.65;
   const size = S - inset;
   const dd = Math.max(2, Math.round(size * 0.22));
   const fx = ox;
@@ -342,15 +375,10 @@ export function SlabCanvas({
     return () => window.cancelAnimationFrame(raf);
   }, [wetKeys]);
 
-  const fitCell = Math.max(
-    8,
-    Math.floor(
-      Math.min(faceW / SLAB_WIDTH, faceH / SLAB_HEIGHT) || SLAB_CELL_PX,
-    ),
-  );
-  const cellPx = zoom === "2x" ? fitCell * 2 : fitCell;
-  const canvasW = SLAB_WIDTH * cellPx;
-  const canvasH = SLAB_HEIGHT * cellPx;
+  const layout = wallLayout(faceW, faceH, zoom);
+  const layoutRef = useRef(layout);
+  layoutRef.current = layout;
+  const { cell: cellPx, ox, oy, canvasW, canvasH } = layout;
 
   const liveMap = new Map(
     live
@@ -377,7 +405,8 @@ export function SlabCanvas({
         canvas.height = ph;
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const cell = cssW / SLAB_WIDTH;
+      const { cell, ox, oy } = layoutRef.current;
+      if (cell <= 0) return;
       const map = new Map(
         live
           .filter((item) => isLiveCell(item, height))
@@ -390,7 +419,7 @@ export function SlabCanvas({
         stains.map((stain) => [cellKey(stain.x, stain.y), stain]),
       );
 
-      ctx.fillStyle = "#0d0b09";
+      ctx.fillStyle = VOID_COBBLE;
       ctx.fillRect(0, 0, cssW, cssH);
       const sky = ctx.createLinearGradient(0, 0, cssW * 0.4, cssH * 0.35);
       sky.addColorStop(0, "rgba(255, 214, 150, 0.07)");
@@ -400,57 +429,100 @@ export function SlabCanvas({
 
       const punch = punchAmount(punchT);
       const wet = wetAmount(punchT);
+      const col0 = Math.floor(-ox / cell) - 1;
+      const col1 = Math.ceil((cssW - ox) / cell) + 1;
+      const row0 = Math.floor(-oy / cell) - 1;
+      const row1 = Math.ceil((cssH - oy) / cell) + 1;
 
-      for (let y = 0; y < SLAB_HEIGHT; y += 1) {
-        for (let x = 0; x < SLAB_WIDTH; x += 1) {
-          const key = cellKey(x, y);
-          const liveCell = map.get(key);
-          const stain = stainMap.get(key);
-          const picked = pickedSet.has(key);
-          const hovered = Boolean(hover && hover.x === x && hover.y === y);
-          const settling = wetKeys.has(key);
+      for (let y = row0; y < row1; y += 1) {
+        for (let x = col0; x < col1; x += 1) {
+          const onWall = inBounds(x, y);
+          const key = onWall ? cellKey(x, y) : "";
+          const liveCell = onWall ? map.get(key) : undefined;
+          const stain = onWall ? stainMap.get(key) : undefined;
+          const picked = onWall && pickedSet.has(key);
+          const hovered = Boolean(
+            onWall && hover && hover.x === x && hover.y === y,
+          );
+          const settling = onWall && wetKeys.has(key);
 
           if (liveCell) {
-            drawCube(ctx, x, y, cell, paletteHex(liveCell.color), {
-              kind: "live",
-              colorId: liveCell.color,
-              outline: picked || hovered,
-              reef: liveCell.coat === "reef",
-              wet: settling ? wet : 0,
-              punch: settling ? punch : 0,
-            });
+            drawCube(
+              ctx,
+              x,
+              y,
+              cell,
+              paletteHex(liveCell.color),
+              {
+                kind: "live",
+                colorId: liveCell.color,
+                outline: picked || hovered,
+                reef: liveCell.coat === "reef",
+                wet: settling ? wet : 0,
+                punch: settling ? punch : 0,
+              },
+              ox,
+              oy,
+            );
             continue;
           }
           if (picked) {
-            drawCube(ctx, x, y, cell, paletteHex(color), {
-              kind: "ghost",
-              colorId: color,
-              outline: true,
-              reef: coat === "reef",
-              wet: 0,
-              punch: 0,
-            });
+            drawCube(
+              ctx,
+              x,
+              y,
+              cell,
+              paletteHex(color),
+              {
+                kind: "ghost",
+                colorId: color,
+                outline: true,
+                reef: coat === "reef",
+                wet: 0,
+                punch: 0,
+              },
+              ox,
+              oy,
+            );
             continue;
           }
           if (stain) {
-            drawCube(ctx, x, y, cell, paletteHex(stain.color), {
-              kind: "stain",
-              colorId: stain.color,
+            drawCube(
+              ctx,
+              x,
+              y,
+              cell,
+              paletteHex(stain.color),
+              {
+                kind: "stain",
+                colorId: stain.color,
+                outline: hovered,
+                reef: false,
+                wet: 0,
+                punch: 0.35,
+              },
+              ox,
+              oy,
+            );
+            continue;
+          }
+          drawCube(
+            ctx,
+            x,
+            y,
+            cell,
+            VOID_COBBLE,
+            {
+              kind: "void",
+              colorId: "tar",
               outline: hovered,
               reef: false,
               wet: 0,
-              punch: 0.35,
-            });
-            continue;
-          }
-          drawCube(ctx, x, y, cell, "#2b261f", {
-            kind: "void",
-            colorId: "tar",
-            outline: hovered,
-            reef: false,
-            wet: 0,
-            punch: 0,
-          });
+              punch: 0,
+            },
+            ox,
+            oy,
+          );
         }
       }
     };
@@ -467,6 +539,8 @@ export function SlabCanvas({
     height,
     hover,
     live,
+    ox,
+    oy,
     punchT,
     selected,
     stains,
@@ -515,7 +589,15 @@ export function SlabCanvas({
       startPan(event);
       return;
     }
-    const pixel = cellFromPoint(canvas, event.clientX, event.clientY);
+    const { cell, ox, oy } = layoutRef.current;
+    const pixel = cellFromPoint(
+      canvas,
+      event.clientX,
+      event.clientY,
+      cell,
+      ox,
+      oy,
+    );
     if (!pixel) return;
     const added = tryAdd([], [pixel]);
     if (added.length === 0 && zoom === "2x") {
@@ -542,7 +624,15 @@ export function SlabCanvas({
       return;
     }
     if (!canvas) return;
-    const pixel = cellFromPoint(canvas, event.clientX, event.clientY);
+    const { cell, ox, oy } = layoutRef.current;
+    const pixel = cellFromPoint(
+      canvas,
+      event.clientX,
+      event.clientY,
+      cell,
+      ox,
+      oy,
+    );
     if (!pixel) {
       if (!painting.current) setHover(null);
       return;
@@ -613,7 +703,11 @@ export function SlabCanvas({
           className="slab-canvas"
           width={canvasW}
           height={canvasH}
-          style={{ width: canvasW, height: canvasH }}
+          style={
+            zoom === "fit"
+              ? { width: "100%", height: "100%" }
+              : { width: canvasW, height: canvasH }
+          }
           aria-label="the slab"
           onContextMenu={(event) => event.preventDefault()}
           onPointerDown={onPointerDown}

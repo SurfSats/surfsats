@@ -9324,7 +9324,7 @@ body:has(.shack-stage) .site-watermark {
   min-height: 28rem;
   overflow: hidden;
   color: #efe6d4;
-  background: #100e0b;
+  background: #2b261f;
 }
 
 body:has(.slab-page) .site-watermark {
@@ -9408,7 +9408,11 @@ body:has(.slab-page) .site-watermark {
   position: absolute;
   inset: 0;
   overflow: auto;
-  background: #0d0b09;
+  background: #2b261f;
+}
+
+.slab-face[data-zoom="fit"] {
+  overflow: hidden;
 }
 
 .slab-canvas {
