@@ -22,6 +22,7 @@ import {
   isStalling,
   metersOf,
   playerX,
+  poseOf,
   primeGhostCourse,
   respawnGame,
   scoreOf,
@@ -51,36 +52,76 @@ type OceanCache = {
   foam: HTMLCanvasElement;
 };
 
+type Cropped = {
+  img: HTMLImageElement;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
+
 type WaveSkin = {
-  rider: HTMLImageElement | null;
-  board: HTMLImageElement | null;
-  foam: HTMLImageElement | null;
-  lip: HTMLImageElement | null;
-  barrel: HTMLImageElement | null;
-  closeout: HTMLImageElement | null;
-  water: HTMLImageElement | null;
+  rider: Cropped | null;
+  riderHop: Cropped | null;
+  riderTuck: Cropped | null;
+  riderWipe: Cropped | null;
+  board: Cropped | null;
+  foam: Cropped | null;
+  lip: Cropped | null;
+  barrel: Cropped | null;
+  closeout: Cropped | null;
+  water: Cropped | null;
 };
 
 const SKIN_DIR = "/arcade/wave-runner";
-const SKIN_FILES = [
-  "rider",
-  "board",
-  "foam",
-  "lip",
-  "barrel",
-  "closeout",
-  "water",
-] as const;
 
 function emptySkin(): WaveSkin {
   return {
     rider: null,
+    riderHop: null,
+    riderTuck: null,
+    riderWipe: null,
     board: null,
     foam: null,
     lip: null,
     barrel: null,
     closeout: null,
     water: null,
+  };
+}
+
+function cropImage(img: HTMLImageElement): Cropped {
+  const c = document.createElement("canvas");
+  c.width = img.width;
+  c.height = img.height;
+  const ctx = c.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return { img, x: 0, y: 0, w: img.width, h: img.height };
+  ctx.drawImage(img, 0, 0);
+  const data = ctx.getImageData(0, 0, img.width, img.height).data;
+  let minX = img.width;
+  let minY = img.height;
+  let maxX = 0;
+  let maxY = 0;
+  for (let y = 0; y < img.height; y += 2) {
+    for (let x = 0; x < img.width; x += 2) {
+      const i = (y * img.width + x) * 4;
+      if (data[i + 3] < 14) continue;
+      if (data[i] + data[i + 1] + data[i + 2] < 20) continue;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+    }
+  }
+  if (maxX <= minX || maxY <= minY) {
+    return { img, x: 0, y: 0, w: img.width, h: img.height };
+  }
+  return {
+    img,
+    x: Math.max(0, minX - 2),
+    y: Math.max(0, minY - 2),
+    w: Math.min(img.width, maxX - minX + 6),
+    h: Math.min(img.height, maxY - minY + 6),
   };
 }
 
@@ -93,36 +134,66 @@ function loadSkinImage(name: string) {
   });
 }
 
+async function loadCropped(name: string) {
+  const img = await loadSkinImage(name);
+  return img ? cropImage(img) : null;
+}
+
 async function loadWaveSkin() {
   const skin = emptySkin();
-  const loaded = await Promise.all(
-    SKIN_FILES.map(async (name) => [name, await loadSkinImage(name)] as const),
-  );
-  for (const [name, img] of loaded) skin[name] = img;
+  const [
+    rider,
+    riderHop,
+    riderTuck,
+    riderWipe,
+    board,
+    foam,
+    lip,
+    barrel,
+    closeout,
+    water,
+  ] = await Promise.all([
+    loadCropped("rider"),
+    loadCropped("rider-hop"),
+    loadCropped("rider-tuck"),
+    loadCropped("rider-wipe"),
+    loadCropped("board"),
+    loadCropped("foam"),
+    loadCropped("lip"),
+    loadCropped("barrel"),
+    loadCropped("closeout"),
+    loadCropped("water"),
+  ]);
+  skin.rider = rider;
+  skin.riderHop = riderHop;
+  skin.riderTuck = riderTuck;
+  skin.riderWipe = riderWipe;
+  skin.board = board;
+  skin.foam = foam;
+  skin.lip = lip;
+  skin.barrel = barrel;
+  skin.closeout = closeout;
+  skin.water = water;
   return skin;
 }
 
-function riderFrame(game: Game) {
-  if (game.dead) return 4;
-  if (game.tucked) return 3;
-  if (!game.grounded || game.hop > 2) return 2;
-  if (game.pumping) return 1;
-  return 0;
-}
-
-function drawClippedImage(
+function stamp(
   ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement,
+  piece: Cropped,
   x: number,
   y: number,
   w: number,
   h: number,
 ) {
-  if (w <= 1 || h <= 1) return;
-  ctx.save();
-  ctx.clip();
-  ctx.drawImage(img, x, y, w, h);
-  ctx.restore();
+  ctx.drawImage(piece.img, piece.x, piece.y, piece.w, piece.h, x, y, w, h);
+}
+
+function riderSprite(game: Game, skin: WaveSkin) {
+  const pose = poseOf(game);
+  if (pose === "wipe" && skin.riderWipe) return skin.riderWipe;
+  if (pose === "tuck" && skin.riderTuck) return skin.riderTuck;
+  if (pose === "hop" && skin.riderHop) return skin.riderHop;
+  return skin.rider;
 }
 
 function bakeSky(w: number, h: number) {
@@ -263,10 +334,10 @@ function drawFace(
   if (skin.water) {
     ctx.save();
     ctx.clip();
-    const iw = Math.max(32, skin.water.width);
-    const ih = Math.max(32, skin.water.height);
+    const iw = Math.max(48, Math.min(220, skin.water.w));
+    const ih = Math.max(32, Math.min(140, skin.water.h));
     for (let y = Math.floor(H * 0.4); y < H; y += ih) {
-      for (let x = 0; x < W; x += iw) ctx.drawImage(skin.water, x, y, iw, ih);
+      for (let x = 0; x < W; x += iw) stamp(ctx, skin.water, x, y, iw, ih);
     }
     ctx.restore();
   } else {
@@ -294,10 +365,10 @@ function drawFace(
   ctx.fill();
 
   if (skin.lip) {
-    const tile = Math.max(16, skin.lip.width);
-    const hh = Math.max(10, Math.min(28, skin.lip.height));
-    for (let x = 0; x < W; x += tile - 2) {
-      ctx.drawImage(skin.lip, x, lipYAt(game, x) - hh * 0.65, tile, hh);
+    const tile = 92;
+    const hh = 36;
+    for (let x = -20; x < W; x += 70) {
+      stamp(ctx, skin.lip, x, lipYAt(game, x + 40) - hh * 0.72, tile, hh);
     }
   } else {
     ctx.beginPath();
@@ -312,9 +383,14 @@ function drawFace(
     ctx.lineWidth = 3.2;
     ctx.stroke();
   }
-  const foamImg = skin.foam ?? foam;
-  for (let x = 8; x < W; x += 28) {
-    ctx.drawImage(foamImg, x - 18, lipYAt(game, x) - 10);
+  if (skin.foam) {
+    for (let x = 16; x < W; x += 88) {
+      stamp(ctx, skin.foam, x - 18, lipYAt(game, x) - 12, 36, 16);
+    }
+  } else {
+    for (let x = 8; x < W; x += 28) {
+      ctx.drawImage(foam, x - 18, lipYAt(game, x) - 10);
+    }
   }
 }
 
@@ -333,11 +409,11 @@ function drawBarrel(ctx: CanvasRenderingContext2D, game: Game, skin: WaveSkin) {
     const cy = lip + (trough - lip) * 0.42;
     const rx = Math.min(86, Math.max(36, (x1 - x0) * 0.32));
     const ry = Math.max(22, (trough - lip) * 0.34);
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
     if (skin.barrel) {
-      drawClippedImage(ctx, skin.barrel, cx - rx, cy - ry, rx * 2, ry * 2);
+      stamp(ctx, skin.barrel, cx - rx * 1.15, cy - ry * 1.15, rx * 2.3, ry * 2.3);
     } else {
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
       ctx.fillStyle = "#02080e";
       ctx.fill();
       ctx.beginPath();
@@ -385,17 +461,22 @@ function drawCloseout(
     ctx.lineTo(x - 16, trough + 10);
     ctx.closePath();
     if (skin.closeout) {
-      const wallW = 40 + u * 48;
-      drawClippedImage(ctx, skin.closeout, x - 16, lip - 8, wallW, trough - lip + 20);
+      const wallW = 110 + u * 40;
+      const wallH = trough - lip + 28;
+      stamp(ctx, skin.closeout, x - 24, lip - 18, wallW, wallH);
     } else {
       ctx.fillStyle = `rgba(239, 230, 212, ${0.35 + u * 0.5 * flash})`;
       ctx.fill();
       ctx.fillStyle = `rgba(255, 255, 255, ${0.5 * flash})`;
       ctx.fill();
     }
-    const foamImg = skin.foam ?? foam;
-    ctx.drawImage(foamImg, x - 8, lip - 6);
-    ctx.drawImage(foamImg, x + 10, lip + 10);
+    if (skin.foam) {
+      stamp(ctx, skin.foam, x - 10, lip - 8, 40, 18);
+      stamp(ctx, skin.foam, x + 18, lip + 8, 32, 14);
+    } else {
+      ctx.drawImage(foam, x - 8, lip - 6);
+      ctx.drawImage(foam, x + 10, lip + 10);
+    }
     if (u < 0.7) {
       ctx.fillStyle = `rgba(255, 46, 196, ${0.55 + flash * 0.35})`;
       ctx.font = "10px monospace";
@@ -430,9 +511,19 @@ function drawSurfer(
   const cx = px + PLAYER_W / 2;
   const boardY = y + PLAYER_H - (tucked ? 8 : 5) + bob;
 
+  const pose = poseOf(game);
+  const sprite = riderSprite(game, skin);
+  const showBoard = Boolean(
+    skin.board && (pose === "hop" || pose === "wipe" || !sprite),
+  );
+  const sx = game.squash;
+  const sy = pose === "hop" && !skin.riderHop ? 1.16 : pose === "tuck" && !skin.riderTuck ? 0.74 : sx;
+  const xx = pose === "hop" && !skin.riderHop ? 0.88 : pose === "tuck" && !skin.riderTuck ? 1.14 : 2 - sy;
+
   ctx.save();
   ctx.translate(cx, boardY);
-  ctx.rotate(tilt);
+  ctx.rotate(tilt + game.lean * 0.35 + (game.dead ? game.deadT * 9 : 0));
+  ctx.scale(xx, sy);
   ctx.translate(-cx, -boardY);
 
   ctx.fillStyle = "rgba(4, 16, 24, 0.4)";
@@ -440,11 +531,11 @@ function drawSurfer(
   ctx.ellipse(cx + 4, boardY + 7, tucked ? 22 : 18, 3, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  if (skin.board) {
-    const bw = tucked ? 52 : 44;
-    const bh = tucked ? 10 : 8;
-    ctx.drawImage(skin.board, cx - bw / 2, boardY - bh / 2, bw, bh);
-  } else {
+  if (showBoard && skin.board) {
+    const bw = tucked ? 52 : 48;
+    const bh = 11;
+    stamp(ctx, skin.board, cx - bw / 2, boardY - bh * 0.35, bw, bh);
+  } else if (!sprite) {
     ctx.fillStyle = "#ff7a18";
     ctx.beginPath();
     ctx.ellipse(cx, boardY, tucked ? 26 : 22, tucked ? 4.2 : 3.6, 0, 0, Math.PI * 2);
@@ -454,23 +545,10 @@ function drawSurfer(
     ctx.stroke();
   }
 
-  if (skin.rider && skin.rider.width > 4) {
-    const frames = 5;
-    const fw = skin.rider.width / frames;
-    const fh = skin.rider.height;
-    const destW = PLAYER_W * 1.7;
-    const destH = PLAYER_H * 1.35;
-    ctx.drawImage(
-      skin.rider,
-      riderFrame(game) * fw,
-      0,
-      fw,
-      fh,
-      cx - destW / 2,
-      y + bob - 4,
-      destW,
-      destH,
-    );
+  if (sprite) {
+    const destH = PLAYER_H * 1.55;
+    const destW = destH * (sprite.w / Math.max(1, sprite.h));
+    stamp(ctx, sprite, cx - destW / 2, boardY - destH + 6 + bob, destW, destH);
   } else {
   ctx.fillStyle = "#041018";
   if (tucked) {
@@ -524,15 +602,29 @@ function drawSurfer(
     ctx.lineTo(cx - 14, boardY);
     ctx.stroke();
   }
-  if (isStalling(game)) {
-    ctx.fillStyle = "rgba(239, 230, 212, 0.85)";
-    ctx.beginPath();
-    ctx.ellipse(cx + 20, boardY - 2, 10, 4, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#efe6d4";
-    ctx.font = "8px monospace";
-    ctx.textAlign = "left";
-    ctx.fillText(WAVE_COPY.stall, cx + 18, boardY - 10);
+  if (isStalling(game) || game.puffT > 0) {
+    const puff = isStalling(game) ? 1 : Math.min(1, game.puffT / 0.16);
+    if (skin.foam) {
+      stamp(
+        ctx,
+        skin.foam,
+        cx + (isStalling(game) ? 10 : -18),
+        boardY - 4,
+        28 + puff * 10,
+        12 + puff * 6,
+      );
+    } else {
+      ctx.fillStyle = `rgba(239, 230, 212, ${0.45 + puff * 0.4})`;
+      ctx.beginPath();
+      ctx.ellipse(cx + 16, boardY - 1, 10 * puff + 6, 4, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (isStalling(game)) {
+      ctx.fillStyle = "#efe6d4";
+      ctx.font = "8px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(WAVE_COPY.stall, cx + 18, boardY - 10);
+    }
   }
   ctx.restore();
 
@@ -657,7 +749,9 @@ function draw(
     const mag = game.shake * 7;
     ctx.translate((Math.random() - 0.5) * mag, (Math.random() - 0.5) * mag);
   }
-  ctx.drawImage(cache.sky, 0, 0, W, H);
+  ctx.imageSmoothingEnabled = false;
+  ctx.translate(0, game.camY);
+  ctx.drawImage(cache.sky, 0, -game.camY, W, H);
   const drift = ((game.scroll * 0.18) % W + W) % W;
   ctx.drawImage(cache.swell, -drift, 0, W, H);
   ctx.drawImage(cache.swell, W - drift, 0, W, H);
@@ -669,6 +763,7 @@ function draw(
     ctx.fillStyle = `rgba(255, 46, 196, ${game.flash * 0.28})`;
     ctx.fillRect(0, 0, W, H);
   }
+  ctx.translate(0, -game.camY);
   drawHud(ctx, game, credits, font, best, ghost);
   ctx.restore();
 }

@@ -10,6 +10,9 @@ import {
   coachAlpha,
   emptyGame,
   hopGame,
+  JUMP_BUFFER,
+  LAND_S,
+  MIN_SPEED,
   isStalling,
   metersOf,
   respawnGame,
@@ -83,6 +86,43 @@ test("hop pops off the face", () => {
   hopGame(game);
   assert.equal(game.grounded, false);
   assert.ok(game.hopV < 0);
+});
+
+test("hop buffer pops on the landing frame", () => {
+  const game = emptyGame();
+  hopGame(game);
+  game.hop = 24;
+  game.hopV = 80;
+  game.grounded = false;
+  game.coyote = 0;
+  hopGame(game);
+  assert.ok(game.hopBuf > 0);
+  assert.ok(game.hopBuf <= JUMP_BUFFER);
+  game.hop = 0.4;
+  game.hopV = 40;
+  step(game, 1 / 60);
+  assert.equal(game.grounded, false);
+  assert.ok(game.hopV < 0);
+});
+
+test("landing squash lasts a couple of frames", () => {
+  const game = emptyGame();
+  hopGame(game);
+  for (let i = 0; i < 90; i += 1) {
+    step(game, 1 / 60);
+    if (game.landT > 0) break;
+  }
+  assert.ok(game.landT > 0);
+  assert.ok(game.landT <= LAND_S + 0.001);
+  assert.ok(game.puffT > 0);
+  assert.ok(game.squash < 0.95);
+});
+
+test("the board always runs forward", () => {
+  const game = emptyGame();
+  for (let i = 0; i < 120; i += 1) step(game, 1 / 60);
+  assert.ok(game.scroll > MIN_SPEED);
+  assert.ok(game.speed >= MIN_SPEED - 0.01);
 });
 
 test("tuck on a barrel section is a corridor you can stay in", () => {

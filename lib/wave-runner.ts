@@ -6,7 +6,10 @@ export const FACE_SLIDE = 0.12;
 export const PUMP_CLIMB = 0.62;
 export const HOP_V = -390;
 export const COYOTE = 0.1;
+export const JUMP_BUFFER = 0.1;
+export const LAND_S = 2 / 60;
 export const BASE_SPEED = 132;
+export const MIN_SPEED = BASE_SPEED * 0.9;
 export const MAX_SPEED = 310;
 export const WAVE_SECS = 10;
 export const WAVE_CAP = 8;
@@ -55,8 +58,14 @@ export type Game = {
   rail: number;
   hop: number;
   hopV: number;
+  hopBuf: number;
   grounded: boolean;
   coyote: number;
+  landT: number;
+  squash: number;
+  lean: number;
+  camY: number;
+  puffT: number;
   pumping: boolean;
   tucked: boolean;
   inBarrel: boolean;
@@ -163,8 +172,14 @@ export function emptyGame(w = 480, h = VIEW_H, seed = 1): Game {
     rail: 0.55,
     hop: 0,
     hopV: 0,
+    hopBuf: 0,
     grounded: true,
     coyote: 0,
+    landT: 0,
+    squash: 1,
+    lean: 0,
+    camY: 0,
+    puffT: 0,
     pumping: false,
     tucked: false,
     inBarrel: false,
@@ -260,18 +275,41 @@ export function playerBox(game: Game) {
   };
 }
 
+function popOff(game: Game) {
+  const late = game.rail > 0.68 ? 1 : game.rail > 0.45 ? 0.55 : 0.2;
+  game.hopV = HOP_V - game.energy * 90 - late * 70;
+  game.grounded = false;
+  game.coyote = 0;
+  game.hopBuf = 0;
+  game.landT = 0;
+  game.squash = 1.12;
+  game.shake = Math.max(game.shake, 0.07);
+}
+
+export function tryPop(game: Game) {
+  if (game.dead || game.hopBuf <= 0) return false;
+  if (game.grounded || game.coyote > 0) {
+    popOff(game);
+    return true;
+  }
+  return false;
+}
+
 export function hopGame(game: Game) {
   if (game.dead) {
     if (game.overlay) game.wantLife = true;
     return;
   }
-  if (game.grounded || game.coyote > 0) {
-    const late = game.rail > 0.68 ? 1 : game.rail > 0.45 ? 0.55 : 0.2;
-    game.hopV = HOP_V - game.energy * 90 - late * 70;
-    game.grounded = false;
-    game.coyote = 0;
-    game.shake = Math.max(game.shake, 0.07);
-  }
+  game.hopBuf = JUMP_BUFFER;
+  tryPop(game);
+}
+
+export function poseOf(game: Game) {
+  if (game.dead) return "wipe" as const;
+  if (game.tucked) return "tuck" as const;
+  if (!game.grounded || game.hop > 2) return "hop" as const;
+  if (game.pumping) return "pump" as const;
+  return "stand" as const;
 }
 
 export function setPump(game: Game, on: boolean) {
@@ -443,6 +481,21 @@ export function step(game: Game, dt: number) {
   game.shake = Math.max(0, game.shake - dt * 2.6);
   game.flash = Math.max(0, game.flash - dt * 3);
   game.near = Math.max(0, game.near - dt * 2.2);
+  game.landT = Math.max(0, game.landT - dt);
+  game.puffT = Math.max(0, game.puffT - dt);
+  game.hopBuf = Math.max(0, game.hopBuf - dt);
+  const squashTo = game.dead ? 0.82 : game.landT > 0 ? 0.72 : 1;
+  game.squash += (squashTo - game.squash) * Math.min(1, dt * 28);
+  const leanTo = game.dead
+    ? game.lean + dt * 10
+    : game.tucked
+      ? 0.42
+      : game.pumping
+        ? 0.22
+        : 0.08;
+  game.lean += (leanTo - game.lean) * Math.min(1, dt * 16);
+  const camTo = game.dead ? 12 : Math.min(22, Math.max(0, game.hop * 0.12));
+  game.camY += (camTo - game.camY) * Math.min(1, dt * 12);
 
   if (game.dead) {
     game.deadT += dt;
@@ -455,7 +508,7 @@ export function step(game: Game, dt: number) {
   game.t += dt;
   const drop = game.grounded ? (0.55 - game.rail) * 46 : 0;
   const pumpBoost = game.pumping && game.grounded ? 38 + game.energy * 50 : 0;
-  game.speed = speedAt(game.t) + drop + pumpBoost;
+  game.speed = Math.max(MIN_SPEED, speedAt(game.t) + drop + pumpBoost);
   game.scroll += game.speed * dt;
   spawnAhead(game);
 
@@ -464,22 +517,30 @@ export function step(game: Game, dt: number) {
       game.energy = Math.min(1, game.energy + dt * 0.85);
       game.rail = Math.min(0.96, game.rail + dt * PUMP_CLIMB * (0.55 + game.energy));
     } else {
-      game.energy = Math.max(0, game.energy - dt * 0.32);
+      game.energy = Math.max(0.08, game.energy - dt * 0.32);
       game.rail = Math.max(0.04, game.rail - dt * FACE_SLIDE * (0.7 + steepAt(game, game.scroll + playerX(game))));
     }
   }
 
+  const wasGrounded = game.grounded;
   game.hopV += GRAVITY * dt;
   game.hop -= game.hopV * dt;
   if (game.hop <= 0) {
+    const landed = !wasGrounded;
     game.hop = 0;
     game.hopV = 0;
     if (!game.grounded) game.coyote = COYOTE;
     game.grounded = true;
+    if (landed) {
+      game.landT = LAND_S;
+      game.puffT = 0.16;
+      game.squash = 0.7;
+    }
   } else {
     game.grounded = false;
     game.coyote = Math.max(0, game.coyote - dt);
   }
+  tryPop(game);
 
   const px = playerX(game);
   const worldX = game.scroll + px;
@@ -494,6 +555,13 @@ export function step(game: Game, dt: number) {
   if (game.inBarrel) {
     game.barrelS += dt;
     game.near = Math.max(game.near, 0.55);
+  }
+  if (
+    game.tucked &&
+    game.grounded &&
+    (sec?.kind === "barrel" || sec?.kind === "closeout")
+  ) {
+    game.rail += (0.52 - game.rail) * Math.min(1, dt * 2.6);
   }
 
   if (sec?.kind === "closeout" && worldX >= sec.telegraphX) {
