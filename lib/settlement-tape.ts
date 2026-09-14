@@ -1,4 +1,5 @@
 import { slabTapeText } from "./slab.ts";
+import { waveRunnerTapeText } from "./wave-runner.ts";
 
 export const TAPE_STORAGE_KEY = "surfsats.tape.v1";
 export const TAPE_LIMIT = 24;
@@ -68,6 +69,8 @@ export function arcadeTapeText(actor: string, sats = 21) {
   return `${actor} zapped ${sats} sats on Arcade`;
 }
 
+export { waveRunnerTapeText };
+
 export function tabTapeText(actor: string, sats = 21) {
   return `${actor} sat the tab · ${sats} sats`;
 }
@@ -96,6 +99,23 @@ export function tapeFromGraffiti(mark: {
     text: graffitiTapeText(actor, mark.text),
     createdAt: mark.createdAt,
     href: "/graffiti",
+  };
+}
+
+export function tapeFromWaveRunner(run: {
+  callsign: string;
+  meters: number;
+  createdAt?: string;
+  playId?: string;
+}): TapeEvent {
+  const actor = formatTapeActor(run.callsign);
+  return {
+    id: `arcade-wave:${run.playId || `${actor}-${Math.floor(run.meters)}-${run.createdAt ?? ""}`}`,
+    machine: "arcade",
+    actor,
+    text: waveRunnerTapeText(actor, run.meters),
+    createdAt: run.createdAt ?? new Date().toISOString(),
+    href: "/arcade",
   };
 }
 

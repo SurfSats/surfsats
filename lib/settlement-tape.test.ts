@@ -22,10 +22,12 @@ import {
   tapeFromSlab,
   tapeFromStory,
   tapeFromTab,
+  tapeFromWaveRunner,
   TAPE_SEED,
   publishTape,
   storyTapeText,
   subscribeTape,
+  waveRunnerTapeText,
 } from "./settlement-tape.ts";
 
 test("tape lines match the settlement copy", () => {
@@ -42,6 +44,10 @@ test("tape lines match the settlement copy", () => {
     "anon wrote line 48 on Story Chain",
   );
   assert.equal(arcadeTapeText("WAVE"), "WAVE zapped 21 sats on Arcade");
+  assert.equal(
+    waveRunnerTapeText("SURF", 184),
+    "SURF wiped out at 184m on Wave Runner",
+  );
   assert.equal(tabTapeText("BITCOINER"), "BITCOINER sat the tab · 21 sats");
   assert.equal(
     slabTapeText("HOPE", 12, "swell"),

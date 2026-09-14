@@ -7,7 +7,7 @@ import { payFetch } from "@/lib/pay-fetch";
 import { useSettleHandoff } from "@/components/pay/SettleRitual";
 import { useCheckNow } from "@/components/pay/useWebLn";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
-import type { WaveRunnerHandle } from "@/components/arcade/WaveRunner";
+import type { WaveRun, WaveRunnerHandle } from "@/components/arcade/WaveRunner";
 import { parseCallsignEtch } from "@/lib/callsign";
 import { useGlass } from "@/lib/useGlass";
 import {
@@ -20,6 +20,10 @@ import {
   sanitizeAlias,
   type ArcadeHighScore,
 } from "@/lib/arcade";
+import {
+  rememberHeat,
+  writeWaveBest,
+} from "@/lib/wave-runner";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 
 type SessionCache = {
@@ -56,6 +60,8 @@ export function ArcadeApp({
   const [ready, setReady] = useState(false);
   const [playId, setPlayId] = useState<string | null>(null);
   const [lastScore, setLastScore] = useState<number | null>(null);
+  const [lastMeters, setLastMeters] = useState<number | null>(null);
+  const [lastBarrelS, setLastBarrelS] = useState<number | null>(null);
   const [scoreCopied, setScoreCopied] = useState(false);
   const gameRef = useRef<WaveRunnerHandle | null>(null);
   const startLock = useRef(false);
@@ -300,6 +306,8 @@ export function ArcadeApp({
       playIdRef.current = data.playId ?? null;
       setPlayId(data.playId ?? null);
       setLastScore(null);
+      setLastMeters(null);
+      setLastBarrelS(null);
       setMode("playing");
       void loadBoards();
     } catch {
@@ -310,28 +318,85 @@ export function ArcadeApp({
   }, [alias, credits, loadBoards, mode, playerId]);
 
   const handleWipeout = useCallback(
-    async (score: number) => {
-      setLastScore(score);
+    async (run: WaveRun) => {
+      setLastScore(run.score);
+      setLastMeters(run.meters);
+      setLastBarrelS(run.barrelS);
       setScoreCopied(false);
-      setMode("result");
+      const tag = sanitizeAlias(alias);
+      const callsign = tag.ok ? tag.alias : alias.trim().toUpperCase() || "anon";
       try {
-        await fetch("/api/arcade/score", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            playerId,
-            playId: playIdRef.current ?? playId,
-            score,
-            game: ARCADE_GAME_ID,
-          }),
-        });
-        await loadBoards();
+        writeWaveBest(
+          {
+            meters: run.meters,
+            barrelS: run.barrelS,
+            score: run.score,
+            at: new Date().toISOString(),
+          },
+          window.localStorage,
+        );
+        rememberHeat(
+          {
+            callsign,
+            meters: run.meters,
+            barrelS: run.barrelS,
+            at: new Date().toISOString(),
+            seed: run.seed,
+          },
+          window.localStorage,
+        );
       } catch {
-        // play is already on LAST 10; score retry is not worth blocking the cabinet
+        // local best is optional
+      }
+      if (credits < 1) {
+        setMode("result");
+        try {
+          await fetch("/api/arcade/score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              playerId,
+              playId: playIdRef.current ?? playId,
+              score: run.score,
+              meters: run.meters,
+              barrelS: run.barrelS,
+              game: ARCADE_GAME_ID,
+            }),
+          });
+          await loadBoards();
+        } catch {
+          // play is already on LAST 10; score retry is not worth blocking the cabinet
+        }
       }
     },
-    [loadBoards, playId, playerId],
+    [alias, credits, loadBoards, playId, playerId],
   );
+
+  const handleNextLife = useCallback(async () => {
+    if (credits < 1 || startLock.current) return false;
+    startLock.current = true;
+    try {
+      const response = await fetch("/api/arcade/play", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerId, game: ARCADE_GAME_ID }),
+      });
+      const data = (await response.json()) as {
+        error?: string;
+        credits?: number;
+        playId?: string;
+      };
+      if (!response.ok) return false;
+      if (typeof data.credits === "number") setCredits(data.credits);
+      playIdRef.current = data.playId ?? playIdRef.current;
+      setPlayId(data.playId ?? playIdRef.current);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      startLock.current = false;
+    }
+  }, [credits, playerId]);
 
   function hop() {
     gameRef.current?.hop();
@@ -459,6 +524,8 @@ export function ArcadeApp({
         pending={pending}
         error={error}
         lastScore={lastScore}
+        lastMeters={lastMeters}
+        lastBarrelS={lastBarrelS}
         scoreRank={scoreRank}
         scoreCopied={scoreCopied}
         gameRef={gameRef}
@@ -466,7 +533,8 @@ export function ArcadeApp({
         onInsert={() => void requestInvoice()}
         onPlay={() => void play()}
         onHop={hop}
-        onWipeout={(score) => void handleWipeout(score)}
+        onWipeout={(run) => void handleWipeout(run)}
+        onNextLife={handleNextLife}
         onCopyScore={() => void copyScore()}
       />
       {showInvoice ? (

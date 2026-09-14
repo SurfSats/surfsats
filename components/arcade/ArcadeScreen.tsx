@@ -3,6 +3,7 @@
 import type { RefObject } from "react";
 import {
   WaveRunner,
+  type WaveRun,
   type WaveRunnerHandle,
 } from "@/components/arcade/WaveRunner";
 import { verbPressProps } from "@/lib/verb-press";
@@ -28,6 +29,8 @@ export function ArcadeScreen({
   invoiceError,
   expired,
   lastScore,
+  lastMeters,
+  lastBarrelS,
   scoreRank,
   scoreCopied,
   gameRef,
@@ -37,6 +40,7 @@ export function ArcadeScreen({
   onPlay,
   onInsert,
   onWipeout,
+  onNextLife,
   onCopyScore,
   photoCrt = false,
 }: {
@@ -46,6 +50,8 @@ export function ArcadeScreen({
   invoiceError: string | null;
   expired: boolean;
   lastScore: number | null;
+  lastMeters?: number | null;
+  lastBarrelS?: number | null;
   scoreRank: number | null;
   scoreCopied: boolean;
   gameRef: RefObject<WaveRunnerHandle | null>;
@@ -54,7 +60,8 @@ export function ArcadeScreen({
   aliasLocked?: boolean;
   onPlay: () => void;
   onInsert: () => void;
-  onWipeout: (score: number) => void;
+  onWipeout: (run: WaveRun) => void;
+  onNextLife?: () => Promise<boolean>;
   onCopyScore: () => void;
   photoCrt?: boolean;
 }) {
@@ -73,7 +80,12 @@ export function ArcadeScreen({
     >
       <div className="cab-crt-well">
         {mode === "playing" ? (
-          <WaveRunner ref={gameRef} credits={credits} onWipeout={onWipeout} />
+          <WaveRunner
+            ref={gameRef}
+            credits={credits}
+            onWipeout={onWipeout}
+            onNextLife={onNextLife}
+          />
         ) : null}
       </div>
       <div className="cab-crt-glass" aria-hidden="true" />
@@ -89,14 +101,16 @@ export function ArcadeScreen({
             <p className="cab-crt-insert">WIPEOUT</p>
           )}
           <p className="cab-crt-score">{formatScore(lastScore ?? 0)}</p>
-          <p className="cab-crt-sub">{ARCADE_GAME_LABEL}</p>
+          <p className="cab-crt-sub">
+            {Math.floor(lastMeters ?? 0)}m · {(lastBarrelS ?? 0).toFixed(1)}s BARREL
+          </p>
           <div className="cab-crt-result-actions">
             <button
               type="button"
               className="cab-crt-next"
               onClick={credits > 0 ? onPlay : onInsert}
             >
-              {credits > 0 ? "PLAY AGAIN" : `INSERT ${ARCADE_PRICE_SATS} SATS`}
+              {credits > 0 ? "NEXT LIFE" : `INSERT ${ARCADE_PRICE_SATS} SATS`}
             </button>
             <button type="button" className="cab-crt-share" onClick={onCopyScore}>
               {scoreCopied ? "COPIED" : "COPY SCORE"}

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { ARCADE_GAME_ID, isPlayerId, normalizePlayGame } from "@/lib/arcade";
 import { arcadeLog } from "@/lib/arcade-log";
-import { arcadeStoreKind, submitArcadeScore } from "@/lib/arcade-store";
+import { arcadeStoreKind, getArcadePlayer, submitArcadeScore } from "@/lib/arcade-store";
+import { announceWaveRunnerTape } from "@/lib/settlement-tape-announce";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,15 @@ export async function POST(request: Request) {
     });
     if (!result.ok) {
       return NextResponse.json({ error: result.reason }, { status: 400 });
+    }
+    const meters = Number(record.meters);
+    if (game === ARCADE_GAME_ID && Number.isFinite(meters)) {
+      const player = await getArcadePlayer(playerId);
+      announceWaveRunnerTape({
+        callsign: player?.alias || "anon",
+        meters,
+        playId: playId || undefined,
+      });
     }
     return NextResponse.json({ ok: true });
   } catch {

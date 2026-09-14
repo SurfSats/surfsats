@@ -8,7 +8,7 @@ export function ArcadeFloorCards() {
       <ul className="arcade-floor-cards">
         <li className="arcade-floor-card">
           <h2>WAVE RUNNER</h2>
-          <p>Tap to hop. Already on the glass.</p>
+          <p>Read the set. Pump, hop, tuck. Already on the glass.</p>
           <a className="arcade-floor-play" href="#cabinet">
             PLAY
           </a>

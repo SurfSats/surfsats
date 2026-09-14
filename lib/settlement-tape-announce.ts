@@ -10,6 +10,7 @@ import {
   tapeFromSlab,
   tapeFromStory,
   tapeFromTab,
+  tapeFromWaveRunner,
 } from "@/lib/settlement-tape";
 import type { StoryLine } from "@/lib/story";
 import { getStoryLines } from "@/lib/story-store";
@@ -17,6 +18,20 @@ import { TAB_PRICE_SATS } from "@/lib/tab";
 
 export function announceGraffitiTape(mark: GraffitiMark) {
   publishTape(tapeFromGraffiti(mark));
+}
+
+export function announceWaveRunnerTape(run: {
+  callsign: string;
+  meters: number;
+  playId?: string;
+}) {
+  publishTape(
+    tapeFromWaveRunner({
+      callsign: run.callsign,
+      meters: run.meters,
+      playId: run.playId,
+    }),
+  );
 }
 
 export function announceArcadeTape(grant: {

@@ -14,7 +14,7 @@ import {
   ArcadeScreen,
   type ArcadeScreenMode,
 } from "@/components/arcade/ArcadeScreen";
-import type { WaveRunnerHandle } from "@/components/arcade/WaveRunner";
+import type { WaveRun, WaveRunnerHandle } from "@/components/arcade/WaveRunner";
 
 export function ArcadeCabinet({
   alias,
@@ -23,6 +23,8 @@ export function ArcadeCabinet({
   pending,
   error,
   lastScore,
+  lastMeters,
+  lastBarrelS,
   scoreRank,
   scoreCopied,
   gameRef,
@@ -31,6 +33,7 @@ export function ArcadeCabinet({
   onPlay,
   onHop,
   onWipeout,
+  onNextLife,
   onCopyScore,
 }: {
   alias: string;
@@ -39,6 +42,8 @@ export function ArcadeCabinet({
   pending: boolean;
   error: string | null;
   lastScore: number | null;
+  lastMeters?: number | null;
+  lastBarrelS?: number | null;
   scoreRank: number | null;
   scoreCopied: boolean;
   gameRef: RefObject<WaveRunnerHandle | null>;
@@ -46,7 +51,8 @@ export function ArcadeCabinet({
   onInsert: () => void;
   onPlay: () => void;
   onHop: () => void;
-  onWipeout: (score: number) => void;
+  onWipeout: (run: WaveRun) => void;
+  onNextLife?: () => Promise<boolean>;
   onCopyScore: () => void;
 }) {
   const aliasOk = sanitizeAlias(alias).ok;
@@ -79,6 +85,8 @@ export function ArcadeCabinet({
               invoiceError={null}
               expired={false}
               lastScore={lastScore}
+              lastMeters={lastMeters}
+              lastBarrelS={lastBarrelS}
               scoreRank={scoreRank}
               scoreCopied={scoreCopied}
               gameRef={gameRef}
@@ -88,6 +96,7 @@ export function ArcadeCabinet({
               onPlay={onPlay}
               onInsert={onInsert}
               onWipeout={onWipeout}
+              onNextLife={onNextLife}
               onCopyScore={onCopyScore}
               photoCrt
             />
