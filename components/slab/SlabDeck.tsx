@@ -308,7 +308,7 @@ export function SlabDeck({
             </button>
           </div>
           <p className="slab-coat-meta">
-            {coatPrice(coat)} sats · pixel · {SLAB_MAX_PIXELS} max
+            {coatPrice(coat)} sats per block · {SLAB_MAX_PIXELS} stroke cap
           </p>
 
           <p className="slab-field-label">color</p>

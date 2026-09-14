@@ -1,14 +1,16 @@
 import { readCallsign } from "./callsign.ts";
 
-export const SLAB_WIDTH = 210;
-export const SLAB_HEIGHT = 84;
+export const SLAB_WIDTH = 84;
+export const SLAB_HEIGHT = 42;
+export const SLAB_CELL_PX = 14;
+export const SLAB_MORTAR_PX = 1;
 export const SLAB_MAX_PIXELS = 21;
 export const SLAB_SWELL_SATS = 21;
 export const SLAB_SWELL_BLOCKS = 2016;
 export const SLAB_REEF_SATS = 441;
 export const SLAB_REEF_BLOCKS = 210_000;
 export const SLAB_STAIN_OPACITY = 0.15;
-export const SLAB_STORAGE_KEY = "surfsats.slab.v1";
+export const SLAB_STORAGE_KEY = "surfsats.slab.v2";
 export const SLAB_META_KIND = "surfsats-slab";
 
 export const SLAB_COATS = {

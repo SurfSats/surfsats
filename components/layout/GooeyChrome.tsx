@@ -17,9 +17,11 @@ import { verbPressProps } from "@/lib/verb-press";
 import {
   isActivePath,
   isReadoutPath,
+  isWallPath,
   kitNavLinks,
   primaryNavLinks,
   readoutNavLinks,
+  wallNavLinks,
 } from "@/lib/nav";
 import type { NavLink } from "@/lib/types";
 
@@ -112,13 +114,18 @@ export function GooeyHeaderNav({
   className?: string;
 }) {
   const [hovered, setHovered] = useState<string | null>(null);
+  const [wallsOpen, setWallsOpen] = useState(false);
   const [readoutsOpen, setReadoutsOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const wallsTriggerRef = useRef<HTMLButtonElement>(null);
+  const readoutTriggerRef = useRef<HTMLButtonElement>(null);
+  const wallActive = isWallPath(pathname);
   const readoutActive = isReadoutPath(pathname);
+  const wallHovering = !wallActive && (hovered === "walls" || wallsOpen);
   const readoutHovering = !readoutActive && (hovered === "readouts" || readoutsOpen);
   const menuId = useId();
 
   useEffect(() => {
+    setWallsOpen(false);
     setReadoutsOpen(false);
   }, [pathname]);
 
@@ -173,19 +180,56 @@ export function GooeyHeaderNav({
           );
         })}
 
-        <Liquid.Item morph={pillMorph(readoutHovering)} radius={999}>
+        <Liquid.Item morph={pillMorph(wallHovering)} radius={999}>
           <button
-            ref={triggerRef}
+            ref={wallsTriggerRef}
             type="button"
-            id={`${menuId}-trigger`}
-            aria-expanded={readoutsOpen}
+            id={`${menuId}-walls-trigger`}
+            aria-expanded={wallsOpen}
             aria-haspopup="menu"
-            aria-controls={menuId}
-            aria-current={readoutActive ? "page" : undefined}
-            onClick={() => setReadoutsOpen((value) => !value)}
+            aria-controls={`${menuId}-walls`}
+            aria-current={wallActive ? "page" : undefined}
+            onClick={() => {
+              setReadoutsOpen(false);
+              setWallsOpen((value) => !value);
+            }}
             onKeyDown={(event) => {
               if (event.key === "ArrowDown") {
                 event.preventDefault();
+                setReadoutsOpen(false);
+                setWallsOpen(true);
+              }
+            }}
+            {...hoverHandlers("walls")}
+            className={cn(
+              pillLayout,
+              "nav-glass backdrop-blur-[10px] backdrop-saturate-[160%]",
+            )}
+          >
+            <span className="relative z-[2] inline-flex items-center gap-1">
+              WALLS
+              <span aria-hidden="true">{wallsOpen ? "▴" : "▾"}</span>
+            </span>
+          </button>
+        </Liquid.Item>
+
+        <Liquid.Item morph={pillMorph(readoutHovering)} radius={999}>
+          <button
+            ref={readoutTriggerRef}
+            type="button"
+            id={`${menuId}-readouts-trigger`}
+            aria-expanded={readoutsOpen}
+            aria-haspopup="menu"
+            aria-controls={`${menuId}-readouts`}
+            aria-current={readoutActive ? "page" : undefined}
+            onClick={() => {
+              setWallsOpen(false);
+              setReadoutsOpen((value) => !value);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowDown") {
+                event.preventDefault();
+                setWallsOpen(false);
                 setReadoutsOpen(true);
               }
             }}
@@ -228,27 +272,38 @@ export function GooeyHeaderNav({
         })}
       </Liquid>
 
-      <ReadoutsMenu
-        id={menuId}
+      <HeaderMenu
+        id={`${menuId}-walls`}
+        open={wallsOpen}
+        pathname={pathname}
+        links={wallNavLinks}
+        triggerRef={wallsTriggerRef}
+        onClose={() => setWallsOpen(false)}
+      />
+      <HeaderMenu
+        id={`${menuId}-readouts`}
         open={readoutsOpen}
         pathname={pathname}
-        triggerRef={triggerRef}
+        links={readoutNavLinks}
+        triggerRef={readoutTriggerRef}
         onClose={() => setReadoutsOpen(false)}
       />
     </div>
   );
 }
 
-function ReadoutsMenu({
+function HeaderMenu({
   id,
   open,
   pathname,
+  links,
   triggerRef,
   onClose,
 }: {
   id: string;
   open: boolean;
   pathname: string;
+  links: NavLink[];
   triggerRef: RefObject<HTMLButtonElement | null>;
   onClose: () => void;
 }) {
@@ -347,7 +402,7 @@ function ReadoutsMenu({
         transform: "translateX(-100%)",
       }}
     >
-      {readoutNavLinks.map((link) => {
+      {links.map((link) => {
         const active = isActivePath(pathname, link.href);
         return (
           <li key={link.href} role="none">

@@ -53,7 +53,7 @@ export type NavLink = {
   label: string;
 };
 
-export type NavGroupId = "machines" | "readouts" | "kit";
+export type NavGroupId = "machines" | "walls" | "readouts" | "kit";
 
 export type NavGroup = {
   id: NavGroupId;

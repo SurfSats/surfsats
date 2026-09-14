@@ -4,10 +4,13 @@ export const primaryNavLinks: NavLink[] = [
   { href: "/music", label: "Radio" },
   { href: "/arcade", label: "Arcade" },
   { href: "/tab", label: "TAB" },
-  { href: "/graffiti", label: "Graffiti" },
-  { href: "/slab", label: "SLAB" },
   { href: "/story", label: "Story" },
   { href: "/glass", label: "GLASS" },
+];
+
+export const wallNavLinks: NavLink[] = [
+  { href: "/graffiti", label: "Graffiti" },
+  { href: "/slab", label: "The Slab" },
 ];
 
 export const readoutNavLinks: NavLink[] = [
@@ -23,6 +26,7 @@ export const kitNavLinks: NavLink[] = [
 
 export const navGroups: NavGroup[] = [
   { id: "machines", label: "// machines", links: primaryNavLinks },
+  { id: "walls", label: "// walls", links: wallNavLinks },
   { id: "readouts", label: "// readouts", links: readoutNavLinks },
   { id: "kit", label: "// kit", links: kitNavLinks },
 ];
@@ -39,10 +43,10 @@ export const footerGroups: NavGroup[] = navGroups.map((group) => {
   }
   if (group.id === "machines") {
     const links = group.links.filter((link) => link.href !== "/glass");
-    const graffitiAt = links.findIndex((link) => link.href === "/graffiti");
     const glass = group.links.find((link) => link.href === "/glass");
-    if (glass && graffitiAt >= 0) {
-      links.splice(graffitiAt + 1, 0, glass);
+    const tabAt = links.findIndex((link) => link.href === "/tab");
+    if (glass) {
+      links.splice(tabAt >= 0 ? tabAt + 1 : links.length, 0, glass);
     }
     return { ...group, links };
   }
@@ -72,4 +76,8 @@ export function isActivePath(pathname: string, href: string) {
 
 export function isReadoutPath(pathname: string) {
   return readoutNavLinks.some((link) => isActivePath(pathname, link.href));
+}
+
+export function isWallPath(pathname: string) {
+  return wallNavLinks.some((link) => isActivePath(pathname, link.href));
 }

@@ -9345,10 +9345,12 @@ body:has(.slab-page) .site-watermark {
 }
 
 .slab-page .console-stage {
+  min-width: 0;
   min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   padding: 1rem;
 }
 
@@ -9368,10 +9370,14 @@ body:has(.slab-page) .site-watermark {
 }
 
 .slab-stage {
-  width: min(100%, 72rem);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .slab-bezel {
+  position: relative;
+  min-width: 0;
   border: 10px solid #2a241c;
   box-shadow:
     inset 0 0 0 2px #5a4a38,
@@ -9380,8 +9386,16 @@ body:has(.slab-page) .site-watermark {
   padding: 0.55rem 0.55rem 0.7rem;
 }
 
-.slab-bezel > p {
+.slab-bezel-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   margin: 0 0 0.45rem;
+}
+
+.slab-bezel-bar p {
+  margin: 0;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 10px;
   letter-spacing: 0.14em;
@@ -9389,16 +9403,40 @@ body:has(.slab-page) .site-watermark {
   color: #c4b49a;
 }
 
+.slab-zoom {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 0.25rem;
+}
+
+.slab-zoom button {
+  min-height: 1.5rem;
+  border: 1px solid #5a4a38;
+  background: transparent;
+  padding: 0 0.45rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c4b49a;
+}
+
+.slab-zoom button.is-on {
+  border-color: #f7931a;
+  color: #f7931a;
+}
+
 .slab-face {
   position: relative;
-  aspect-ratio: 210 / 84;
-  background: #12100e;
+  overflow: auto;
+  max-width: 100%;
+  max-height: min(70dvh, 42rem);
+  background: #0c0a08;
 }
 
 .slab-canvas {
   display: block;
-  width: 100%;
-  height: 100%;
+  flex-shrink: 0;
   touch-action: none;
   cursor: crosshair;
   image-rendering: pixelated;
@@ -9406,8 +9444,8 @@ body:has(.slab-page) .site-watermark {
 
 .slab-hover {
   position: absolute;
-  right: 0.45rem;
-  top: 0.45rem;
+  right: 0.85rem;
+  top: 2.35rem;
   z-index: 2;
   min-width: 8.5rem;
   border: 1px solid rgb(247 147 26 / 0.45);

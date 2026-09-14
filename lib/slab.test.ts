@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  SLAB_CELL_PX,
   SLAB_COATS,
   SLAB_COPY,
   SLAB_HEIGHT,
   SLAB_MAX_PIXELS,
+  SLAB_MORTAR_PX,
   SLAB_REEF_BLOCKS,
   SLAB_REEF_SATS,
   SLAB_STAIN_OPACITY,
@@ -54,9 +56,11 @@ function cell(input: {
   };
 }
 
-test("the slab is 210 by 84 with a 16-color palette and a 21-pixel stroke cap", () => {
-  assert.equal(SLAB_WIDTH, 210);
-  assert.equal(SLAB_HEIGHT, 84);
+test("the slab is 84 by 42 voxels at 14px with a 1px mortar and a 21-block stroke cap", () => {
+  assert.equal(SLAB_WIDTH, 84);
+  assert.equal(SLAB_HEIGHT, 42);
+  assert.equal(SLAB_CELL_PX, 14);
+  assert.equal(SLAB_MORTAR_PX, 1);
   assert.equal(SLAB_MAX_PIXELS, 21);
   assert.equal(slabPalette.length, 16);
   const ids = slabPalette.map((item) => item.id);
@@ -262,14 +266,14 @@ test("parseSlabPixels drops duplicates, out of bounds, and caps at 21", () => {
     { x: 0, y: 0 },
     { x: 0, y: 0 },
     { x: -1, y: 0 },
-    { x: 209, y: 83 },
-    { x: 210, y: 0 },
-    { x: 0, y: 84 },
+    { x: 83, y: 41 },
+    { x: 84, y: 0 },
+    { x: 0, y: 42 },
     { x: 1.5, y: 1 },
   ]);
   assert.deepEqual(parsed, [
     { x: 0, y: 0 },
-    { x: 209, y: 83 },
+    { x: 83, y: 41 },
   ]);
 
   const tooMany = Array.from({ length: 22 }, (_, i) => ({ x: i, y: 0 }));

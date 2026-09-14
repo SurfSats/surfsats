@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { footerGroups, footerLinks, primaryNavLinks } from "./nav.ts";
+import {
+  footerGroups,
+  footerLinks,
+  isReadoutPath,
+  isWallPath,
+  primaryNavLinks,
+  wallNavLinks,
+} from "./nav.ts";
 
 test("DIRTY FIAT footer dest is /fiat, not /dirty-fiat", () => {
   const hit = footerLinks.find((link) =>
@@ -20,24 +27,43 @@ test("machines nav includes GLASS", () => {
   assert.equal(hit.label, "GLASS");
 });
 
-test("machines nav has SLAB after GRAFFITI and before STORY", () => {
+test("primary pills have no SLAB and no extra wall dest", () => {
   const hrefs = primaryNavLinks.map((link) => link.href);
-  const graffitiAt = hrefs.indexOf("/graffiti");
-  assert.ok(graffitiAt >= 0);
-  assert.equal(hrefs[graffitiAt + 1], "/slab");
-  assert.equal(hrefs[graffitiAt + 2], "/story");
-  const hit = primaryNavLinks.find((link) => link.href === "/slab");
-  assert.ok(hit);
-  assert.equal(hit.label, "SLAB");
+  assert.equal(hrefs.includes("/slab"), false);
+  assert.equal(
+    primaryNavLinks.some((link) => link.label === "SLAB"),
+    false,
+  );
+  assert.equal(hrefs.includes("/graffiti"), false);
 });
 
-test("footer machines list has GLASS next to GRAFFITI", () => {
+test("WALLS dropdown is Graffiti then The Slab, not a readout", () => {
+  assert.deepEqual(wallNavLinks, [
+    { href: "/graffiti", label: "Graffiti" },
+    { href: "/slab", label: "The Slab" },
+  ]);
+  assert.equal(isWallPath("/graffiti"), true);
+  assert.equal(isWallPath("/slab"), true);
+  assert.equal(isWallPath("/story"), false);
+  assert.equal(isReadoutPath("/slab"), false);
+  assert.equal(isReadoutPath("/graffiti"), false);
+});
+
+test("footer machines list still has GLASS", () => {
   const machines = footerGroups.find((group) => group.id === "machines");
   assert.ok(machines);
   const hrefs = machines.links.map((link) => link.href);
-  const graffitiAt = hrefs.indexOf("/graffiti");
-  assert.ok(graffitiAt >= 0);
-  assert.equal(hrefs[graffitiAt + 1], "/glass");
+  assert.ok(hrefs.includes("/glass"));
+  assert.equal(hrefs.includes("/slab"), false);
+});
+
+test("footer walls list is Graffiti then The Slab", () => {
+  const walls = footerGroups.find((group) => group.id === "walls");
+  assert.ok(walls);
+  assert.deepEqual(
+    walls.links.map((link) => link.href),
+    ["/graffiti", "/slab"],
+  );
 });
 
 test("machines nav has one radio/jukebox/music entry", () => {

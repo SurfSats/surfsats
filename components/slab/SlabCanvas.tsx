@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
+  SLAB_CELL_PX,
   SLAB_HEIGHT,
   SLAB_MAX_PIXELS,
+  SLAB_MORTAR_PX,
   SLAB_STAIN_OPACITY,
   SLAB_WIDTH,
   bezelCounts,
@@ -19,6 +21,24 @@ import {
   type SlabPixel,
   type SlabStain,
 } from "@/lib/slab";
+
+type Zoom = "fit" | "2x";
+
+function hexToRgb(hex: string): [number, number, number] {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function mixHex(a: string, b: string, t: number) {
+  const u = t < 0 ? 0 : t > 1 ? 1 : t;
+  const [ar, ag, ab] = hexToRgb(a);
+  const [br, bg, bb] = hexToRgb(b);
+  const r = Math.round(ar + (br - ar) * u);
+  const g = Math.round(ag + (bg - ag) * u);
+  const bl = Math.round(ab + (bb - ab) * u);
+  const toHex = (v: number) => v.toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(bl)}`;
+}
 
 function linePixels(from: SlabPixel, to: SlabPixel) {
   const pixels: SlabPixel[] = [];
@@ -60,6 +80,43 @@ function cellFromPoint(
   return { x, y };
 }
 
+function drawVoxel(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  cell: number,
+  hex: string,
+  alpha: number,
+  outline: boolean,
+) {
+  const mortar = Math.max(1, Math.round(cell * (SLAB_MORTAR_PX / SLAB_CELL_PX)));
+  const fill = Math.max(2, cell - mortar);
+  const px = x * cell;
+  const py = y * cell;
+  const edge = Math.max(1, Math.round(fill * 0.14));
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = hex;
+  ctx.fillRect(px, py, fill, fill);
+  ctx.fillStyle = mixHex(hex, "#ffffff", 0.34);
+  ctx.fillRect(px, py, fill, edge);
+  ctx.fillRect(px, py, edge, fill);
+  ctx.fillStyle = mixHex(hex, "#000000", 0.4);
+  ctx.fillRect(px, py + fill - edge, fill, edge);
+  ctx.fillRect(px + fill - edge, py, edge, fill);
+  if (outline) {
+    ctx.strokeStyle = "#f4ead6";
+    ctx.lineWidth = Math.max(1, Math.round(cell * 0.08));
+    ctx.strokeRect(
+      px + edge,
+      py + edge,
+      Math.max(1, fill - edge * 2),
+      Math.max(1, fill - edge * 2),
+    );
+  }
+  ctx.restore();
+}
+
 export function SlabCanvas({
   live,
   stains,
@@ -80,15 +137,33 @@ export function SlabCanvas({
   onSelect: (pixels: SlabPixel[]) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const faceRef = useRef<HTMLDivElement>(null);
   const painting = useRef(false);
   const lastCell = useRef<SlabPixel | null>(null);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
+  const [zoom, setZoom] = useState<Zoom>("fit");
+  const [faceW, setFaceW] = useState(0);
   const [hover, setHover] = useState<{
     x: number;
     y: number;
     cell: SlabCell | null;
   } | null>(null);
+
+  useEffect(() => {
+    const face = faceRef.current;
+    if (!face) return;
+    const measure = () => setFaceW(face.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(face);
+    return () => observer.disconnect();
+  }, []);
+
+  const fitCell = Math.max(6, Math.floor(faceW / SLAB_WIDTH) || SLAB_CELL_PX);
+  const cellPx = zoom === "2x" ? fitCell * 2 : fitCell;
+  const canvasW = SLAB_WIDTH * cellPx;
+  const canvasH = SLAB_HEIGHT * cellPx;
 
   const liveMap = new Map(
     live
@@ -116,52 +191,66 @@ export function SlabCanvas({
         canvas.height = ph;
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const cellW = cssW / SLAB_WIDTH;
-      const cellH = cssH / SLAB_HEIGHT;
+      const cell = cssW / SLAB_WIDTH;
       const map = new Map(
         live
-          .filter((cell) => isLiveCell(cell, height))
-          .map((cell) => [cellKey(cell.x, cell.y), cell]),
+          .filter((item) => isLiveCell(item, height))
+          .map((item) => [cellKey(item.x, item.y), item]),
+      );
+      const pickedSet = new Set(
+        selected.map((pixel) => cellKey(pixel.x, pixel.y)),
+      );
+      const stainMap = new Map(
+        stains.map((stain) => [cellKey(stain.x, stain.y), stain]),
       );
 
-      ctx.fillStyle = "#12100e";
+      ctx.fillStyle = "#0c0a08";
       ctx.fillRect(0, 0, cssW, cssH);
 
-      for (const stain of stains) {
-        ctx.globalAlpha = SLAB_STAIN_OPACITY;
-        ctx.fillStyle = paletteHex(stain.color);
-        ctx.fillRect(stain.x * cellW, stain.y * cellH, cellW, cellH);
-      }
-      ctx.globalAlpha = 1;
-
-      for (const cell of map.values()) {
-        const key = cellKey(cell.x, cell.y);
-        ctx.fillStyle = paletteHex(cell.color);
-        ctx.fillRect(cell.x * cellW, cell.y * cellH, cellW, cellH);
-        if (wetKeys.has(key)) {
-          ctx.globalAlpha = 0.45;
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(cell.x * cellW, cell.y * cellH, cellW, cellH);
-          ctx.globalAlpha = 1;
+      for (let y = 0; y < SLAB_HEIGHT; y += 1) {
+        for (let x = 0; x < SLAB_WIDTH; x += 1) {
+          const key = cellKey(x, y);
+          const liveCell = map.get(key);
+          const stain = stainMap.get(key);
+          const picked = pickedSet.has(key);
+          const hovered = Boolean(hover && hover.x === x && hover.y === y);
+          if (liveCell) {
+            drawVoxel(
+              ctx,
+              x,
+              y,
+              cell,
+              paletteHex(liveCell.color),
+              1,
+              picked || hovered,
+            );
+            if (wetKeys.has(key)) {
+              ctx.save();
+              ctx.globalAlpha = 0.28;
+              ctx.fillStyle = "#ffffff";
+              ctx.fillRect(x * cell, y * cell, cell - 1, cell - 1);
+              ctx.restore();
+            }
+            continue;
+          }
+          if (picked) {
+            drawVoxel(ctx, x, y, cell, paletteHex(color), 0.92, true);
+            continue;
+          }
+          if (stain) {
+            drawVoxel(
+              ctx,
+              x,
+              y,
+              cell,
+              paletteHex(stain.color),
+              SLAB_STAIN_OPACITY,
+              hovered,
+            );
+            continue;
+          }
+          drawVoxel(ctx, x, y, cell, "#1c1814", 1, hovered);
         }
-      }
-
-      ctx.globalAlpha = 0.85;
-      ctx.fillStyle = paletteHex(color);
-      for (const pixel of selected) {
-        ctx.fillRect(pixel.x * cellW, pixel.y * cellH, cellW, cellH);
-      }
-      ctx.globalAlpha = 1;
-
-      if (hover && !painting.current) {
-        ctx.strokeStyle = "rgba(239, 230, 212, 0.85)";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(
-          hover.x * cellW + 0.4,
-          hover.y * cellH + 0.4,
-          Math.max(0.5, cellW - 0.8),
-          Math.max(0.5, cellH - 0.8),
-        );
       }
     };
 
@@ -169,7 +258,7 @@ export function SlabCanvas({
     const observer = new ResizeObserver(paint);
     observer.observe(canvas);
     return () => observer.disconnect();
-  }, [color, height, hover, live, selected, stains, wetKeys]);
+  }, [canvasH, canvasW, color, height, hover, live, selected, stains, wetKeys, zoom]);
 
   function tryAdd(pixels: SlabPixel[], next: SlabPixel[]) {
     const seen = new Set(pixels.map((pixel) => cellKey(pixel.x, pixel.y)));
@@ -244,17 +333,38 @@ export function SlabCanvas({
   return (
     <div className="slab-stage">
       <div className="slab-bezel">
-        <p>
-          painted {counts.painted} · swell {counts.swell} · reef {counts.reef} ·
-          stain {counts.stain} · next{" "}
-          {counts.nextExpiry == null ? "—" : `${counts.nextExpiry} blocks`}
-        </p>
-        <div className="slab-face">
+        <div className="slab-bezel-bar">
+          <p>
+            painted {counts.painted} · swell {counts.swell} · reef {counts.reef}{" "}
+            · stain {counts.stain} · next{" "}
+            {counts.nextExpiry == null ? "—" : `${counts.nextExpiry} blocks`}
+          </p>
+          <div className="slab-zoom" role="group" aria-label="zoom">
+            <button
+              type="button"
+              className={zoom === "fit" ? "is-on" : undefined}
+              aria-pressed={zoom === "fit"}
+              onClick={() => setZoom("fit")}
+            >
+              FIT
+            </button>
+            <button
+              type="button"
+              className={zoom === "2x" ? "is-on" : undefined}
+              aria-pressed={zoom === "2x"}
+              onClick={() => setZoom("2x")}
+            >
+              2×
+            </button>
+          </div>
+        </div>
+        <div className="slab-face" data-zoom={zoom} ref={faceRef}>
           <canvas
             ref={canvasRef}
             className="slab-canvas"
-            width={SLAB_WIDTH}
-            height={SLAB_HEIGHT}
+            width={canvasW}
+            height={canvasH}
+            style={{ width: canvasW, height: canvasH }}
             aria-label="the slab"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
@@ -264,14 +374,14 @@ export function SlabCanvas({
               if (!painting.current) setHover(null);
             }}
           />
-          {hoverPlate ? (
-            <div className="slab-hover" role="status">
-              <p>{hoverPlate.callsign}</p>
-              <p>{hoverPlate.coat} coat</p>
-              <p>{hoverPlate.left} blocks left</p>
-            </div>
-          ) : null}
         </div>
+        {hoverPlate ? (
+          <div className="slab-hover" role="status">
+            <p>{hoverPlate.callsign}</p>
+            <p>{hoverPlate.coat} coat</p>
+            <p>{hoverPlate.left} blocks left</p>
+          </div>
+        ) : null}
       </div>
       {selectedSet.size > 0 ? (
         <p className="slab-select-hint">

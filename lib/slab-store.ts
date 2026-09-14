@@ -5,6 +5,7 @@ import { hashRef, slabLog } from "@/lib/slab-log";
 import {
   applyStroke,
   expireBoard,
+  inBounds,
   isSlabCoat,
   isSlabColor,
   parseSlabPixels,
@@ -142,6 +143,7 @@ function cellFromRow(row: Record<string, unknown>): SlabCell | null {
   if (
     x == null ||
     y == null ||
+    !inBounds(x, y) ||
     !isSlabColor(color) ||
     !isSlabCoat(coat) ||
     !callsign ||
@@ -167,7 +169,9 @@ function stainFromRow(row: Record<string, unknown>): SlabStain | null {
   const x = int(row.x);
   const y = int(row.y);
   const color = row.color;
-  if (x == null || y == null || !isSlabColor(color)) return null;
+  if (x == null || y == null || !inBounds(x, y) || !isSlabColor(color)) {
+    return null;
+  }
   return { x, y, color };
 }
 
