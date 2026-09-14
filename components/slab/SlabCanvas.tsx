@@ -101,28 +101,20 @@ function fillPoly(
   ctx.fill();
 }
 
-function speckle(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  seed: number,
-  amount: number,
-) {
-  const step = Math.max(1, Math.floor(Math.min(w, h) / 7));
-  for (let iy = 0; iy < h; iy += step) {
-    for (let ix = 0; ix < w; ix += step) {
-      const n = hash01(seed + ix * 13, seed + iy * 17);
-      if (n < 1 - amount) continue;
-      ctx.fillStyle =
-        n > 0.88 ? "rgba(255,255,255,0.16)" : "rgba(0,0,0,0.22)";
-      ctx.fillRect(x + ix, y + iy, step, step);
-    }
-  }
-}
-
 type CubeKind = "void" | "live" | "stain" | "ghost";
+
+type CubeOpts = {
+  kind: CubeKind;
+  colorId: SlabColor;
+  outline: boolean;
+  reef: boolean;
+  wet: number;
+  punch: number;
+  occN?: boolean;
+  occE?: boolean;
+  occS?: boolean;
+  occW?: boolean;
+};
 
 function grainFor(color: SlabColor, kind: CubeKind) {
   if (kind === "void") return 0.55;
@@ -132,6 +124,108 @@ function grainFor(color: SlabColor, kind: CubeKind) {
   if (color === "moss" || color === "rust" || color === "tar") return 0.42;
   if (color === "night" || color === "void") return 0.5;
   return 0.22;
+}
+
+const GRAIN_TILE = 48;
+const grainTiles = new Map<string, HTMLCanvasElement>();
+
+function grainTile(color: SlabColor, kind: CubeKind) {
+  const key = `${kind}:${color}`;
+  const hit = grainTiles.get(key);
+  if (hit) return hit;
+  const tile = document.createElement("canvas");
+  tile.width = GRAIN_TILE;
+  tile.height = GRAIN_TILE;
+  const g = tile.getContext("2d");
+  if (g) {
+    const amount = grainFor(color, kind);
+    const seed =
+      color.charCodeAt(0) * 97 + color.charCodeAt(color.length - 1) * 13 +
+      (kind === "void" ? 3 : kind === "stain" ? 7 : 1);
+    const step = 2;
+    for (let y = 0; y < GRAIN_TILE; y += step) {
+      for (let x = 0; x < GRAIN_TILE; x += step) {
+        const n = hash01(seed + x * 13, seed + y * 17);
+        if (n < 1 - amount) continue;
+        g.fillStyle = n > 0.88 ? "rgba(255,255,255,0.16)" : "rgba(0,0,0,0.22)";
+        g.fillRect(x, y, step, step);
+      }
+    }
+  }
+  grainTiles.set(key, tile);
+  return tile;
+}
+
+function stampGrain(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  color: SlabColor,
+  kind: CubeKind,
+  gx: number,
+  gy: number,
+) {
+  if (w <= 0 || h <= 0) return;
+  const tile = grainTile(color, kind);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  const ox = x - (((gx * 19) % GRAIN_TILE) + GRAIN_TILE) % GRAIN_TILE;
+  const oy = y - (((gy * 13) % GRAIN_TILE) + GRAIN_TILE) % GRAIN_TILE;
+  for (let ty = oy; ty < y + h; ty += GRAIN_TILE) {
+    for (let tx = ox; tx < x + w; tx += GRAIN_TILE) {
+      ctx.drawImage(tile, tx, ty);
+    }
+  }
+  ctx.restore();
+}
+
+function depthRatio(opts: CubeOpts) {
+  if (opts.kind === "stain") return 0.1;
+  if (opts.kind === "void") return 0.18;
+  if (opts.reef) return 0.34;
+  return 0.18;
+}
+
+function occupiedNeighbors(x: number, y: number, occ: Set<string>) {
+  return {
+    occN: occ.has(cellKey(x, y - 1)),
+    occE: occ.has(cellKey(x + 1, y)),
+    occS: occ.has(cellKey(x, y + 1)),
+    occW: occ.has(cellKey(x - 1, y)),
+  };
+}
+
+function drawDropShadow(
+  ctx: CanvasRenderingContext2D,
+  gx: number,
+  gy: number,
+  S: number,
+  originX: number,
+  originY: number,
+  occ: Set<string>,
+) {
+  const x = originX + gx * S;
+  const y = originY + gy * S;
+  const band = Math.max(2, Math.round(S * 0.22));
+  ctx.save();
+  ctx.fillStyle = "#050403";
+  if (!occ.has(cellKey(gx + 1, gy))) {
+    ctx.globalAlpha = 0.22;
+    ctx.fillRect(x + S, y + band * 0.35, band, S - band * 0.2);
+  }
+  if (!occ.has(cellKey(gx, gy + 1))) {
+    ctx.globalAlpha = 0.22;
+    ctx.fillRect(x + band * 0.2, y + S, S - band * 0.15, band);
+  }
+  if (!occ.has(cellKey(gx + 1, gy + 1))) {
+    ctx.globalAlpha = 0.34;
+    ctx.fillRect(x + S, y + S, band * 1.15, band * 1.15);
+  }
+  ctx.restore();
 }
 
 function punchAmount(t: number) {
@@ -236,78 +330,106 @@ function drawCube(
   gy: number,
   S: number,
   hex: string,
-  opts: {
-    kind: CubeKind;
-    colorId: SlabColor;
-    outline: boolean;
-    reef: boolean;
-    wet: number;
-    punch: number;
-  },
+  opts: CubeOpts,
   originX: number,
   originY: number,
 ) {
-  const d = Math.max(2, Math.round(S * 0.22));
-  const inset = opts.punch * d;
+  const inset = opts.punch * Math.max(2, Math.round(S * 0.22));
   const ox = originX + gx * S + inset * 0.35;
   const oy = originY + gy * S + inset * 0.65;
   const size = S - inset;
-  const dd = Math.max(2, Math.round(size * 0.22));
+  const dd = Math.max(2, Math.round(size * depthRatio(opts)));
   const fx = ox;
   const fy = oy + dd;
   const fw = size - dd;
   const fh = size - dd;
   const stain = opts.kind === "stain";
   const voided = opts.kind === "void";
-  const topMix = stain ? 0.1 : voided ? 0.16 : 0.4;
-  const sideMix = stain ? 0.55 : voided ? 0.52 : 0.46;
-  const frontMix = stain ? 0.28 : voided ? 0.18 : 0.05;
-  const topC = mixHex(hex, "#fff6d8", topMix);
-  const sideC = mixHex(hex, "#050403", sideMix);
+  const occN = Boolean(opts.occN);
+  const occE = Boolean(opts.occE);
+  const occS = Boolean(opts.occS);
+  const occW = Boolean(opts.occW);
+  const isolated = !voided && !stain && !occN && !occE && !occS && !occW;
+  const topMix = stain ? 0 : voided ? 0.16 : opts.reef ? 0.58 : 0.38;
+  const sideMix = stain ? 0.62 : voided ? 0.52 : opts.reef ? 0.4 : 0.46;
+  const frontMix = stain ? 0.34 : voided ? 0.18 : 0.05;
+  const topC = stain
+    ? mixHex(hex, "#050403", 0.48)
+    : mixHex(hex, "#fff6d8", occN ? topMix * 0.35 : topMix);
+  const sideC = mixHex(hex, "#050403", occE ? Math.min(0.72, sideMix + 0.18) : sideMix);
   const frontC = mixHex(hex, "#000000", frontMix);
-  const sunC = mixHex(frontC, "#fff1c8", voided ? 0.08 : 0.18);
+  const sunC = mixHex(frontC, "#fff1c8", voided ? 0.08 : isolated ? 0.28 : 0.16);
   const alpha = stain ? SLAB_STAIN_OPACITY : opts.kind === "ghost" ? 0.88 : 1;
-  const seed = gx * 97 + gy * 13 + (voided ? 3 : 0);
+  const band = Math.max(1, Math.round(Math.min(fw, fh) * 0.18));
 
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  fillPoly(
-    ctx,
-    [
-      [fx + fw, fy],
-      [fx + fw + dd, oy],
-      [fx + fw + dd, oy + fh],
-      [fx + fw, fy + fh],
-    ],
-    sideC,
-  );
-  fillPoly(
-    ctx,
-    [
-      [fx, fy],
-      [fx + dd, oy],
-      [fx + fw + dd, oy],
-      [fx + fw, fy],
-    ],
-    topC,
-  );
+  if (!occE || opts.reef) {
+    fillPoly(
+      ctx,
+      [
+        [fx + fw, fy],
+        [fx + fw + dd, oy],
+        [fx + fw + dd, oy + fh],
+        [fx + fw, fy + fh],
+      ],
+      sideC,
+    );
+  }
+
+  if (!stain) {
+    fillPoly(
+      ctx,
+      [
+        [fx, fy],
+        [fx + dd, oy],
+        [fx + fw + dd, oy],
+        [fx + fw, fy],
+      ],
+      topC,
+    );
+    stampGrain(ctx, fx + dd, oy, fw, dd, opts.colorId, opts.kind, gx, gy - 1);
+  } else {
+    fillPoly(
+      ctx,
+      [
+        [fx, fy],
+        [fx + dd, oy],
+        [fx + fw + dd, oy],
+        [fx + fw, fy],
+      ],
+      topC,
+    );
+  }
 
   ctx.fillStyle = frontC;
   ctx.fillRect(fx, fy, fw, fh);
-  ctx.fillStyle = sunC;
-  ctx.fillRect(fx, fy, Math.max(1, Math.round(fw * 0.14)), fh);
 
-  speckle(ctx, fx, fy, fw, fh, seed, grainFor(opts.colorId, opts.kind));
-  speckle(
-    ctx,
-    fx + dd,
-    oy,
-    fw,
-    dd,
-    seed + 91,
-    grainFor(opts.colorId, opts.kind) * 0.7,
-  );
+  if (occW) {
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.fillRect(fx, fy, band, fh);
+  } else {
+    ctx.fillStyle = sunC;
+    ctx.fillRect(fx, fy, Math.max(1, Math.round(fw * (isolated ? 0.18 : 0.12))), fh);
+  }
+  if (occN) {
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.fillRect(fx, fy, fw, band);
+  } else if (!stain && !voided) {
+    ctx.fillStyle = mixHex(frontC, "#fff6d8", isolated ? 0.55 : 0.22);
+    ctx.fillRect(fx, fy, fw, Math.max(1, Math.round(band * (isolated ? 0.85 : 0.55))));
+  }
+  if (occE) {
+    ctx.fillStyle = "rgba(0,0,0,0.34)";
+    ctx.fillRect(fx + fw - band, fy, band, fh);
+  }
+  if (occS) {
+    ctx.fillStyle = "rgba(0,0,0,0.34)";
+    ctx.fillRect(fx, fy + fh - band, fw, band);
+  }
+
+  stampGrain(ctx, fx, fy, fw, fh, opts.colorId, opts.kind, gx, gy);
 
   if (voided) {
     ctx.strokeStyle = "rgba(0,0,0,0.35)";
@@ -323,6 +445,17 @@ function drawCube(
     gloss.addColorStop(1, "rgba(200, 240, 255, 0)");
     ctx.fillStyle = gloss;
     ctx.fillRect(fx, fy, fw, lip);
+    ctx.globalAlpha = alpha * 0.22;
+    fillPoly(
+      ctx,
+      [
+        [fx, fy],
+        [fx + dd, oy],
+        [fx + fw + dd, oy],
+        [fx + fw, fy],
+      ],
+      "rgba(200, 240, 255, 0.35)",
+    );
   }
 
   if (opts.wet > 0) {
@@ -555,9 +688,19 @@ export function SlabCanvas({
       const map = liveMapRef.current;
       const picked = strokeRef.current;
       const pickedSet = new Set(picked.map((pixel) => cellKey(pixel.x, pixel.y)));
+      const occ = new Set<string>(map.keys());
+      for (const stain of world.stains) occ.add(cellKey(stain.x, stain.y));
+      for (const pixel of picked) occ.add(cellKey(pixel.x, pixel.y));
       const hoverCell = painting.current ? null : hoverRef.current;
       const punch = punchAmount(world.punchT);
       const wet = wetAmount(world.punchT);
+      const lives = world.live
+        .filter((item) => isLiveCell(item, world.height))
+        .sort((a, b) => a.y - b.y || a.x - b.x);
+
+      for (const liveCell of lives) {
+        drawDropShadow(ctx, liveCell.x, liveCell.y, cell, ox, oy, occ);
+      }
 
       for (const stain of world.stains) {
         const key = cellKey(stain.x, stain.y);
@@ -578,14 +721,14 @@ export function SlabCanvas({
             reef: false,
             wet: 0,
             punch: 0.35,
+            ...occupiedNeighbors(stain.x, stain.y, occ),
           },
           ox,
           oy,
         );
       }
 
-      for (const liveCell of world.live) {
-        if (!isLiveCell(liveCell, world.height)) continue;
+      for (const liveCell of lives) {
         const key = cellKey(liveCell.x, liveCell.y);
         const hovered = Boolean(
           hoverCell && hoverCell.x === liveCell.x && hoverCell.y === liveCell.y,
@@ -604,13 +747,15 @@ export function SlabCanvas({
             reef: liveCell.coat === "reef",
             wet: settling ? wet : 0,
             punch: settling ? punch : 0,
+            ...occupiedNeighbors(liveCell.x, liveCell.y, occ),
           },
           ox,
           oy,
         );
       }
 
-      for (const pixel of picked) {
+      const ghosts = [...picked].sort((a, b) => a.y - b.y || a.x - b.x);
+      for (const pixel of ghosts) {
         const key = cellKey(pixel.x, pixel.y);
         if (map.has(key)) continue;
         drawCube(
@@ -626,6 +771,7 @@ export function SlabCanvas({
             reef: world.coat === "reef",
             wet: 0,
             punch: 0,
+            ...occupiedNeighbors(pixel.x, pixel.y, occ),
           },
           ox,
           oy,
