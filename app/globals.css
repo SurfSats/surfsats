@@ -4761,18 +4761,21 @@ body:has(.graffiti-page) .site-watermark {
   pointer-events: none;
 }
 
-.arcade-pit.is-wave .arcade-bay-retro.is-back {
+.arcade-pit.is-wave .arcade-bay-retro.is-back,
+.arcade-pit.is-pleb .arcade-bay-retro.is-back {
   right: 0;
   transform-origin: top right;
 }
 
-.arcade-pit.is-retro .arcade-bay-wave.is-back {
+.arcade-pit.is-retro .arcade-bay-wave.is-back,
+.arcade-pit.is-retro .arcade-bay-pleb.is-back {
   left: 0;
   transform-origin: top left;
 }
 
 .arcade-pit.is-tab .arcade-bay-wave,
-.arcade-pit.is-tab .arcade-bay-retro {
+.arcade-pit.is-tab .arcade-bay-retro,
+.arcade-pit.is-tab .arcade-bay-pleb {
   display: none;
 }
 
@@ -4998,6 +5001,48 @@ body:has(.graffiti-page) .site-watermark {
   filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.62)) hue-rotate(22deg) saturate(1.1);
 }
 
+.cab-machine-pleb .cab-plate {
+  color: #ff3df6;
+  text-shadow:
+    0 0 10px rgba(255, 61, 246, 0.85),
+    0 1px 0 #100418;
+}
+
+.cab-machine-pleb .cab-art {
+  filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.62)) saturate(1.15) contrast(1.05);
+}
+
+.cab-machine-pleb .pleb-tab {
+  border-color: #3dfff3;
+  background: #05060a;
+  color: #3dfff3;
+}
+
+.cab-machine-pleb .pleb-tab.is-on {
+  border-color: #ff3df6;
+  background: #ff3df6;
+  color: #05060a;
+}
+
+.cab-crt-pleb .cab-crt-well {
+  background: #05060a;
+}
+
+.cab-crt-pleb .cab-crt-attract {
+  justify-content: center;
+  padding: 0.7rem 0.45rem;
+  background: transparent;
+}
+
+.cab-crt-pleb .cab-crt-insert {
+  color: #ff3df6;
+  text-shadow: 0 0 8px rgba(255, 61, 246, 0.8);
+}
+
+.cab-crt-pleb .cab-crt-sub {
+  color: #3dfff3;
+}
+
 .cab-game-btn {
   flex: 1 1 18%;
   min-height: 1.85rem;
@@ -5190,6 +5235,21 @@ body:has(.graffiti-page) .site-watermark {
 
 .cab-crt-photo .cab-crt-attract .cab-crt-alias {
   margin-top: 0.2rem;
+}
+
+.cab-crt-photo.cab-crt-pleb .cab-crt-attract {
+  justify-content: center;
+  padding: 0.7rem 0.45rem;
+  background: #05060a;
+}
+
+.cab-crt-photo.cab-crt-pleb .cab-crt-insert {
+  color: #ff3df6;
+  text-shadow: 0 0 8px rgba(255, 61, 246, 0.8);
+}
+
+.cab-crt-photo.cab-crt-pleb .cab-crt-sub {
+  color: #3dfff3;
 }
 
 .cab-crt-photo.cab-crt-live {

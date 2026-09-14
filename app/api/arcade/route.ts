@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { ARCADE_MACHINE_RETRO, ARCADE_MACHINE_TAB } from "@/lib/arcade";
+import {
+  ARCADE_MACHINE_PLEB,
+  ARCADE_MACHINE_RETRO,
+  ARCADE_MACHINE_TAB,
+} from "@/lib/arcade";
 import { arcadeLog } from "@/lib/arcade-log";
 import {
   arcadeStoreKind,
@@ -17,18 +21,23 @@ export async function GET(request: Request) {
   try {
     const tab = machine === ARCADE_MACHINE_TAB;
     const retro = machine === ARCADE_MACHINE_RETRO;
+    const pleb = machine === ARCADE_MACHINE_PLEB;
     const [highScores, lastPlayers] = await Promise.all([
       tab
         ? getTabHighScores()
         : retro
           ? getRetroHighScores()
-          : getArcadeHighScores(),
+          : pleb
+            ? Promise.resolve([])
+            : getArcadeHighScores(),
       getArcadeRecentPlays(
         tab
           ? ARCADE_MACHINE_TAB
           : retro
             ? ARCADE_MACHINE_RETRO
-            : undefined,
+            : pleb
+              ? ARCADE_MACHINE_PLEB
+              : undefined,
       ),
     ]);
     return NextResponse.json(

@@ -11,6 +11,7 @@ import {
 } from "react";
 import {
   ARCADE_STORAGE_KEY,
+  PLEB_BOX_STORAGE_KEY,
   RETRO_STORAGE_KEY,
   TAB_STORAGE_KEY,
 } from "@/lib/arcade";
@@ -66,6 +67,7 @@ function loadGlass(): GlassCache | null {
     ARCADE_STORAGE_KEY,
     RETRO_STORAGE_KEY,
     TAB_STORAGE_KEY,
+    PLEB_BOX_STORAGE_KEY,
     HARBOR_TAB_STORAGE_KEY,
   ];
   for (const key of sessions) {

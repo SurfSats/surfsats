@@ -3,9 +3,11 @@ import path from "node:path";
 import {
   ARCADE_CREDITS_PER_PAY,
   ARCADE_GAME_ID,
+  ARCADE_MACHINE_PLEB,
   ARCADE_MACHINE_TAB,
   ARCADE_MACHINE_WAVE,
   ARCADE_PRICE_SATS,
+  PLEB_BOX_GAME_ID,
   RETRO_GAME_IDS,
   TAB_ENDING_GAMES,
   TAB_GAME_ID,
@@ -714,7 +716,9 @@ export async function getArcadeRecentPlays(machine: ArcadeMachine = ARCADE_MACHI
             ? ARCADE_GAME_ID
             : machine === ARCADE_MACHINE_TAB
               ? TAB_GAME_ID
-              : "retro"),
+              : machine === ARCADE_MACHINE_PLEB
+                ? PLEB_BOX_GAME_ID
+                : "retro"),
       ),
       sats: ARCADE_PRICE_SATS,
       createdAt: iso(row.created_at),
@@ -733,7 +737,9 @@ export async function getArcadeRecentPlays(machine: ArcadeMachine = ARCADE_MACHI
           ? ARCADE_GAME_ID
           : machine === ARCADE_MACHINE_TAB
             ? TAB_GAME_ID
-            : "retro"),
+            : machine === ARCADE_MACHINE_PLEB
+              ? PLEB_BOX_GAME_ID
+              : "retro"),
       sats: ARCADE_PRICE_SATS,
       createdAt: grant.createdAt,
     }));

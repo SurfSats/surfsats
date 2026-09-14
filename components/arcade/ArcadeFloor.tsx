@@ -2,15 +2,20 @@
 
 import { Press_Start_2P } from "next/font/google";
 import { useEffect, useState } from "react";
-import { ArcadeApp } from "@/components/arcade/ArcadeApp";
 import { ArcadeBoards } from "@/components/arcade/ArcadeBoards";
 import { ArcadeFloorCards } from "@/components/arcade/ArcadeFloorCards";
+import { PlebBoxApp } from "@/components/arcade/PlebBoxApp";
 import { RetroApp } from "@/components/arcade/RetroApp";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import {
   ARCADE_CREDITS_PER_PAY,
+  ARCADE_MACHINE_PLEB,
   ARCADE_PRICE_SATS,
-  WAVE_RUNNER_LIVE,
+  PLEB_BOX_HOW,
+  PLEB_BOX_LABEL,
+  PLEB_BOX_RULES,
+  isPlebBoxDeepLink,
+  isRetroGameId,
   isWaveRunnerDeepLink,
   type ArcadeHighScore,
   type ArcadeRecentPlay,
@@ -22,22 +27,32 @@ const pixel = Press_Start_2P({
   variable: "--font-arcade-pixel",
 });
 
-type Cabinet = "wave" | "retro";
+type Cabinet = "pleb" | "retro";
 type DeckTab = "scores" | "how" | "rules";
 
 export function ArcadeFloor() {
-  const [front, setFront] = useState<Cabinet>(
-    WAVE_RUNNER_LIVE ? "wave" : "retro",
-  );
+  const [front, setFront] = useState<Cabinet>("pleb");
   const [tab, setTab] = useState<DeckTab>("scores");
 
   useEffect(() => {
     const game = new URLSearchParams(window.location.search).get("game");
     if (isWaveRunnerDeepLink(game)) {
-      setFront("retro");
+      setFront("pleb");
       const url = new URL(window.location.href);
       url.searchParams.delete("game");
-      window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+      window.history.replaceState(
+        null,
+        "",
+        `${url.pathname}${url.search}${url.hash}`,
+      );
+      return;
+    }
+    if (isPlebBoxDeepLink(game)) {
+      setFront("pleb");
+      return;
+    }
+    if (game === "retro" || isRetroGameId(game)) {
+      setFront("retro");
     }
   }, []);
 
@@ -65,35 +80,31 @@ export function ArcadeFloor() {
           <h1 className="sr-only">SurfSats Lightning Arcade</h1>
           <div className="arcade-haze" aria-hidden="true" />
           <div id="cabinet" className="arcade-cabinet-anchor">
-          {WAVE_RUNNER_LIVE ? (
-            <div className="arcade-toggle" role="tablist" aria-label="Cabinet">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={front === "wave"}
-                className={front === "wave" ? "is-on" : undefined}
-                onClick={() => setFront("wave")}
-              >
-                WAVE RUNNER
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={front === "retro"}
-                className={front === "retro" ? "is-on" : undefined}
-                onClick={() => setFront("retro")}
-              >
-                RETRO
-              </button>
-            </div>
-          ) : null}
+          <div className="arcade-toggle" role="tablist" aria-label="Cabinet">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={front === "pleb"}
+              className={front === "pleb" ? "is-on" : undefined}
+              onClick={() => setFront("pleb")}
+            >
+              {PLEB_BOX_LABEL}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={front === "retro"}
+              className={front === "retro" ? "is-on" : undefined}
+              onClick={() => setFront("retro")}
+            >
+              RETRO
+            </button>
+          </div>
           <div className={`arcade-pit is-${front}`}>
-            {WAVE_RUNNER_LIVE ? (
-              <ArcadeApp
-                front={front === "wave"}
-                onBringForward={() => setFront("wave")}
-              />
-            ) : null}
+            <PlebBoxApp
+              front={front === "pleb"}
+              onBringForward={() => setFront("pleb")}
+            />
             <RetroApp
               front={front === "retro"}
               onBringForward={() => setFront("retro")}
@@ -118,23 +129,35 @@ export function ArcadeFloor() {
       {tab === "scores" ? <ArcadeScores machine={front} /> : null}
       {tab === "how" ? (
         <div className="arcade-deck-copy">
-          <p>
-            {ARCADE_PRICE_SATS} sats. {ARCADE_CREDITS_PER_PAY} credits. Isolated
-            pool. We don&apos;t HODL.
-          </p>
-          <p>
-            RETRO keeps its own credits and legends. Anarch and Bouncing Bitties
-            are on the floor.
-          </p>
-          <p>Insert coin on the glass. The CRT is the till.</p>
+          {front === "pleb" ? (
+            <p>{PLEB_BOX_HOW}</p>
+          ) : (
+            <>
+              <p>
+                {ARCADE_PRICE_SATS} sats. {ARCADE_CREDITS_PER_PAY} credits. Isolated
+                pool. We don&apos;t HODL.
+              </p>
+              <p>
+                RETRO keeps its own credits and legends. Anarch and Bouncing Bitties
+                are on the floor.
+              </p>
+              <p>Insert coin on the glass. The CRT is the till.</p>
+            </>
+          )}
         </div>
       ) : null}
       {tab === "rules" ? (
         <div className="arcade-deck-copy">
-          <p>
-            {ARCADE_PRICE_SATS} SATS = {ARCADE_CREDITS_PER_PAY} CREDITS · RETRO
-          </p>
-          <p>EACH MACHINE KEEPS ITS OWN CREDITS AND LEGENDS</p>
+          {front === "pleb" ? (
+            <p>{PLEB_BOX_RULES}</p>
+          ) : (
+            <>
+              <p>
+                {ARCADE_PRICE_SATS} SATS = {ARCADE_CREDITS_PER_PAY} CREDITS · RETRO
+              </p>
+              <p>EACH MACHINE KEEPS ITS OWN CREDITS AND LEGENDS</p>
+            </>
+          )}
         </div>
       ) : null}
     </ConsoleShell>
@@ -153,7 +176,10 @@ function ArcadeScores({ machine }: { machine: Cabinet }) {
 
     async function load() {
       try {
-        const query = machine === "retro" ? "?machine=retro" : "";
+        const query =
+          machine === "retro"
+            ? "?machine=retro"
+            : `?machine=${ARCADE_MACHINE_PLEB}`;
         const response = await fetch(`/api/arcade${query}`, {
           cache: "no-store",
         });
@@ -184,7 +210,7 @@ function ArcadeScores({ machine }: { machine: Cabinet }) {
       highScores={highScores}
       lastPlayers={lastPlayers}
       now={now}
-      title={machine === "retro" ? "RETRO LEGENDS" : "HIGH SCORES"}
+      title={machine === "retro" ? "RETRO LEGENDS" : `${PLEB_BOX_LABEL} LEGENDS`}
       recentTitle={machine === "retro" ? "LAST 10 RETRO" : "LAST 10 PLAYERS"}
       showGame={machine === "retro"}
     />

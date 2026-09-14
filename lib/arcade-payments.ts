@@ -7,9 +7,11 @@ import {
   type AlbyInvoice,
 } from "@/lib/alby";
 import {
+  ARCADE_MACHINE_PLEB,
   ARCADE_MACHINE_WAVE,
   ARCADE_META_KIND,
   ARCADE_PRICE_SATS,
+  isPlebBoxGameId,
   isPlayerId,
   isRetroGameId,
   parseArcadeMachine,
@@ -18,7 +20,7 @@ import {
   type ArcadePlayer,
 } from "@/lib/arcade";
 import { arcadeLog, hashRef } from "@/lib/arcade-log";
-import type { CallsignEtch } from "@/lib/callsign";
+import type { CallsignEtch, CallsignMachine } from "@/lib/callsign";
 import { rememberSettledCallsign } from "@/lib/callsign-store";
 import {
   arcadeStoreKind,
@@ -55,7 +57,8 @@ export function parseArcadePayload(
   if (!clean.ok) return null;
   const machine = parseArcadeMachine(record.machine);
   const gameRaw = String(record.game ?? "").trim().toLowerCase();
-  const game = isRetroGameId(gameRaw) ? gameRaw : undefined;
+  const game =
+    isRetroGameId(gameRaw) || isPlebBoxGameId(gameRaw) ? gameRaw : undefined;
   return {
     playerId: String(record.playerId || record.player_id),
     alias: clean.alias,
@@ -82,7 +85,9 @@ async function createInvoice(input: ArcadeInvoicePayload) {
       ? `SurfSats Arcade · RETRO${input.game ? ` · ${input.game}` : ""}`
       : machine === "tab"
         ? "SurfSats Arcade · THE TAB"
-        : "SurfSats Arcade";
+        : machine === ARCADE_MACHINE_PLEB
+          ? `SurfSats Arcade · PLEB BOX${input.game ? ` · ${input.game}` : ""}`
+          : "SurfSats Arcade";
   try {
     return await createAlbyInvoice({
       amountSats: ARCADE_PRICE_SATS,
@@ -154,7 +159,7 @@ export async function settleArcadePayment(paymentHash: string): Promise<{
     const etch = await rememberSettledCallsign({
       callsign: playerNext.alias,
       paymentHash,
-      machine: "arcade",
+      machine: callsignMachineFor(existing.machine),
     });
     return {
       paid: true,
@@ -193,7 +198,7 @@ export async function settleArcadePayment(paymentHash: string): Promise<{
   const etch = await rememberSettledCallsign({
     callsign: result.player.alias,
     paymentHash,
-    machine: "arcade",
+    machine: callsignMachineFor(pending.machine),
   });
   return {
     paid: true,
@@ -218,11 +223,16 @@ export function pendingArcadeFromBody(
   if (!clean.ok) return { error: clean.reason };
   const machine = parseArcadeMachine(record.machine);
   const gameRaw = String(record.game ?? "").trim().toLowerCase();
-  const game = isRetroGameId(gameRaw) ? gameRaw : undefined;
+  const game =
+    isRetroGameId(gameRaw) || isPlebBoxGameId(gameRaw) ? gameRaw : undefined;
   return {
     playerId: String(record.playerId || record.player_id),
     alias: clean.alias,
     machine,
     game,
   };
+}
+
+function callsignMachineFor(machine?: ArcadeMachine): CallsignMachine {
+  return machine === ARCADE_MACHINE_PLEB ? "pleb-box" : "arcade";
 }

@@ -137,9 +137,11 @@ test("parseCallsignEtch and machine list include slab", () => {
     "tab",
     "radio",
     "slab",
+    "pleb-box",
   ]);
   assert.equal(isCallsignMachine("graffiti"), true);
   assert.equal(isCallsignMachine("slab"), true);
+  assert.equal(isCallsignMachine("pleb-box"), true);
   assert.equal(isCallsignMachine("bottle"), false);
   assert.deepEqual(mergeCallsignMachines(["arcade"], "arcade"), ["arcade"]);
   assert.deepEqual(mergeCallsignMachines(["arcade"], "tab"), ["arcade", "tab"]);

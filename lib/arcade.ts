@@ -18,6 +18,7 @@ export const SWELL_HOP_GAME_LABEL = BITTIES_GAME_LABEL;
 export const ARCADE_STORAGE_KEY = "surfsats.arcade.v1";
 export const RETRO_STORAGE_KEY = "surfsats.arcade.retro.v1";
 export const TAB_STORAGE_KEY = "surfsats.arcade.tab.v1";
+export const PLEB_BOX_STORAGE_KEY = "surfsats.arcade.pleb-box.v1";
 export const ARCADE_META_KIND = "surfsats-arcade";
 export {
   CALLSIGN_MIN as ARCADE_ALIAS_MIN,
@@ -27,6 +28,19 @@ export {
 export const ARCADE_MACHINE_WAVE = "wave";
 export const ARCADE_MACHINE_RETRO = "retro";
 export const ARCADE_MACHINE_TAB = "tab";
+export const ARCADE_MACHINE_PLEB = "pleb-box";
+export const PLEB_BOX_GAME_ID = "pleb-box";
+export const PLEB_BOX_LABEL = "PLEB BOX";
+export const PLEB_BOX_ATTRACT = `INSERT ${ARCADE_PRICE_SATS} SATS · NOODLE · LASER · YEET`;
+export const PLEB_BOX_HOW =
+  "21 SATS. 3 CREDITS. ONE BOX. NOODLE GROWS. LASER CLEARS. YEET FLIES.";
+export const PLEB_BOX_RULES =
+  "no accounts. callsign on the glass. isolated from Retro.";
+export const PLEB_BOX_GAMES = [
+  { id: "noodle", label: "NOODLE", line: "NOODLE GROWS." },
+  { id: "laser", label: "LASER", line: "LASER CLEARS." },
+  { id: "yeet", label: "YEET", line: "YEET FLIES." },
+] as const;
 export const TAB_GAME_ID = "tab";
 export const TAB_ENDING_GAMES = [
   "tab-settled",
@@ -42,9 +56,10 @@ export const RETRO_GAMES = [
   { id: "invaders", label: "Space Invaders" },
 ] as const;
 
-export type ArcadeMachine = "wave" | "retro" | "tab";
+export type ArcadeMachine = "wave" | "retro" | "tab" | "pleb-box";
 export type TabEndingGame = (typeof TAB_ENDING_GAMES)[number];
 export type RetroGameId = (typeof RETRO_GAMES)[number]["id"];
+export type PlebBoxGameId = (typeof PLEB_BOX_GAMES)[number]["id"];
 
 export type ArcadePlayer = {
   playerId: string;
@@ -127,13 +142,15 @@ export function isArcadeMachine(value: unknown): value is ArcadeMachine {
   return (
     value === ARCADE_MACHINE_WAVE ||
     value === ARCADE_MACHINE_RETRO ||
-    value === ARCADE_MACHINE_TAB
+    value === ARCADE_MACHINE_TAB ||
+    value === ARCADE_MACHINE_PLEB
   );
 }
 
 export function parseArcadeMachine(value: unknown): ArcadeMachine {
   if (value === ARCADE_MACHINE_RETRO) return ARCADE_MACHINE_RETRO;
   if (value === ARCADE_MACHINE_TAB) return ARCADE_MACHINE_TAB;
+  if (value === ARCADE_MACHINE_PLEB) return ARCADE_MACHINE_PLEB;
   return ARCADE_MACHINE_WAVE;
 }
 
@@ -161,11 +178,36 @@ export function isWaveRunnerDeepLink(value: unknown) {
   );
 }
 
+export function isPlebBoxGameId(value: unknown): value is PlebBoxGameId {
+  return (
+    typeof value === "string" &&
+    PLEB_BOX_GAMES.some((game) => game.id === value)
+  );
+}
+
+export function plebBoxGame(id: PlebBoxGameId) {
+  return PLEB_BOX_GAMES.find((game) => game.id === id) ?? PLEB_BOX_GAMES[0];
+}
+
+export function isPlebBoxDeepLink(value: unknown) {
+  const id = String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-");
+  return (
+    id === "pleb" ||
+    id === "pleb-box" ||
+    id === "plebbox" ||
+    isPlebBoxGameId(id)
+  );
+}
+
 export function normalizePlayGame(raw: string): string | null {
   const id = raw.trim().toLowerCase();
   if (!id || id === "wave" || id === ARCADE_GAME_ID) return ARCADE_GAME_ID;
   if (id === ANARCH_GAME_ID) return ANARCH_GAME_ID;
   if (id === BITTIES_GAME_ID || id === SWELL_HOP_GAME_ID) return BITTIES_GAME_ID;
+  if (id === PLEB_BOX_GAME_ID || isPlebBoxGameId(id)) return id;
   if (isRetroGameId(id)) return id;
   if (id === TAB_GAME_ID) return TAB_GAME_ID;
   if (isTabEndingGame(id)) return id;
