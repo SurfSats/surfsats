@@ -9317,3 +9317,344 @@ body:has(.shack-stage) .site-watermark {
   border-color: var(--sats);
   color: var(--sats);
 }
+
+.slab-page {
+  color: #efe6d4;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(40 32 24 / 0.55), transparent 52%),
+    #0c0b0a;
+}
+
+body:has(.slab-page) .site-watermark {
+  display: none;
+}
+
+.slab-page .console-strip {
+  border-bottom: 1px solid rgb(90 70 48 / 0.55);
+  background: rgb(12 10 8 / 0.88);
+  padding: 0.45rem 1rem;
+}
+
+.slab-page .console-strip p {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c4b49a;
+}
+
+.slab-page .console-stage {
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.slab-page .console-deck {
+  border-left: 1px solid rgb(90 70 48 / 0.55);
+  background: rgb(10 9 8 / 0.94);
+}
+
+.slab-page .console-deck-tabs button {
+  border-right: 1px solid rgb(90 70 48 / 0.45);
+  color: #a8a29a;
+}
+
+.slab-page .console-deck-tabs button.is-on {
+  background: rgb(247 147 26 / 0.12);
+  color: #f7931a;
+}
+
+.slab-stage {
+  width: min(100%, 72rem);
+}
+
+.slab-bezel {
+  border: 10px solid #2a241c;
+  box-shadow:
+    inset 0 0 0 2px #5a4a38,
+    0 0 0 1px #0a0908;
+  background: #1a1612;
+  padding: 0.55rem 0.55rem 0.7rem;
+}
+
+.slab-bezel > p {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c4b49a;
+}
+
+.slab-face {
+  position: relative;
+  aspect-ratio: 210 / 84;
+  background: #12100e;
+}
+
+.slab-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+  image-rendering: pixelated;
+}
+
+.slab-hover {
+  position: absolute;
+  right: 0.45rem;
+  top: 0.45rem;
+  z-index: 2;
+  min-width: 8.5rem;
+  border: 1px solid rgb(247 147 26 / 0.45);
+  background: rgb(10 9 8 / 0.88);
+  padding: 0.4rem 0.5rem;
+  pointer-events: none;
+}
+
+.slab-hover p {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #efe6d4;
+}
+
+.slab-hover p + p {
+  margin-top: 0.15rem;
+  color: #c4b49a;
+}
+
+.slab-select-hint {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8b8d99;
+}
+
+.slab-deck-form,
+.slab-how {
+  padding: 1rem 1.05rem 1.25rem;
+}
+
+.slab-kicker {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #f7931a;
+}
+
+.slab-deck-form h2,
+.slab-how h2 {
+  margin: 0.45rem 0 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.slab-lede,
+.slab-coat-meta {
+  margin: 0.45rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a8a29a;
+}
+
+.slab-field-label {
+  margin: 1rem 0 0.4rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a8a29a;
+}
+
+.slab-callsign {
+  display: block;
+  margin-top: 1rem;
+}
+
+.slab-callsign span {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a8a29a;
+}
+
+.slab-callsign input {
+  width: 100%;
+  border: 1px solid #44403c;
+  background: rgb(0 0 0 / 0.7);
+  padding: 0.7rem 0.75rem;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #efe6d4;
+  outline: none;
+}
+
+.slab-callsign input:focus {
+  border-color: #f7931a;
+}
+
+.slab-coats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.slab-coats button {
+  min-height: 2.6rem;
+  border: 1px solid #44403c;
+  background: transparent;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #c4b49a;
+}
+
+.slab-coats button.is-on {
+  border-color: #f7931a;
+  background: rgb(247 147 26 / 0.14);
+  color: #f7931a;
+}
+
+.slab-palette {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.slab-palette button {
+  aspect-ratio: 1;
+  border: 2px solid rgb(0 0 0 / 0.45);
+}
+
+.slab-palette button.is-on {
+  border-color: #efe6d4;
+}
+
+.slab-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.slab-hud button {
+  border: 1px solid #44403c;
+  background: transparent;
+  padding: 0.35rem 0.55rem;
+  color: #a8a29a;
+}
+
+.slab-hud button:disabled {
+  opacity: 0.4;
+}
+
+.slab-error {
+  margin: 0.8rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f87171;
+}
+
+.slab-zap {
+  margin-top: 1rem;
+  min-height: 3rem;
+  width: 100%;
+  border: 0;
+  background: #f7931a;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #140a04;
+}
+
+.slab-zap:disabled {
+  opacity: 0.4;
+}
+
+.slab-invoice {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.slab-invoice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.slab-invoice-actions button,
+.slab-invoice-actions a,
+.slab-invoice-actions .one-tap-zap {
+  min-height: 2.5rem;
+  border: 1px solid #44403c;
+  background: transparent;
+  padding: 0.45rem 0.7rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #efe6d4;
+}
+
+.slab-invoice-edit {
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a8a29a;
+}
+
+.slab-how ul {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slab-how li {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c4b49a;
+}
+
+@media (max-width: 1023px) {
+  .slab-page .console-deck {
+    border-left: 0;
+    border-top: 1px solid rgb(90 70 48 / 0.55);
+  }
+}

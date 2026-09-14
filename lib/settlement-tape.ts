@@ -1,7 +1,17 @@
+import { slabTapeText } from "./slab.ts";
+
 export const TAPE_STORAGE_KEY = "surfsats.tape.v1";
 export const TAPE_LIMIT = 24;
 
-export type TapeMachine = "graffiti" | "arcade" | "story" | "tab" | "radio";
+export { slabTapeText };
+
+export type TapeMachine =
+  | "graffiti"
+  | "arcade"
+  | "story"
+  | "tab"
+  | "radio"
+  | "slab";
 
 export type TapeEvent = {
   id: string;
@@ -18,6 +28,7 @@ const MACHINES = new Set<TapeMachine>([
   "story",
   "tab",
   "radio",
+  "slab",
 ]);
 
 export function formatTapeActor(alias?: string | null) {
@@ -157,6 +168,24 @@ export function tapeFromRadio(pull: {
     text: radioTapeText(actor, pull.sats ?? 21),
     createdAt: pull.createdAt,
     href: "/music",
+  };
+}
+
+export function tapeFromSlab(stroke: {
+  paymentHash: string;
+  callsign?: string;
+  coat: "swell" | "reef";
+  pixelCount: number;
+  createdAt: string;
+}): TapeEvent {
+  const actor = formatTapeActor(stroke.callsign);
+  return {
+    id: `slab:${stroke.paymentHash}`,
+    machine: "slab",
+    actor,
+    text: slabTapeText(actor, stroke.pixelCount, stroke.coat),
+    createdAt: stroke.createdAt,
+    href: "/slab",
   };
 }
 

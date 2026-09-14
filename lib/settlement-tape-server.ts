@@ -3,6 +3,7 @@ import { getArcadeRecentGrants } from "@/lib/arcade-store";
 import { BOTTLE_PRICE_SATS } from "@/lib/bottle";
 import { getRecentBottlePulls } from "@/lib/bottle-store";
 import { getPaidMarks } from "@/lib/graffiti-store";
+import { getRecentSlabStrokes } from "@/lib/slab-store";
 import {
   bufferedTape,
   mergeTapeEvents,
@@ -10,6 +11,7 @@ import {
   tapeFromArcade,
   tapeFromGraffiti,
   tapeFromRadio,
+  tapeFromSlab,
   tapeFromStory,
   tapeFromTab,
   type TapeEvent,
@@ -28,13 +30,15 @@ async function safeList<T>(load: () => Promise<T[]>, label: string) {
 }
 
 export async function collectRecentTape(): Promise<TapeEvent[]> {
-  const [marks, arcadeGrants, tabGrants, storyLines, pulls] = await Promise.all([
-    safeList(() => getPaidMarks(), "graffiti"),
-    safeList(() => getArcadeRecentGrants(12), "arcade"),
-    safeList(() => getTabRecentGrants(12), "tab"),
-    safeList(() => getStoryLines(), "story"),
-    safeList(() => getRecentBottlePulls(12), "radio"),
-  ]);
+  const [marks, arcadeGrants, tabGrants, storyLines, pulls, slabStrokes] =
+    await Promise.all([
+      safeList(() => getPaidMarks(), "graffiti"),
+      safeList(() => getArcadeRecentGrants(12), "arcade"),
+      safeList(() => getTabRecentGrants(12), "tab"),
+      safeList(() => getStoryLines(), "story"),
+      safeList(() => getRecentBottlePulls(12), "radio"),
+      safeList(() => getRecentSlabStrokes(12), "slab"),
+    ]);
 
   const graffiti = marks.map(tapeFromGraffiti);
   const arcade = arcadeGrants.map((grant) =>
@@ -51,6 +55,7 @@ export async function collectRecentTape(): Promise<TapeEvent[]> {
   const radio = pulls.map((pull) =>
     tapeFromRadio({ ...pull, sats: BOTTLE_PRICE_SATS }),
   );
+  const slab = slabStrokes.map(tapeFromSlab);
 
   return mergeTapeEvents([], [
     ...graffiti,
@@ -58,6 +63,7 @@ export async function collectRecentTape(): Promise<TapeEvent[]> {
     ...tab,
     ...story,
     ...radio,
+    ...slab,
   ]);
 }
 

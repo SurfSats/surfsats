@@ -1,11 +1,13 @@
 import { ARCADE_PRICE_SATS } from "@/lib/arcade";
 import { BOTTLE_PRICE_SATS, type BottlePull } from "@/lib/bottle";
 import type { GraffitiMark } from "@/lib/graffiti";
+import type { SlabStroke } from "@/lib/slab";
 import {
   publishTape,
   tapeFromArcade,
   tapeFromGraffiti,
   tapeFromRadio,
+  tapeFromSlab,
   tapeFromStory,
   tapeFromTab,
 } from "@/lib/settlement-tape";
@@ -66,4 +68,8 @@ export function announceRadioTape(pull: BottlePull) {
       sats: BOTTLE_PRICE_SATS,
     }),
   );
+}
+
+export function announceSlabTape(stroke: SlabStroke) {
+  publishTape(tapeFromSlab(stroke));
 }

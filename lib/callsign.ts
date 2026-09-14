@@ -19,6 +19,7 @@ export const CALLSIGN_MACHINES = [
   "story",
   "tab",
   "radio",
+  "slab",
 ] as const;
 
 export type CallsignMachine = (typeof CALLSIGN_MACHINES)[number];

@@ -12,6 +12,7 @@ const routes = [
   "/arcade/bitties",
   "/tab",
   "/graffiti",
+  "/slab",
   "/tidechain",
   "/lineup",
   "/signal",

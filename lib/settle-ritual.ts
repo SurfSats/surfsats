@@ -36,7 +36,13 @@ export const SETTLE_CLOCK = {
 } as const;
 
 export type SettlePhase = keyof typeof SETTLE_TITLES;
-export type SettleMachine = "arcade" | "tab" | "graffiti" | "story" | "drop";
+export type SettleMachine =
+  | "arcade"
+  | "tab"
+  | "graffiti"
+  | "story"
+  | "drop"
+  | "slab";
 export type SettleFillStyle = "wave" | "threads" | "slash" | "hex";
 
 export const SETTLE_FILL_STYLE: SettleFillStyle = "wave";
@@ -66,6 +72,11 @@ export const SETTLE_SUBTITLES = {
     waiting: "21 off the rail · unpaid",
     settling: "invoice paid · 21 leaving the dock",
     settled: "21 sats cleared · dropped",
+  },
+  slab: {
+    waiting: "stroke unpaid · slab dry",
+    settling: "invoice paid · coats pouring",
+    settled: "sats cleared · on the slab",
   },
 } as const satisfies Record<SettleMachine, Record<SettlePhase, string>>;
 

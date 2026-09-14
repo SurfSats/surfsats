@@ -5,6 +5,7 @@ export const primaryNavLinks: NavLink[] = [
   { href: "/arcade", label: "Arcade" },
   { href: "/tab", label: "TAB" },
   { href: "/graffiti", label: "Graffiti" },
+  { href: "/slab", label: "SLAB" },
   { href: "/story", label: "Story" },
   { href: "/glass", label: "GLASS" },
 ];
@@ -52,6 +53,7 @@ export const footerLinks: NavLink[] = footerGroups.flatMap((group) => group.link
 
 export const COMPACT_HEADER_PREFIXES = [
   "/graffiti",
+  "/slab",
   "/arcade",
   "/tab",
   "/story",

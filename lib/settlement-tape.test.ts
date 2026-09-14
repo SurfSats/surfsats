@@ -14,10 +14,12 @@ import {
   parseTapeEvent,
   parseTapePayload,
   radioTapeText,
+  slabTapeText,
   tabTapeText,
   tapeFromArcade,
   tapeFromGraffiti,
   tapeFromRadio,
+  tapeFromSlab,
   tapeFromStory,
   tapeFromTab,
   TAPE_SEED,
@@ -41,6 +43,10 @@ test("tape lines match the settlement copy", () => {
   );
   assert.equal(arcadeTapeText("WAVE"), "WAVE zapped 21 sats on Arcade");
   assert.equal(tabTapeText("BITCOINER"), "BITCOINER sat the tab · 21 sats");
+  assert.equal(
+    slabTapeText("HOPE", 12, "swell"),
+    "HOPE laid 12 swell px on The Slab",
+  );
 });
 
 test("formatTapeActor falls back to anon", () => {
@@ -151,6 +157,18 @@ test("store mappers match the settlement copy", () => {
     }).href,
     "/tab",
   );
+
+  const slab = tapeFromSlab({
+    paymentHash: "sh",
+    callsign: "HOPE",
+    coat: "swell",
+    pixelCount: 12,
+    createdAt: "2026-09-05T12:00:00Z",
+  });
+  assert.equal(slab.text, "HOPE laid 12 swell px on The Slab");
+  assert.equal(slab.id, "slab:sh");
+  assert.equal(slab.href, "/slab");
+  assert.equal(slab.machine, "slab");
 });
 
 test("parseTapePayload reads snapshot envelopes and seed is never empty", () => {

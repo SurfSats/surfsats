@@ -12,6 +12,7 @@ import {
   announceArcadeTape,
   announceGraffitiTape,
   announceRadioTape,
+  announceSlabTape,
   announceStoryTape,
   announceTabTape,
 } from "@/lib/settlement-tape-announce";
@@ -24,6 +25,9 @@ import { graffitiStoreKind } from "@/lib/graffiti-store";
 import { bottleLog } from "@/lib/bottle-log";
 import { settleBottlePayment } from "@/lib/bottle-payments";
 import { bottleStoreKind } from "@/lib/bottle-store";
+import { slabLog } from "@/lib/slab-log";
+import { settleSlabPayment } from "@/lib/slab-payments";
+import { slabStoreKind } from "@/lib/slab-store";
 import { storyLog } from "@/lib/story-log";
 import { settleStoryPayment } from "@/lib/story-payments";
 import { storyStoreKind } from "@/lib/story-store";
@@ -163,6 +167,24 @@ export async function POST(request: Request) {
       });
     }
 
+    const slab = await settleSlabPayment(paymentHash);
+    if (slab.stroke) {
+      slabLog("info", "webhook.settled", {
+        hash: hashRef(paymentHash),
+        paid: true,
+        live: true,
+        kind: "slab",
+        store: slabStoreKind(),
+      });
+      announceSlabTape(slab.stroke);
+      return NextResponse.json({
+        ok: true,
+        paid: true,
+        live: true,
+        kind: "slab",
+      });
+    }
+
     const bottle = await settleBottlePayment(paymentHash);
     if (bottle.pull) {
       bottleLog("info", "webhook.settled", {
@@ -181,7 +203,14 @@ export async function POST(request: Request) {
       });
     }
 
-    if (graffiti.paid || tab.paid || arcade.paid || story.paid || bottle.paid) {
+    if (
+      graffiti.paid ||
+      tab.paid ||
+      arcade.paid ||
+      story.paid ||
+      bottle.paid ||
+      slab.paid
+    ) {
       graffitiLog("error", "webhook.paid_without_claim", {
         hash: hashRef(paymentHash),
         graffiti: Boolean(graffiti.paid),
@@ -189,6 +218,7 @@ export async function POST(request: Request) {
         arcade: Boolean(arcade.paid),
         story: Boolean(story.paid),
         bottle: Boolean(bottle.paid),
+        slab: Boolean(slab.paid),
       });
       return NextResponse.json(
         { ok: false, paid: true, live: false },

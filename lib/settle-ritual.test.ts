@@ -38,6 +38,7 @@ const MACHINES = [
   "graffiti",
   "story",
   "drop",
+  "slab",
 ] as const satisfies readonly SettleMachine[];
 
 const PHASES = [
@@ -83,6 +84,12 @@ test("machine subtitles stay locked", () => {
     "invoice paid · 21 leaving the dock",
   );
   assert.equal(SETTLE_SUBTITLES.drop.settled, "21 sats cleared · dropped");
+  assert.equal(SETTLE_SUBTITLES.slab.waiting, "stroke unpaid · slab dry");
+  assert.equal(
+    SETTLE_SUBTITLES.slab.settling,
+    "invoice paid · coats pouring",
+  );
+  assert.equal(SETTLE_SUBTITLES.slab.settled, "sats cleared · on the slab");
 });
 
 test("every machine has a subtitle for every title", () => {

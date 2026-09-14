@@ -281,6 +281,11 @@ export function hasLiveData(snapshot: TimechainSnapshot) {
   );
 }
 
+export async function getTimechainHeight(): Promise<number | null> {
+  const tip = await readText(`${MEMPOOL}/blocks/tip/height`);
+  return parseHeight(tip);
+}
+
 type PricesResponse = { USD?: number };
 type HistoricalResponse = { prices?: Array<{ USD?: number }> };
 type BlockSummary = { height?: number; timestamp?: number };

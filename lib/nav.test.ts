@@ -20,6 +20,17 @@ test("machines nav includes GLASS", () => {
   assert.equal(hit.label, "GLASS");
 });
 
+test("machines nav has SLAB after GRAFFITI and before STORY", () => {
+  const hrefs = primaryNavLinks.map((link) => link.href);
+  const graffitiAt = hrefs.indexOf("/graffiti");
+  assert.ok(graffitiAt >= 0);
+  assert.equal(hrefs[graffitiAt + 1], "/slab");
+  assert.equal(hrefs[graffitiAt + 2], "/story");
+  const hit = primaryNavLinks.find((link) => link.href === "/slab");
+  assert.ok(hit);
+  assert.equal(hit.label, "SLAB");
+});
+
 test("footer machines list has GLASS next to GRAFFITI", () => {
   const machines = footerGroups.find((group) => group.id === "machines");
   assert.ok(machines);

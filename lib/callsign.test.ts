@@ -129,15 +129,17 @@ test("name collisions share one wall row and never auto-rename", () => {
   assert.notEqual(second.callsign, "HOPE_2");
 });
 
-test("parseCallsignEtch and machine list stay on the five floor machines", () => {
+test("parseCallsignEtch and machine list include slab", () => {
   assert.deepEqual(CALLSIGN_MACHINES, [
     "graffiti",
     "arcade",
     "story",
     "tab",
     "radio",
+    "slab",
   ]);
   assert.equal(isCallsignMachine("graffiti"), true);
+  assert.equal(isCallsignMachine("slab"), true);
   assert.equal(isCallsignMachine("bottle"), false);
   assert.deepEqual(mergeCallsignMachines(["arcade"], "arcade"), ["arcade"]);
   assert.deepEqual(mergeCallsignMachines(["arcade"], "tab"), ["arcade", "tab"]);
