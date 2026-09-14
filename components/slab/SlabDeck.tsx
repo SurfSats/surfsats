@@ -13,7 +13,6 @@ import { parseCallsignEtch } from "@/lib/callsign";
 import { INVOICE_QR_OPTIONS } from "@/lib/invoice-qr";
 import { payFetch } from "@/lib/pay-fetch";
 import {
-  SLAB_COPY,
   SLAB_MAX_PIXELS,
   coatPrice,
   invoiceSats,
@@ -38,6 +37,8 @@ export function SlabDeck({
   onColor,
   onPaid,
   onClear,
+  onHow,
+  howOpen,
 }: {
   coat: SlabCoat;
   color: SlabColor;
@@ -52,6 +53,8 @@ export function SlabDeck({
     height: number;
   }) => void;
   onClear: () => void;
+  onHow: () => void;
+  howOpen: boolean;
 }) {
   const { settling, beginSettle, finishSettle } = useSettleHandoff();
   const { bind: bindCheck, kick: kickCheck } = useCheckNow();
@@ -276,74 +279,74 @@ export function SlabDeck({
     <section className="slab-deck-form">
       {step === "compose" ? (
         <>
-          <p className="slab-kicker">{SLAB_COPY.title}</p>
-          <h2>{SLAB_COPY.clock}</h2>
-          <p className="slab-lede">
-            {coat === "swell" ? SLAB_COPY.swell : SLAB_COPY.reef}
-          </p>
-
-          <CallsignField
-            className="slab-callsign"
-            label="CALLSIGN"
-            disabled={pending}
-          />
-
-          <p className="slab-field-label">coat</p>
-          <div className="slab-coats">
+          <div className="slab-hotbar-row">
+            <div className="slab-coats">
+              <button
+                type="button"
+                className={cn(coat === "swell" && "is-on")}
+                aria-pressed={coat === "swell"}
+                onClick={() => onCoat("swell")}
+              >
+                SWELL
+              </button>
+              <button
+                type="button"
+                className={cn(coat === "reef" && "is-on")}
+                aria-pressed={coat === "reef"}
+                onClick={() => onCoat("reef")}
+              >
+                REEF
+              </button>
+            </div>
+            <div className="slab-palette">
+              {slabPalette.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onColor(item.id)}
+                  className={cn(color === item.id && "is-on")}
+                  style={{ background: item.hex }}
+                  aria-label={item.label}
+                />
+              ))}
+            </div>
+            <CallsignField
+              className="slab-callsign"
+              label="CALLSIGN"
+              disabled={pending}
+            />
+            <p className="slab-hud">
+              {pixelCount} px · {amountSats} sats
+            </p>
             <button
               type="button"
-              className={cn(coat === "swell" && "is-on")}
-              aria-pressed={coat === "swell"}
-              onClick={() => onCoat("swell")}
+              className="slab-clear"
+              onClick={onClear}
+              disabled={!pixelCount}
             >
-              SWELL
+              clear
             </button>
             <button
               type="button"
-              className={cn(coat === "reef" && "is-on")}
-              aria-pressed={coat === "reef"}
-              onClick={() => onCoat("reef")}
+              className="slab-zap"
+              disabled={!canPay}
+              onClick={() => void requestInvoice()}
             >
-              REEF
+              {pending ? COPY.validating : COPY.zapSats}
+            </button>
+            <button
+              type="button"
+              className={cn("slab-how-btn", howOpen && "is-on")}
+              aria-pressed={howOpen}
+              onClick={onHow}
+            >
+              HOW
             </button>
           </div>
           <p className="slab-coat-meta">
             {coatPrice(coat)} sats per block · {SLAB_MAX_PIXELS} stroke cap
+            {error ? ` · ${error}` : ""}
           </p>
-
-          <p className="slab-field-label">color</p>
-          <div className="slab-palette">
-            {slabPalette.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onColor(item.id)}
-                className={cn(color === item.id && "is-on")}
-                style={{ background: item.hex }}
-                aria-label={item.label}
-              />
-            ))}
-          </div>
-
-          <div className="slab-hud">
-            <p>
-              {pixelCount} px · {amountSats} sats
-            </p>
-            <button type="button" onClick={onClear} disabled={!pixelCount}>
-              clear
-            </button>
-          </div>
-
-          {error ? <p className="slab-error">{error}</p> : null}
-
-          <button
-            type="button"
-            className="slab-zap"
-            disabled={!canPay}
-            onClick={() => void requestInvoice()}
-          >
-            {pending ? COPY.validating : COPY.zapSats}
-          </button>
         </>
       ) : null}
 

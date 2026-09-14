@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { SlabCanvas } from "@/components/slab/SlabCanvas";
 import { SlabDeck } from "@/components/slab/SlabDeck";
 import { SlabHow } from "@/components/slab/SlabHow";
@@ -15,8 +14,6 @@ import {
   type SlabPixel,
   type SlabStain,
 } from "@/lib/slab";
-
-type DeckTab = "paint" | "how";
 
 type BoardCache = {
   cells: SlabCell[];
@@ -32,7 +29,7 @@ export function SlabApp() {
   const [coat, setCoat] = useState<SlabCoat>("swell");
   const [color, setColor] = useState<SlabColor>("hope");
   const [wetKeys, setWetKeys] = useState<Set<string>>(new Set());
-  const [tab, setTab] = useState<DeckTab>("paint");
+  const [howOpen, setHowOpen] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -103,22 +100,17 @@ export function SlabApp() {
           if (current !== keys) return current;
           return new Set();
         });
-      }, 720);
+      }, 980);
     },
     [],
   );
 
   return (
-    <ConsoleShell
-      name="slab"
-      className="slab-page"
-      deckLabel="Slab"
-      strip={
-        <p>
-          {SLAB_COPY.title} · {SLAB_COPY.clock}
-        </p>
-      }
-      stage={
+    <div className="slab-page">
+      <p className="slab-strip">
+        {SLAB_COPY.title} · {SLAB_COPY.clock}
+      </p>
+      <div className="slab-bleed">
         <SlabCanvas
           live={live}
           stains={stains}
@@ -129,26 +121,25 @@ export function SlabApp() {
           wetKeys={wetKeys}
           onSelect={setSelected}
         />
-      }
-      tabs={[
-        { id: "paint", label: "PAINT" },
-        { id: "how", label: "HOW" },
-      ]}
-      tab={tab}
-      onTab={(id) => setTab(id as DeckTab)}
-    >
-      {tab === "paint" ? (
-        <SlabDeck
-          coat={coat}
-          color={color}
-          selected={selected}
-          onCoat={setCoat}
-          onColor={setColor}
-          onPaid={onPaid}
-          onClear={() => setSelected([])}
-        />
-      ) : null}
-      {tab === "how" ? <SlabHow /> : null}
-    </ConsoleShell>
+        <div className="slab-hotbar">
+          <SlabDeck
+            coat={coat}
+            color={color}
+            selected={selected}
+            onCoat={setCoat}
+            onColor={setColor}
+            onPaid={onPaid}
+            onClear={() => setSelected([])}
+            onHow={() => setHowOpen((value) => !value)}
+            howOpen={howOpen}
+          />
+        </div>
+        {howOpen ? (
+          <div className="slab-how-card">
+            <SlabHow />
+          </div>
+        ) : null}
+      </div>
+    </div>
   );
 }
