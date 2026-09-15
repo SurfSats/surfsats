@@ -1,3 +1,4 @@
+import { noodleTapeText } from "./noodle.ts";
 import { slabTapeText } from "./slab.ts";
 import { waveRunnerTapeText } from "./wave-runner.ts";
 
@@ -99,6 +100,23 @@ export function tapeFromGraffiti(mark: {
     text: graffitiTapeText(actor, mark.text),
     createdAt: mark.createdAt,
     href: "/graffiti",
+  };
+}
+
+export function tapeFromNoodle(run: {
+  callsign: string;
+  score: number;
+  createdAt?: string;
+  playId?: string;
+}): TapeEvent {
+  const actor = formatTapeActor(run.callsign);
+  return {
+    id: `arcade-noodle:${run.playId || `${actor}-${Math.floor(run.score)}-${run.createdAt ?? ""}`}`,
+    machine: "arcade",
+    actor,
+    text: noodleTapeText(actor, run.score),
+    createdAt: run.createdAt ?? new Date().toISOString(),
+    href: "/arcade",
   };
 }
 

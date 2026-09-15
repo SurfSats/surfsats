@@ -6,6 +6,7 @@ import {
   publishTape,
   tapeFromArcade,
   tapeFromGraffiti,
+  tapeFromNoodle,
   tapeFromRadio,
   tapeFromSlab,
   tapeFromStory,
@@ -18,6 +19,20 @@ import { TAB_PRICE_SATS } from "@/lib/tab";
 
 export function announceGraffitiTape(mark: GraffitiMark) {
   publishTape(tapeFromGraffiti(mark));
+}
+
+export function announceNoodleTape(run: {
+  callsign: string;
+  score: number;
+  playId?: string;
+}) {
+  publishTape(
+    tapeFromNoodle({
+      callsign: run.callsign,
+      score: run.score,
+      playId: run.playId,
+    }),
+  );
 }
 
 export function announceWaveRunnerTape(run: {

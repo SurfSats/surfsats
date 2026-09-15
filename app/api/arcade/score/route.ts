@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { ARCADE_GAME_ID, isPlayerId, normalizePlayGame } from "@/lib/arcade";
 import { arcadeLog } from "@/lib/arcade-log";
 import { arcadeStoreKind, getArcadePlayer, submitArcadeScore } from "@/lib/arcade-store";
-import { announceWaveRunnerTape } from "@/lib/settlement-tape-announce";
+import {
+  announceNoodleTape,
+  announceWaveRunnerTape,
+} from "@/lib/settlement-tape-announce";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,6 +46,14 @@ export async function POST(request: Request) {
       announceWaveRunnerTape({
         callsign: player?.alias || "anon",
         meters,
+        playId: playId || undefined,
+      });
+    }
+    if (game === "noodle") {
+      const player = await getArcadePlayer(playerId);
+      announceNoodleTape({
+        callsign: player?.alias || "anon",
+        score,
         playId: playId || undefined,
       });
     }

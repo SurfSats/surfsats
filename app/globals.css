@@ -5198,7 +5198,8 @@ body:has(.graffiti-page) .site-watermark {
 .cab-crt-slot .cab-crt-scan,
 .cab-crt-slot .cab-crt-attract,
 .cab-crt-slot .cab-crt-result,
-.cab-crt-slot .cab-crt-hit {
+.cab-crt-slot .cab-crt-hit,
+.cab-crt-slot .cab-crt-hud {
   grid-area: 1 / 1;
 }
 
@@ -5243,6 +5244,17 @@ body:has(.graffiti-page) .site-watermark {
   background: #05060a;
 }
 
+.cab-crt-photo.cab-crt-pleb.has-field .cab-crt-attract {
+  justify-content: flex-end;
+  padding: 0.28rem 0.4rem 0.45rem;
+  background: linear-gradient(
+    to top,
+    rgba(5, 6, 10, 0.9) 0%,
+    rgba(5, 6, 10, 0.35) 55%,
+    transparent 100%
+  );
+}
+
 .cab-crt-photo.cab-crt-pleb .cab-crt-insert {
   color: #ff3df6;
   text-shadow: 0 0 8px rgba(255, 61, 246, 0.8);
@@ -5250,6 +5262,28 @@ body:has(.graffiti-page) .site-watermark {
 
 .cab-crt-photo.cab-crt-pleb .cab-crt-sub {
   color: #3dfff3;
+}
+
+.cab-crt-pleb .noodle-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.cab-crt-pleb .cab-crt-hud {
+  z-index: 5;
+  align-self: start;
+  justify-self: start;
+  margin: 0.28rem 0.35rem;
+  font-family: var(--font-arcade-pixel), monospace;
+  font-size: clamp(0.36rem, 4cqi, 0.52rem);
+  letter-spacing: 0.04em;
+  color: #ffe24a;
+  text-shadow: 0 1px 0 #000, 0 0 6px #000;
+  pointer-events: none;
 }
 
 .cab-crt-photo.cab-crt-live {

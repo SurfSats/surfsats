@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArcadeInvoice } from "@/components/arcade/ArcadeInvoice";
 import { PlebBoxCabinet } from "@/components/arcade/PlebBoxCabinet";
 import { payFetch } from "@/lib/pay-fetch";
@@ -10,6 +10,7 @@ import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import {
   ARCADE_CREDITS_PER_PAY,
   ARCADE_MACHINE_PLEB,
+  ARCADE_PRICE_SATS,
   PLEB_BOX_LABEL,
   PLEB_BOX_STORAGE_KEY,
   isPlebBoxGameId,
@@ -53,6 +54,11 @@ export function PlebBoxApp({
   const [nowTick, setNowTick] = useState(() => Date.now());
   const [expired, setExpired] = useState(false);
   const [ready, setReady] = useState(false);
+  const [playId, setPlayId] = useState<string | null>(null);
+  const [score, setScore] = useState(0);
+  const [length, setLength] = useState(3);
+  const startLock = useRef(false);
+  const playIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cached: SessionCache | null = null;
@@ -179,7 +185,7 @@ export function PlebBoxApp({
           setWaiting(false);
           beginSettle(() => {
             setCredits(creditsNext);
-            setMode("attract");
+            setMode(creditsNext > 0 && game === "noodle" ? "ready" : "attract");
             setPaymentHash("");
             setPaymentRequest("");
           });
@@ -205,20 +211,36 @@ export function PlebBoxApp({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [beginSettle, bindCheck, expired, markEtched, mode, paymentHash, settling]);
+  }, [beginSettle, bindCheck, expired, game, markEtched, mode, paymentHash, settling]);
 
   const remainMs = expiresAt ? new Date(expiresAt).getTime() - nowTick : 0;
   const remainLabel = mode === "invoice" ? formatRemain(remainMs) : "";
 
   const screenMode: ArcadeScreenMode = useMemo(() => {
-    if (mode === "invoice") return mode;
+    if (
+      mode === "invoice" ||
+      mode === "playing" ||
+      mode === "result" ||
+      mode === "ready"
+    ) {
+      return mode;
+    }
     return "attract";
   }, [mode]);
 
   function selectGame(id: PlebBoxGameId) {
     if (mode === "invoice") return;
+    if (id === game) return;
+    if (mode === "playing" && game === "noodle" && id !== "noodle") {
+      void submitScore(score);
+    }
     setGame(id);
     setError(null);
+    if (id === "noodle") {
+      setMode(credits > 0 ? "ready" : "attract");
+    } else {
+      setMode("attract");
+    }
   }
 
   async function requestInvoice() {
@@ -260,7 +282,7 @@ export function PlebBoxApp({
         !data.payment_request.toLowerCase().startsWith("ln")
       ) {
         setError(data.error || "could not create invoice. try again");
-        setMode("attract");
+        setMode(credits > 0 && game === "noodle" ? "ready" : "attract");
         return;
       }
       setPaymentRequest(data.payment_request);
@@ -274,11 +296,85 @@ export function PlebBoxApp({
       setMode("invoice");
     } catch {
       setError("could not create invoice. try again");
-      setMode("attract");
+      setMode(credits > 0 && game === "noodle" ? "ready" : "attract");
     } finally {
       setPending(false);
     }
   }
+
+  const submitScore = useCallback(
+    async (value: number) => {
+      try {
+        await fetch("/api/arcade/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            playerId,
+            playId: playIdRef.current ?? playId,
+            score: value,
+            game: "noodle",
+          }),
+        });
+      } catch {
+        // play is already recorded
+      }
+    },
+    [playId, playerId],
+  );
+
+  const play = useCallback(async () => {
+    if (game !== "noodle") return;
+    if (mode === "invoice" || mode === "playing" || startLock.current) return;
+    const next = sanitizeAlias(alias);
+    if (!next.ok) {
+      setError("SET CALLSIGN FIRST · 2–16 CHARS");
+      return;
+    }
+    if (credits < 1) {
+      setError(
+        `INSERT ${ARCADE_PRICE_SATS} SATS FOR ${ARCADE_CREDITS_PER_PAY} CREDITS`,
+      );
+      return;
+    }
+    setError(null);
+    setAlias(next.alias);
+    startLock.current = true;
+    try {
+      const response = await fetch("/api/arcade/play", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerId, game: "noodle" }),
+      });
+      const data = (await response.json()) as {
+        error?: string;
+        credits?: number;
+        playId?: string;
+      };
+      if (!response.ok) {
+        setError(data.error || "cabinet jammed");
+        return;
+      }
+      if (typeof data.credits === "number") setCredits(data.credits);
+      playIdRef.current = data.playId ?? null;
+      setPlayId(data.playId ?? null);
+      setScore(0);
+      setLength(3);
+      setMode("playing");
+    } catch {
+      setError("cabinet jammed. try again");
+    } finally {
+      startLock.current = false;
+    }
+  }, [alias, credits, game, mode, playerId, setAlias]);
+
+  const handleDie = useCallback(
+    (value: number) => {
+      setScore(value);
+      setMode("result");
+      void submitScore(value);
+    },
+    [submitScore],
+  );
 
   async function copyInvoice() {
     if (!paymentRequest) return;
@@ -292,7 +388,7 @@ export function PlebBoxApp({
   }
 
   function cancelPay() {
-    setMode("attract");
+    setMode(credits > 0 && game === "noodle" ? "ready" : "attract");
     setPaymentHash("");
     setPaymentRequest("");
     setQrSrc("");
@@ -338,8 +434,17 @@ export function PlebBoxApp({
         pending={pending}
         error={error}
         game={game}
+        score={score}
+        length={length}
+        armed={front}
         onInsert={() => void requestInvoice()}
+        onPlay={() => void play()}
         onSelectGame={selectGame}
+        onDie={handleDie}
+        onHud={(nextScore, nextLength) => {
+          setScore(nextScore);
+          setLength(nextLength);
+        }}
       />
       {showInvoice ? (
         <ArcadeInvoice

@@ -28,7 +28,7 @@ export async function GET(request: Request) {
         : retro
           ? getRetroHighScores()
           : pleb
-            ? Promise.resolve([])
+            ? getArcadeHighScores("noodle")
             : getArcadeHighScores(),
       getArcadeRecentPlays(
         tab

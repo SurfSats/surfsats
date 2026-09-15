@@ -22,8 +22,14 @@ export function PlebBoxCabinet({
   pending,
   error,
   game,
+  score,
+  length,
+  armed = true,
   onInsert,
+  onPlay,
   onSelectGame,
+  onDie,
+  onHud,
 }: {
   alias: string;
   credits: number;
@@ -31,12 +37,25 @@ export function PlebBoxCabinet({
   pending: boolean;
   error: string | null;
   game: PlebBoxGameId;
+  score: number;
+  length: number;
+  armed?: boolean;
   onInsert: () => void;
+  onPlay: () => void;
   onSelectGame: (id: PlebBoxGameId) => void;
+  onDie: (score: number) => void;
+  onHud: (score: number, length: number) => void;
 }) {
   const aliasOk = sanitizeAlias(alias).ok;
   const paying = mode === "invoice";
-  const showInsert = credits < 1 && mode !== "invoice";
+  const playing = mode === "playing";
+  const showInsert = credits < 1 && !paying && !playing;
+  const canPlay =
+    game === "noodle" &&
+    credits > 0 &&
+    !paying &&
+    !playing &&
+    aliasOk;
 
   return (
     <div className="cab-wrap">
@@ -59,7 +78,13 @@ export function PlebBoxCabinet({
               mode={mode}
               credits={credits}
               game={game}
+              score={score}
+              length={length}
+              armed={armed}
               onInsert={onInsert}
+              onPlay={onPlay}
+              onDie={onDie}
+              onHud={onHud}
             />
           </div>
         </div>
@@ -86,7 +111,12 @@ export function PlebBoxCabinet({
 
         <div className="cab-coin cab-coin-plate" id="arcade-coin-pleb">
           <div className="cab-coin-top">
-            {showInsert ? (
+            {canPlay ? (
+              <button type="button" className="cab-play" onClick={onPlay}>
+                {mode === "result" ? "NEXT LIFE" : "PLAY"}
+                <span>1 CREDIT</span>
+              </button>
+            ) : showInsert ? (
               <button
                 type="button"
                 className="cab-insert cab-insert-primary cab-till-insert"

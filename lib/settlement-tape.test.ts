@@ -20,6 +20,7 @@ import {
   tapeFromGraffiti,
   tapeFromRadio,
   tapeFromSlab,
+  tapeFromNoodle,
   tapeFromStory,
   tapeFromTab,
   TAPE_SEED,
@@ -46,6 +47,10 @@ test("tape lines match the settlement copy", () => {
   assert.equal(
     waveRunnerTapeText("SURF", 184),
     "SURF wiped out at 184m on Wave Runner",
+  );
+  assert.equal(
+    tapeFromNoodle({ callsign: "HOPE", score: 12 }).text,
+    "HOPE wiped out at 12 on NOODLE",
   );
   assert.equal(tabTapeText("BITCOINER"), "BITCOINER sat the tab · 21 sats");
   assert.equal(
