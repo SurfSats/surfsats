@@ -12,6 +12,7 @@ import {
   isPlebBoxGameId,
   isWaveRunnerDeepLink,
   parseArcadeMachine,
+  plebInvoiceFromSubmit,
 } from "./arcade.ts";
 
 test("wave runner stays hidden", () => {
@@ -51,6 +52,20 @@ test("pleb box deep links land on the box, not wave runner", () => {
   assert.equal(isPlebBoxDeepLink("yeet"), true);
   assert.equal(isPlebBoxDeepLink("waverunner"), false);
   assert.equal(isPlebBoxDeepLink("retro"), false);
+});
+
+test("pleb invoice opens only after an explicit submit of a full valid callsign", () => {
+  assert.equal(plebInvoiceFromSubmit("HO", { explicit: false }).open, false);
+  assert.equal(plebInvoiceFromSubmit("HOPE", { explicit: false }).open, false);
+  assert.equal(plebInvoiceFromSubmit("H", { explicit: true }).open, false);
+  assert.equal(plebInvoiceFromSubmit("ANON", { explicit: true }).open, false);
+  assert.equal(plebInvoiceFromSubmit("", { explicit: true }).open, false);
+  const two = plebInvoiceFromSubmit("HO", { explicit: true });
+  assert.equal(two.open, true);
+  if (two.open) assert.equal(two.alias, "HO");
+  const hope = plebInvoiceFromSubmit("  hope  ", { explicit: true });
+  assert.equal(hope.open, true);
+  if (hope.open) assert.equal(hope.alias, "HOPE");
 });
 
 test("pleb box copy names the three tabs and skips forbidden words", () => {

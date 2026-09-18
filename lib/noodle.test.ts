@@ -5,6 +5,7 @@ import {
   COLS,
   DEAD_BEAT,
   DIRS,
+  INSET,
   MAX_HZ,
   ROWS,
   START_LEN,
@@ -15,11 +16,35 @@ import {
   noodleTapeText,
   queueDir,
   respawnNoodle,
+  noodleView,
   spawnNoodle,
   stepNoodle,
   tickNoodle,
   tickSeconds,
 } from "./noodle.ts";
+
+test("playfield is a readable 12×7 to 16×9 grid", () => {
+  assert.ok(COLS >= 12 && COLS <= 16, `COLS ${COLS}`);
+  assert.ok(ROWS >= 7 && ROWS <= 9, `ROWS ${ROWS}`);
+});
+
+test("noodleView uses integer cell size and does not grow past the box", () => {
+  const view = noodleView(1003, 719);
+  assert.equal(view.cell, Math.floor(view.cell));
+  assert.equal(view.gridW, view.cell * COLS);
+  assert.equal(view.gridH, view.cell * ROWS);
+  assert.ok(view.cell >= 1);
+  assert.ok(view.ox + view.gridW <= view.w);
+  assert.ok(view.oy + view.gridH <= view.h);
+  const square = noodleView(800, 800);
+  assert.equal(
+    square.cell,
+    Math.max(
+      1,
+      Math.floor(Math.min((800 * INSET.w) / COLS, (800 * INSET.h) / ROWS)),
+    ),
+  );
+});
 
 test("first frame is a noodle in the center facing right", () => {
   const game = spawnNoodle(7);

@@ -1,5 +1,6 @@
 export const COLS = 16;
-export const ROWS = 10;
+export const ROWS = 9;
+export const INSET = { x: 0.032, y: 0.04, w: 0.936, h: 0.9 };
 export const START_LEN = 3;
 export const BASE_HZ = 8;
 export const MAX_HZ = 10.5;
@@ -32,6 +33,19 @@ export type Noodle = {
 };
 
 export type NoodleRng = () => number;
+
+export function noodleView(cssW: number, cssH: number) {
+  const w = Math.max(1, Math.floor(cssW));
+  const h = Math.max(1, Math.floor(cssH));
+  const innerW = w * INSET.w;
+  const innerH = h * INSET.h;
+  const cell = Math.max(1, Math.floor(Math.min(innerW / COLS, innerH / ROWS)));
+  const gridW = cell * COLS;
+  const gridH = cell * ROWS;
+  const ox = Math.floor(w * INSET.x + (innerW - gridW) / 2);
+  const oy = Math.floor(h * INSET.y + (innerH - gridH) / 2);
+  return { w, h, cell, ox, oy, gridW, gridH };
+}
 
 export function tickSeconds(length: number) {
   const extra = Math.max(0, length - START_LEN) * 0.12;

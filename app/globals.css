@@ -5286,6 +5286,229 @@ body:has(.graffiti-page) .site-watermark {
   pointer-events: none;
 }
 
+body[data-arcade-front="pleb"] .arcade-page .console-shell {
+  height: calc(100dvh - var(--site-chrome-h));
+  min-height: calc(100dvh - var(--site-chrome-h));
+}
+
+body[data-arcade-front="pleb"] .arcade-page .console-stage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.4rem 0.65rem 0.45rem;
+}
+
+body[data-arcade-front="pleb"] .arcade-toggle {
+  flex-shrink: 0;
+  max-width: none;
+  margin-bottom: 0.4rem;
+}
+
+body[data-arcade-front="pleb"] .arcade-cabinet-anchor,
+body[data-arcade-front="pleb"] .arcade-pit.is-pleb {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+}
+
+.arcade-pit.is-pleb .arcade-bay-pleb.is-front {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+}
+
+.arcade-bay-pleb.is-front .pleb-bleed,
+.arcade-bay-pleb.is-front .cab-machine-pleb {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+}
+
+.arcade-bay-pleb.is-front .cab-body {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.arcade-bay-pleb.is-front .cab-body::after {
+  display: none;
+}
+
+.arcade-bay-pleb.is-front .cab-crt-slot {
+  position: relative;
+  top: auto;
+  left: auto;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 22rem;
+  overflow: hidden;
+  border-radius: 0;
+  background: #05060a;
+}
+
+.arcade-bay-pleb.is-front .cab-crt-well {
+  place-items: stretch;
+}
+
+.arcade-bay-pleb.is-front .cab-crt-glass {
+  opacity: 0.08;
+}
+
+.arcade-bay-pleb.is-front .cab-crt-scan {
+  opacity: 0.12;
+}
+
+.arcade-bay-pleb.is-front .cab-crt-pleb .pleb-attract,
+.arcade-bay-pleb.is-front .cab-crt-photo.cab-crt-pleb .cab-crt-attract,
+.arcade-bay-pleb.is-front .cab-crt-photo.cab-crt-pleb.has-field .cab-crt-attract {
+  align-self: end;
+  justify-self: stretch;
+  justify-content: flex-end;
+  width: 100%;
+  height: auto;
+  max-height: 33%;
+  padding: 0.55rem 0.7rem 0.65rem;
+  background: linear-gradient(
+    to top,
+    rgba(5, 6, 10, 0.92) 0%,
+    rgba(5, 6, 10, 0.42) 72%,
+    transparent 100%
+  );
+}
+
+.arcade-bay-pleb.is-front .cab-crt-hit.pleb-attract {
+  width: 100%;
+  height: auto;
+}
+
+.arcade-bay-pleb.is-front .pleb-dock {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.4rem 0 0;
+}
+
+.arcade-bay-pleb.is-front .pleb-dock .cab-games,
+.arcade-bay-pleb.is-front .pleb-dock .cab-coin-plate {
+  margin: 0;
+  width: auto;
+  max-width: none;
+}
+
+.arcade-bay-pleb.is-front .pleb-dock .cab-games {
+  flex: 0 1 auto;
+  align-content: center;
+}
+
+.arcade-bay-pleb.is-front .pleb-dock .cab-coin-plate {
+  flex: 1 1 24rem;
+}
+
+.pleb-callsign {
+  width: 100%;
+}
+
+.pleb-full {
+  flex-shrink: 0;
+  min-height: 2.4rem;
+  padding: 0.28rem 0.45rem;
+  border: 1px solid #3dfff3;
+  background: #05060a;
+  color: #3dfff3;
+  font-family: var(--font-arcade-pixel), monospace;
+  font-size: 0.38rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pleb-bleed:fullscreen {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 0.45rem 0.6rem 0.55rem;
+  background: #05060a;
+}
+
+.pleb-bleed:fullscreen .cab-machine-pleb,
+.pleb-bleed:fullscreen .cab-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.pleb-bleed:fullscreen .cab-crt-slot {
+  position: relative;
+  top: auto;
+  left: auto;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border-radius: 0;
+}
+
+@media (max-width: 1023px) {
+  body[data-arcade-front="pleb"] .arcade-page .console-shell {
+    height: auto;
+    min-height: calc(100dvh - var(--site-chrome-h));
+  }
+
+  body[data-arcade-front="pleb"] .arcade-page .console-stage {
+    height: auto;
+    min-height: min(72dvh, 42rem);
+    overflow: auto;
+  }
+
+  .arcade-bay-pleb.is-front .cab-body {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
+  }
+
+  .arcade-bay-pleb.is-front .cab-crt-slot {
+    min-height: 16rem;
+    height: min(52dvh, 28rem);
+    flex: none;
+  }
+
+  .arcade-bay-pleb.is-front .pleb-dock {
+    flex-direction: column;
+  }
+
+  .arcade-bay-pleb.is-front .pleb-dock .cab-games {
+    width: 100%;
+    flex: none;
+  }
+
+  .arcade-bay-pleb.is-front .pleb-dock .cab-coin-plate {
+    flex: none;
+    width: 100%;
+  }
+}
+
 .cab-crt-photo.cab-crt-live {
   background: #041018;
 }

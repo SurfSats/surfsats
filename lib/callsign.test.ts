@@ -13,6 +13,7 @@ import {
   mergeCallsignMachines,
   migrateGlassFromArcade,
   nextGlassFromEtch,
+  nextGlassFromTyping,
   parseCallsignEtch,
   parseGlassCache,
   sanitizeCallsign,
@@ -49,6 +50,19 @@ test("reserved callsigns cannot be etched", () => {
     [...CALLSIGN_RESERVED].sort(),
     ["ADMIN", "ANON", "GLASS", "NULL", "ROOT", "SURFSATS", "SYS", "TAPE"].sort(),
   );
+});
+
+test("a 2-letter callsign is valid, not a stop — HOPE still types", () => {
+  assert.equal(sanitizeCallsign("HO").ok, true);
+  assert.equal(sanitizeCallsign("HOPE").ok, true);
+  const two = nextGlassFromTyping(null, "HO");
+  assert.equal(two?.callsign, "HO");
+  const four = nextGlassFromTyping(two, "HOPE");
+  assert.equal(four?.callsign, "HOPE");
+  const mid = nextGlassFromTyping(four, "H");
+  assert.equal(mid?.callsign, "HOPE");
+  const cleared = nextGlassFromTyping(four, "");
+  assert.equal(cleared, null);
 });
 
 test("sanitizeAlias is a wrapper around sanitizeCallsign", () => {

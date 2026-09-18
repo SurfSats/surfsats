@@ -15,6 +15,7 @@ import {
   PLEB_BOX_STORAGE_KEY,
   isPlebBoxGameId,
   isPlayerId,
+  plebInvoiceFromSubmit,
   sanitizeAlias,
   type PlebBoxGameId,
 } from "@/lib/arcade";
@@ -244,12 +245,12 @@ export function PlebBoxApp({
   }
 
   async function requestInvoice() {
-    const next = sanitizeAlias(alias);
-    if (!next.ok) {
+    const gate = plebInvoiceFromSubmit(alias, { explicit: true });
+    if (!gate.open) {
       setError("SET CALLSIGN FIRST · 2–16 CHARS");
       return;
     }
-    setAlias(next.alias);
+    setAlias(gate.alias);
     setError(null);
     setPending(true);
     setPaymentHash("");
@@ -264,7 +265,7 @@ export function PlebBoxApp({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           playerId,
-          alias: next.alias,
+          alias: gate.alias,
           machine: ARCADE_MACHINE_PLEB,
           game,
         }),
@@ -437,6 +438,7 @@ export function PlebBoxApp({
         score={score}
         length={length}
         armed={front}
+        front={front}
         onInsert={() => void requestInvoice()}
         onPlay={() => void play()}
         onSelectGame={selectGame}

@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, type PointerEvent } from "react";
 import {
-  COLS,
   DEAD_BEAT,
   FALLBACK,
-  ROWS,
   SKIN_DIR,
   dirFromKey,
   dirFromSwipe,
+  noodleView,
   queueDir,
   spawnNoodle,
   stepNoodle,
@@ -26,8 +25,6 @@ type Cropped = {
   h: number;
 };
 type Skin = Record<SkinKey, Cropped | null>;
-
-const INSET = { x: 0.032, y: 0.04, w: 0.936, h: 0.9 };
 
 export type NoodlePhase = "ghost" | "ready" | "play" | "dead";
 
@@ -148,6 +145,13 @@ export function NoodleGame({
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (!armedRef.current || phaseRef.current !== "play") return;
+      const target = event.target;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
       const dir = dirFromKey(event.key);
       if (!dir) return;
       event.preventDefault();
@@ -250,68 +254,62 @@ function paint(canvas: HTMLCanvasElement, game: Noodle, skin: Skin) {
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, cssW, cssH);
 
+  const view = noodleView(cssW, cssH);
   const bg = skin.bg;
-  let ox = 0;
-  let oy = 0;
-  let dw = cssW;
-  let dh = cssH;
   if (bg) {
-    const scale = Math.max(cssW / bg.w, cssH / bg.h);
-    dw = bg.w * scale;
-    dh = bg.h * scale;
-    ox = (cssW - dw) / 2;
-    oy = (cssH - dh) / 2;
-    ctx.drawImage(bg.img, bg.x, bg.y, bg.w, bg.h, ox, oy, dw, dh);
+    ctx.drawImage(bg.img, bg.x, bg.y, bg.w, bg.h, 0, 0, cssW, cssH);
   } else {
     ctx.fillStyle = FALLBACK;
     ctx.fillRect(0, 0, cssW, cssH);
   }
 
-  const innerX = ox + dw * INSET.x;
-  const innerY = oy + dh * INSET.y;
-  const cellW = (dw * INSET.w) / COLS;
-  const cellH = (dh * INSET.h) / ROWS;
-
   const stamp = (
     piece: Cropped | null,
     cell: { x: number; y: number },
     angle: number,
-    scale = 1.08,
   ) => {
-    const cx = innerX + (cell.x + 0.5) * cellW;
-    const cy = innerY + (cell.y + 0.5) * cellH;
-    const w = cellW * scale;
-    const h = cellH * scale;
+    const size = view.cell;
+    const cx = view.ox + cell.x * size + size / 2;
+    const cy = view.oy + cell.y * size + size / 2;
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(angle);
     ctx.imageSmoothingEnabled = false;
     if (piece) {
-      ctx.drawImage(piece.img, piece.x, piece.y, piece.w, piece.h, -w / 2, -h / 2, w, h);
+      ctx.drawImage(
+        piece.img,
+        piece.x,
+        piece.y,
+        piece.w,
+        piece.h,
+        -size / 2,
+        -size / 2,
+        size,
+        size,
+      );
     } else {
       ctx.fillStyle = FALLBACK;
-      ctx.fillRect(-w / 2, -h / 2, w, h);
+      ctx.fillRect(-size / 2, -size / 2, size, size);
     }
     ctx.restore();
   };
 
-  if (game.sat.x >= 0) stamp(skin.sat, game.sat, 0, 0.82);
+  if (game.sat.x >= 0) stamp(skin.sat, game.sat, 0);
 
   const last = game.body.length - 1;
   for (let i = last; i >= 0; i--) {
     const cell = game.body[i]!;
     if (i === 0) {
       const angle = Math.atan2(game.dir.y, game.dir.x);
-      if (game.dead) stamp(skin.dead, cell, angle, 1.18);
-      else stamp(skin.head, cell, angle, 1.22);
+      stamp(game.dead ? skin.dead : skin.head, cell, angle);
       continue;
     }
     if (i === last) {
       const dir = tailDir(game);
-      stamp(skin.tail, cell, Math.atan2(dir.y, dir.x), 1.12);
+      stamp(skin.tail, cell, Math.atan2(dir.y, dir.x));
       continue;
     }
     const dir = segmentDir(game, i);
-    stamp(skin.body, cell, Math.atan2(dir.y, dir.x), 1.08);
+    stamp(skin.body, cell, Math.atan2(dir.y, dir.x));
   }
 }

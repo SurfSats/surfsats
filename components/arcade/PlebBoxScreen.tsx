@@ -18,6 +18,7 @@ export function PlebBoxScreen({
   score,
   length,
   armed = true,
+  aliasOk = false,
   onInsert,
   onPlay,
   onDie,
@@ -29,6 +30,7 @@ export function PlebBoxScreen({
   score: number;
   length: number;
   armed?: boolean;
+  aliasOk?: boolean;
   onInsert: () => void;
   onPlay: () => void;
   onDie: (score: number) => void;
@@ -80,7 +82,7 @@ export function PlebBoxScreen({
       ) : null}
 
       {paying ? (
-        <div className="cab-crt-attract">
+        <div className="cab-crt-attract pleb-attract">
           <p className="cab-crt-insert cab-crt-blink">
             PAY {ARCADE_PRICE_SATS} SATS
           </p>
@@ -107,7 +109,8 @@ export function PlebBoxScreen({
       {ready && !paying ? (
         <button
           type="button"
-          className="cab-crt-attract cab-crt-hit"
+          className="cab-crt-attract cab-crt-hit pleb-attract"
+          tabIndex={-1}
           onClick={onPlay}
         >
           <p className="cab-crt-insert cab-crt-blink">PRESS START</p>
@@ -118,7 +121,7 @@ export function PlebBoxScreen({
       ) : null}
 
       {!noodle && !paying ? (
-        <div className="cab-crt-attract">
+        <div className="cab-crt-attract pleb-attract">
           <p className="cab-crt-insert">{tab.label}</p>
           <p className="cab-crt-sub">
             {credits > 0 ? tab.line : PLEB_BOX_ATTRACT}
@@ -127,15 +130,18 @@ export function PlebBoxScreen({
       ) : null}
 
       {noodle && !paying && !playing && !result && !ready ? (
-        <div className="cab-crt-attract">
+        <div className="cab-crt-attract pleb-attract">
           <button
             type="button"
             className="cab-crt-verb"
+            tabIndex={-1}
             {...verbPressProps}
             onClick={onInsert}
           >
             <p className="cab-crt-insert cab-crt-blink">
-              INSERT {ARCADE_PRICE_SATS} SATS
+              {aliasOk
+                ? `INSERT ${ARCADE_PRICE_SATS} SATS`
+                : "ENTER CALLSIGN"}
             </p>
             <p className="cab-crt-sub">NOODLE · LASER · YEET</p>
           </button>

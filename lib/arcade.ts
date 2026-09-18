@@ -116,6 +116,16 @@ export function sanitizeAlias(raw: string) {
   return { ok: true as const, alias: parsed.callsign };
 }
 
+export function plebInvoiceFromSubmit(
+  raw: string,
+  opts: { explicit: boolean },
+) {
+  if (!opts.explicit) return { open: false as const };
+  const parsed = sanitizeAlias(raw);
+  if (!parsed.ok) return { open: false as const, reason: parsed.reason };
+  return { open: true as const, alias: parsed.alias };
+}
+
 export function isPlayerId(value: unknown): value is string {
   return typeof value === "string" && /^[a-z0-9-]{8,64}$/i.test(value);
 }
