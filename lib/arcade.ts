@@ -126,6 +126,19 @@ export function plebInvoiceFromSubmit(
   return { open: true as const, alias: parsed.alias };
 }
 
+export type PlebBoxView = "lobby" | "run";
+
+export function plebBoxView(input: {
+  credits: number;
+  mode: "attract" | "invoice" | "ready" | "playing" | "result";
+  game?: string;
+}): PlebBoxView {
+  if (input.game && input.game !== "noodle") return "lobby";
+  if (input.mode === "playing") return "run";
+  if (input.mode === "result" && input.credits > 0) return "run";
+  return "lobby";
+}
+
 export function isPlayerId(value: unknown): value is string {
   return typeof value === "string" && /^[a-z0-9-]{8,64}$/i.test(value);
 }

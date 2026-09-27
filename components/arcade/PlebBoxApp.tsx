@@ -15,6 +15,7 @@ import {
   PLEB_BOX_STORAGE_KEY,
   isPlebBoxGameId,
   isPlayerId,
+  plebBoxView,
   plebInvoiceFromSubmit,
   sanitizeAlias,
   type PlebBoxGameId,
@@ -371,10 +372,10 @@ export function PlebBoxApp({
   const handleDie = useCallback(
     (value: number) => {
       setScore(value);
-      setMode("result");
       void submitScore(value);
+      setMode(credits < 1 ? "attract" : "result");
     },
-    [submitScore],
+    [credits, submitScore],
   );
 
   async function copyInvoice() {
@@ -400,6 +401,20 @@ export function PlebBoxApp({
   }
 
   const showInvoice = screenMode === "invoice" || pending || settling;
+  const view = plebBoxView({
+    credits,
+    mode: screenMode,
+    game,
+  });
+  const run = front && view === "run";
+
+  useEffect(() => {
+    if (run) document.body.dataset.plebView = "run";
+    else delete document.body.dataset.plebView;
+    return () => {
+      delete document.body.dataset.plebView;
+    };
+  }, [run]);
 
   useEffect(() => {
     if (!showInvoice) return;
@@ -417,7 +432,9 @@ export function PlebBoxApp({
   const gameMemo = `${ARCADE_CREDITS_PER_PAY} credits · ${PLEB_BOX_LABEL} · ${game.toUpperCase()} · SurfSats Arcade`;
 
   return (
-    <div className={`arcade-bay arcade-bay-pleb ${front ? "is-front" : "is-back"}`}>
+    <div
+      className={`arcade-bay arcade-bay-pleb ${front ? "is-front" : "is-back"} ${run ? "is-run" : "is-lobby"}`}
+    >
       {!front ? (
         <button
           type="button"
@@ -439,6 +456,7 @@ export function PlebBoxApp({
         length={length}
         armed={front}
         front={front}
+        run={run}
         onInsert={() => void requestInvoice()}
         onPlay={() => void play()}
         onSelectGame={selectGame}

@@ -12,6 +12,7 @@ import {
   isPlebBoxGameId,
   isWaveRunnerDeepLink,
   parseArcadeMachine,
+  plebBoxView,
   plebInvoiceFromSubmit,
 } from "./arcade.ts";
 
@@ -52,6 +53,37 @@ test("pleb box deep links land on the box, not wave runner", () => {
   assert.equal(isPlebBoxDeepLink("yeet"), true);
   assert.equal(isPlebBoxDeepLink("waverunner"), false);
   assert.equal(isPlebBoxDeepLink("retro"), false);
+});
+
+test("pleb box stays in the lobby until a credit is actually started", () => {
+  assert.equal(
+    plebBoxView({ credits: 0, mode: "attract", game: "noodle" }),
+    "lobby",
+  );
+  assert.equal(
+    plebBoxView({ credits: 0, mode: "invoice", game: "noodle" }),
+    "lobby",
+  );
+  assert.equal(
+    plebBoxView({ credits: 3, mode: "ready", game: "noodle" }),
+    "lobby",
+  );
+  assert.equal(
+    plebBoxView({ credits: 2, mode: "playing", game: "noodle" }),
+    "run",
+  );
+  assert.equal(
+    plebBoxView({ credits: 2, mode: "result", game: "noodle" }),
+    "run",
+  );
+  assert.equal(
+    plebBoxView({ credits: 0, mode: "result", game: "noodle" }),
+    "lobby",
+  );
+  assert.equal(
+    plebBoxView({ credits: 2, mode: "playing", game: "laser" }),
+    "lobby",
+  );
 });
 
 test("pleb invoice opens only after an explicit submit of a full valid callsign", () => {

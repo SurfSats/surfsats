@@ -33,6 +33,7 @@ export function PlebBoxCabinet({
   length,
   armed = true,
   front = true,
+  run = false,
   onInsert,
   onPlay,
   onSelectGame,
@@ -49,6 +50,7 @@ export function PlebBoxCabinet({
   length: number;
   armed?: boolean;
   front?: boolean;
+  run?: boolean;
   onInsert: () => void;
   onPlay: () => void;
   onSelectGame: (id: PlebBoxGameId) => void;
@@ -76,6 +78,13 @@ export function PlebBoxCabinet({
     document.addEventListener("fullscreenchange", onFull);
     return () => document.removeEventListener("fullscreenchange", onFull);
   }, []);
+
+  useEffect(() => {
+    if (run) return;
+    if (document.fullscreenElement === rootRef.current) {
+      void document.exitFullscreen();
+    }
+  }, [run]);
 
   const focusCallsign = useCallback(() => {
     callsignRef.current?.querySelector("input")?.focus();
@@ -124,11 +133,11 @@ export function PlebBoxCabinet({
   return (
     <div
       ref={rootRef}
-      className={front ? "cab-wrap pleb-bleed" : "cab-wrap"}
+      className={run ? "cab-wrap pleb-bleed" : "cab-wrap"}
     >
       <div className="cab-machine cab-machine-pleb">
         <div className="cab-body">
-          {front ? null : (
+          {run ? null : (
             <>
               <p className="cab-plate">{PLEB_BOX_LABEL}</p>
               <Image
@@ -136,9 +145,10 @@ export function PlebBoxCabinet({
                 alt="SurfSats Pleb Box arcade cabinet"
                 width={1712}
                 height={1152}
+                priority={front}
                 unoptimized
                 className="cab-art"
-                sizes="(max-width: 900px) 42vw, 24rem"
+                sizes="(max-width: 900px) 96vw, 58rem"
               />
             </>
           )}
@@ -210,7 +220,7 @@ export function PlebBoxCabinet({
                 <p>CREDITS</p>
                 <CreditLed credits={credits} />
               </div>
-              {front ? (
+              {run ? (
                 <button
                   type="button"
                   className="pleb-full"
