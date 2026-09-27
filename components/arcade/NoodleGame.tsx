@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, type PointerEvent } from "react";
 import {
+  COLS,
   DEAD_BEAT,
   FALLBACK,
+  ROWS,
   SKIN_DIR,
+  applyNoodleView,
   dirFromKey,
   dirFromSwipe,
   noodleView,
@@ -14,6 +17,7 @@ import {
   segmentDir,
   tailDir,
   type Noodle,
+  type NoodleView,
 } from "@/lib/noodle";
 
 type SkinKey = "bg" | "head" | "body" | "tail" | "sat" | "dead";
@@ -54,8 +58,19 @@ export function NoodleGame({
   const diedRef = useRef(false);
   const hudRef = useRef({ score: -1, length: -1 });
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
+  const viewRef = useRef<NoodleView | null>(null);
   const onDieRef = useRef(onDie);
   const onHudRef = useRef(onHud);
+
+  function spawnForView(ghost: boolean) {
+    const view = viewRef.current;
+    return spawnNoodle(
+      Date.now(),
+      ghost,
+      view?.cols ?? COLS,
+      view?.rows ?? ROWS,
+    );
+  }
 
   phaseRef.current = phase;
   armedRef.current = armed;
@@ -81,16 +96,21 @@ export function NoodleGame({
   }, []);
 
   useEffect(() => {
+    const canvas = canvasRef.current;
+    const parent = canvas?.parentElement;
+    if (parent) {
+      viewRef.current = noodleView(parent.clientWidth, parent.clientHeight);
+    }
     const game = gameRef.current;
     if (phase === "ghost") {
-      gameRef.current = spawnNoodle(Date.now(), true);
+      gameRef.current = spawnForView(true);
       diedRef.current = false;
     } else if (phase === "ready") {
-      gameRef.current = spawnNoodle(Date.now(), false);
+      gameRef.current = spawnForView(false);
       diedRef.current = false;
     } else if (phase === "play") {
       if (game.ghost || game.dead) {
-        gameRef.current = spawnNoodle(Date.now(), false);
+        gameRef.current = spawnForView(false);
       } else {
         game.ghost = false;
       }
@@ -116,6 +136,12 @@ export function NoodleGame({
       last = now;
       const game = gameRef.current;
       const phaseNow = phaseRef.current;
+      const parent = surface.parentElement;
+      const cssW = Math.max(1, parent?.clientWidth ?? surface.clientWidth);
+      const cssH = Math.max(1, parent?.clientHeight ?? surface.clientHeight);
+      const view = noodleView(cssW, cssH);
+      viewRef.current = view;
+      applyNoodleView(game, view);
       if (phaseNow === "ghost" || (phaseNow === "play" && armedRef.current)) {
         stepNoodle(game, dt);
       }
@@ -136,7 +162,7 @@ export function NoodleGame({
         diedRef.current = true;
         onDieRef.current(game.score);
       }
-      paint(surface, game, skinRef.current);
+      paint(surface, game, skinRef.current, view);
     };
     raf = window.requestAnimationFrame(draw);
     return () => window.cancelAnimationFrame(raf);
@@ -243,18 +269,20 @@ async function loadCropped(name: SkinKey) {
   return cropImage(img);
 }
 
-function paint(canvas: HTMLCanvasElement, game: Noodle, skin: Skin) {
-  const parent = canvas.parentElement;
-  const cssW = Math.max(1, parent?.clientWidth ?? canvas.clientWidth);
-  const cssH = Math.max(1, parent?.clientHeight ?? canvas.clientHeight);
+function paint(
+  canvas: HTMLCanvasElement,
+  game: Noodle,
+  skin: Skin,
+  view: NoodleView,
+) {
+  const cssW = view.w;
+  const cssH = view.h;
   if (canvas.width !== cssW) canvas.width = cssW;
   if (canvas.height !== cssH) canvas.height = cssH;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, cssW, cssH);
-
-  const view = noodleView(cssW, cssH);
   const bg = skin.bg;
   if (bg) {
     ctx.drawImage(bg.img, bg.x, bg.y, bg.w, bg.h, 0, 0, cssW, cssH);

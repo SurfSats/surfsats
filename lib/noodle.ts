@@ -1,6 +1,7 @@
 export const COLS = 16;
 export const ROWS = 9;
 export const INSET = { x: 0.032, y: 0.04, w: 0.936, h: 0.9 };
+export const SHORT_CELLS = 9;
 export const START_LEN = 3;
 export const BASE_HZ = 8;
 export const MAX_HZ = 10.5;
@@ -30,21 +31,56 @@ export type Noodle = {
   ghost: boolean;
   acc: number;
   seed: number;
+  cols: number;
+  rows: number;
+};
+
+export type NoodleView = {
+  w: number;
+  h: number;
+  cell: number;
+  ox: number;
+  oy: number;
+  gridW: number;
+  gridH: number;
+  cols: number;
+  rows: number;
 };
 
 export type NoodleRng = () => number;
 
-export function noodleView(cssW: number, cssH: number) {
+export function noodleView(cssW: number, cssH: number): NoodleView {
   const w = Math.max(1, Math.floor(cssW));
   const h = Math.max(1, Math.floor(cssH));
   const innerW = w * INSET.w;
   const innerH = h * INSET.h;
-  const cell = Math.max(1, Math.floor(Math.min(innerW / COLS, innerH / ROWS)));
-  const gridW = cell * COLS;
-  const gridH = cell * ROWS;
+  const short = Math.min(innerW, innerH);
+  const cell = Math.max(1, Math.floor(short / SHORT_CELLS));
+  const cols = Math.max(1, Math.floor(innerW / cell));
+  const rows = Math.max(1, Math.floor(innerH / cell));
+  const gridW = cell * cols;
+  const gridH = cell * rows;
   const ox = Math.floor(w * INSET.x + (innerW - gridW) / 2);
   const oy = Math.floor(h * INSET.y + (innerH - gridH) / 2);
-  return { w, h, cell, ox, oy, gridW, gridH };
+  return { w, h, cell, ox, oy, gridW, gridH, cols, rows };
+}
+
+export function applyNoodleView(game: Noodle, view: Pick<NoodleView, "cols" | "rows">) {
+  const cols = Math.max(1, Math.floor(view.cols));
+  const rows = Math.max(1, Math.floor(view.rows));
+  const same = game.cols === cols && game.rows === rows;
+  game.cols = cols;
+  game.rows = rows;
+  if (same) return;
+  const out = game.body.some(
+    (seg) => seg.x < 0 || seg.y < 0 || seg.x >= cols || seg.y >= rows,
+  );
+  const satOut =
+    game.sat.x >= 0 &&
+    (game.sat.x >= cols || game.sat.y >= rows || game.sat.x < 0 || game.sat.y < 0);
+  const fresh =
+    !game.dead && game.score === 0 && game.body.length === START_LEN;
+  if (out || satOut || fresh) respawnNoodle(game);
 }
 
 export function tickSeconds(length: number) {
@@ -61,8 +97,8 @@ export function sameCell(a: Cell, b: Cell) {
   return a.x === b.x && a.y === b.y;
 }
 
-export function inBounds(cell: Cell) {
-  return cell.x >= 0 && cell.x < COLS && cell.y >= 0 && cell.y < ROWS;
+export function inBounds(cell: Cell, cols = COLS, rows = ROWS) {
+  return cell.x >= 0 && cell.x < cols && cell.y >= 0 && cell.y < rows;
 }
 
 export function mulberry32(seed: number): NoodleRng {
@@ -85,8 +121,8 @@ function occupied(body: Cell[], cell: Cell, ignoreTail = false) {
 
 export function placeSat(game: Noodle, rng: NoodleRng) {
   const free: Cell[] = [];
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
+  for (let y = 0; y < game.rows; y++) {
+    for (let x = 0; x < game.cols; x++) {
       const cell = { x, y };
       if (!occupied(game.body, cell)) free.push(cell);
     }
@@ -98,9 +134,16 @@ export function placeSat(game: Noodle, rng: NoodleRng) {
   game.sat = free[Math.floor(rng() * free.length)]!;
 }
 
-export function spawnNoodle(seed = 1, ghost = false): Noodle {
-  const cx = Math.floor(COLS / 2);
-  const cy = Math.floor(ROWS / 2);
+export function spawnNoodle(
+  seed = 1,
+  ghost = false,
+  cols = COLS,
+  rows = ROWS,
+): Noodle {
+  const gridW = Math.max(START_LEN, Math.floor(cols));
+  const gridH = Math.max(1, Math.floor(rows));
+  const cx = Math.floor(gridW / 2);
+  const cy = Math.floor(gridH / 2);
   const body: Cell[] = [];
   for (let i = 0; i < START_LEN; i++) {
     body.push({ x: cx - i, y: cy });
@@ -117,13 +160,15 @@ export function spawnNoodle(seed = 1, ghost = false): Noodle {
     ghost,
     acc: 0,
     seed,
+    cols: gridW,
+    rows: gridH,
   };
   placeSat(game, mulberry32(seed));
   return game;
 }
 
 export function respawnNoodle(game: Noodle) {
-  const next = spawnNoodle(game.seed + 1, game.ghost);
+  const next = spawnNoodle(game.seed + 1, game.ghost, game.cols, game.rows);
   game.body = next.body;
   game.dir = next.dir;
   game.queued = null;
@@ -182,7 +227,7 @@ export function ghostThink(game: Noodle): Dir {
   for (const dir of options) {
     if (isOpposite(game.dir, dir)) continue;
     const next = { x: head.x + dir.x, y: head.y + dir.y };
-    if (!inBounds(next)) continue;
+    if (!inBounds(next, game.cols, game.rows)) continue;
     if (occupied(game.body, next, true)) continue;
     return dir;
   }
@@ -204,7 +249,7 @@ export function tickNoodle(game: Noodle) {
   game.queued = null;
   const head = game.body[0]!;
   const next = { x: head.x + game.dir.x, y: head.y + game.dir.y };
-  if (!inBounds(next)) {
+  if (!inBounds(next, game.cols, game.rows)) {
     kill(game, "wall");
     return;
   }
