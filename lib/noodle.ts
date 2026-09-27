@@ -8,6 +8,28 @@ export const MAX_HZ = 10.5;
 export const DEAD_BEAT = 0.125;
 export const FALLBACK = "#F7931A";
 export const SKIN_DIR = "/arcade/pleb/noodle";
+export const HEAD_SCALE = 1.38;
+export const SAT_SCALE = 0.7;
+export const SEGMENT_OVERLAP = 0.3;
+export const GRID_ALPHA = 0.1;
+
+export function stampSize(
+  cell: number,
+  kind: "head" | "body" | "tail" | "sat" | "dead",
+  aspect = 1,
+) {
+  const c = Math.max(1, Math.floor(cell));
+  if (kind === "sat") {
+    const s = Math.max(1, Math.round(c * SAT_SCALE));
+    return { w: s, h: s };
+  }
+  const scale =
+    kind === "head" || kind === "dead" ? HEAD_SCALE : 1 + SEGMENT_OVERLAP;
+  const along = Math.max(1, Math.round(c * scale));
+  const safe = aspect > 0 ? aspect : 1;
+  const cross = Math.max(1, Math.round(along / safe));
+  return { w: along, h: cross };
+}
 
 export const DIRS = {
   right: { x: 1, y: 0 },

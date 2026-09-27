@@ -5,9 +5,11 @@ import {
   COLS,
   DEAD_BEAT,
   FALLBACK,
+  GRID_ALPHA,
   ROWS,
   SKIN_DIR,
   applyNoodleView,
+  stampSize,
   dirFromKey,
   dirFromSwipe,
   noodleView,
@@ -290,15 +292,21 @@ function paint(
     ctx.fillStyle = FALLBACK;
     ctx.fillRect(0, 0, cssW, cssH);
   }
+  paintGrid(ctx, view);
+
+  const hideCorpse = game.dead && !game.ghost && game.deadT >= DEAD_BEAT;
+  if (hideCorpse) return;
 
   const stamp = (
     piece: Cropped | null,
     cell: { x: number; y: number },
     angle: number,
+    kind: "head" | "body" | "tail" | "sat" | "dead",
   ) => {
-    const size = view.cell;
-    const cx = view.ox + cell.x * size + size / 2;
-    const cy = view.oy + cell.y * size + size / 2;
+    const aspect = piece && piece.h > 0 ? piece.w / piece.h : 1;
+    const box = stampSize(view.cell, kind, aspect);
+    const cx = view.ox + cell.x * view.cell + view.cell / 2;
+    const cy = view.oy + cell.y * view.cell + view.cell / 2;
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(angle);
@@ -310,34 +318,58 @@ function paint(
         piece.y,
         piece.w,
         piece.h,
-        -size / 2,
-        -size / 2,
-        size,
-        size,
+        -box.w / 2,
+        -box.h / 2,
+        box.w,
+        box.h,
       );
     } else {
       ctx.fillStyle = FALLBACK;
-      ctx.fillRect(-size / 2, -size / 2, size, size);
+      ctx.fillRect(-box.w / 2, -box.h / 2, box.w, box.h);
     }
     ctx.restore();
   };
 
-  if (game.sat.x >= 0) stamp(skin.sat, game.sat, 0);
+  if (game.sat.x >= 0) stamp(skin.sat, game.sat, 0, "sat");
 
   const last = game.body.length - 1;
-  for (let i = last; i >= 0; i--) {
-    const cell = game.body[i]!;
-    if (i === 0) {
-      const angle = Math.atan2(game.dir.y, game.dir.x);
-      stamp(game.dead ? skin.dead : skin.head, cell, angle);
-      continue;
-    }
-    if (i === last) {
-      const dir = tailDir(game);
-      stamp(skin.tail, cell, Math.atan2(dir.y, dir.x));
-      continue;
-    }
-    const dir = segmentDir(game, i);
-    stamp(skin.body, cell, Math.atan2(dir.y, dir.x));
+  if (last > 0) {
+    const tail = game.body[last]!;
+    const dir = tailDir(game);
+    stamp(skin.tail, tail, Math.atan2(dir.y, dir.x), "tail");
   }
+  for (let i = last - 1; i >= 1; i--) {
+    const cell = game.body[i]!;
+    const dir = segmentDir(game, i);
+    stamp(skin.body, cell, Math.atan2(dir.y, dir.x), "body");
+  }
+  const head = game.body[0];
+  if (head) {
+    const angle = Math.atan2(game.dir.y, game.dir.x);
+    const deadHead = game.dead;
+    stamp(deadHead ? skin.dead : skin.head, head, angle, deadHead ? "dead" : "head");
+  }
+}
+
+function paintGrid(
+  ctx: CanvasRenderingContext2D,
+  view: NoodleView,
+) {
+  ctx.save();
+  ctx.globalAlpha = GRID_ALPHA;
+  ctx.strokeStyle = "#f4efe6";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let x = 0; x <= view.cols; x++) {
+    const px = view.ox + x * view.cell + 0.5;
+    ctx.moveTo(px, view.oy);
+    ctx.lineTo(px, view.oy + view.gridH);
+  }
+  for (let y = 0; y <= view.rows; y++) {
+    const py = view.oy + y * view.cell + 0.5;
+    ctx.moveTo(view.ox, py);
+    ctx.lineTo(view.ox + view.gridW, py);
+  }
+  ctx.stroke();
+  ctx.restore();
 }

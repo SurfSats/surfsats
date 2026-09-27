@@ -18,6 +18,11 @@ import {
   respawnNoodle,
   noodleView,
   applyNoodleView,
+  stampSize,
+  HEAD_SCALE,
+  SAT_SCALE,
+  SEGMENT_OVERLAP,
+  GRID_ALPHA,
   spawnNoodle,
   stepNoodle,
   tickNoodle,
@@ -93,6 +98,24 @@ test("the last visible column is playable; one step past it is a wall", () => {
   assert.equal(game.dead, true);
   assert.equal(game.reason, "wall");
   assert.equal(game.body[0]?.x, view.cols - 1);
+});
+
+test("stamps overlap into one animal and the head wins", () => {
+  const cell = 40;
+  const head = stampSize(cell, "head", 1.6);
+  const body = stampSize(cell, "body", 2);
+  const tail = stampSize(cell, "tail", 2.4);
+  const sat = stampSize(cell, "sat", 1);
+  assert.ok(HEAD_SCALE >= 1.25 && HEAD_SCALE <= 1.4);
+  assert.ok(Math.abs(head.w / cell - HEAD_SCALE) < 0.05);
+  assert.ok(head.w > body.w);
+  assert.equal(body.w, Math.round(cell * (1 + SEGMENT_OVERLAP)));
+  assert.ok(body.w - cell >= cell * 0.25);
+  assert.ok(body.h < body.w);
+  assert.ok(tail.h < tail.w);
+  assert.equal(sat.w, Math.round(cell * SAT_SCALE));
+  assert.equal(sat.h, sat.w);
+  assert.ok(GRID_ALPHA >= 0.08 && GRID_ALPHA <= 0.12);
 });
 
 test("first frame is a noodle in the center facing right", () => {
