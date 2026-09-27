@@ -27,8 +27,48 @@ export function stampSize(
     kind === "head" || kind === "dead" ? HEAD_SCALE : 1 + SEGMENT_OVERLAP;
   const along = Math.max(1, Math.round(c * scale));
   const safe = aspect > 0 ? aspect : 1;
-  const cross = Math.max(1, Math.round(along / safe));
-  return { w: along, h: cross };
+  if (safe >= 1) {
+    return { w: along, h: Math.max(1, Math.round(along / safe)) };
+  }
+  return { w: Math.max(1, Math.round(along * safe)), h: along };
+}
+
+export function headSprite(dir: Dir) {
+  if (dir.x > 0) return "head-right";
+  if (dir.x < 0) return "head-left";
+  if (dir.y < 0) return "head-up";
+  return "head-down";
+}
+
+export function bodySprite(dir: Dir) {
+  return dir.y !== 0 && dir.x === 0 ? "body-v" : "body-h";
+}
+
+export function tailSprite(dir: Dir) {
+  if (dir.x < 0) return "tail-left";
+  if (dir.x > 0) return "tail-right";
+  if (dir.y < 0) return "tail-up";
+  return "tail-down";
+}
+
+export function spriteFallback(name: string) {
+  if (name.startsWith("head-")) return "head";
+  if (name.startsWith("body-")) return "body";
+  if (name.startsWith("tail-")) return "tail";
+  return name;
+}
+
+export function tailPoint(game: Noodle): Dir {
+  if (game.body.length < 2) {
+    return {
+      x: (game.dir.x === 0 ? 0 : -game.dir.x) as Dir["x"],
+      y: (game.dir.y === 0 ? 0 : -game.dir.y) as Dir["y"],
+    };
+  }
+  return toward(
+    game.body[game.body.length - 2]!,
+    game.body[game.body.length - 1]!,
+  );
 }
 
 export const DIRS = {

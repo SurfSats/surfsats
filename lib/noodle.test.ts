@@ -16,9 +16,15 @@ import {
   noodleTapeText,
   queueDir,
   respawnNoodle,
+  segmentDir,
   noodleView,
   applyNoodleView,
   stampSize,
+  headSprite,
+  bodySprite,
+  tailSprite,
+  tailPoint,
+  spriteFallback,
   HEAD_SCALE,
   SAT_SCALE,
   SEGMENT_OVERLAP,
@@ -98,6 +104,40 @@ test("the last visible column is playable; one step past it is a wall", () => {
   assert.equal(game.dead, true);
   assert.equal(game.reason, "wall");
   assert.equal(game.body[0]?.x, view.cols - 1);
+});
+
+test("turning swaps head and tail faces; corners use the outbound body axis", () => {
+  assert.equal(headSprite(DIRS.right), "head-right");
+  assert.equal(headSprite(DIRS.left), "head-left");
+  assert.equal(headSprite(DIRS.up), "head-up");
+  assert.equal(headSprite(DIRS.down), "head-down");
+  assert.equal(bodySprite(DIRS.right), "body-h");
+  assert.equal(bodySprite(DIRS.up), "body-v");
+  assert.equal(tailSprite(DIRS.left), "tail-left");
+  assert.equal(tailSprite(DIRS.down), "tail-down");
+  assert.equal(spriteFallback("head-up"), "head");
+  assert.equal(spriteFallback("body-v"), "body");
+  assert.equal(spriteFallback("tail-right"), "tail");
+
+  const game = spawnNoodle(1);
+  game.body = [
+    { x: 4, y: 2 },
+    { x: 3, y: 2 },
+    { x: 2, y: 2 },
+    { x: 2, y: 3 },
+    { x: 2, y: 4 },
+  ];
+  game.dir = { ...DIRS.right };
+  assert.equal(bodySprite(segmentDir(game, 2)), "body-h");
+  assert.equal(tailSprite(tailPoint(game)), "tail-down");
+  game.dir = { ...DIRS.up };
+  game.body = [
+    { x: 2, y: 1 },
+    { x: 2, y: 2 },
+    { x: 2, y: 3 },
+  ];
+  assert.equal(headSprite(game.dir), "head-up");
+  assert.equal(tailSprite(tailPoint(game)), "tail-down");
 });
 
 test("stamps overlap into one animal and the head wins", () => {
