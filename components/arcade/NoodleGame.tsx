@@ -9,7 +9,7 @@ import {
   ROWS,
   SKIN_DIR,
   applyNoodleView,
-  bodySprite,
+  bodyTile,
   headSprite,
   spriteFallback,
   stampSize,
@@ -21,7 +21,6 @@ import {
   queueDir,
   spawnNoodle,
   stepNoodle,
-  segmentDir,
   type Noodle,
   type NoodleView,
 } from "@/lib/noodle";
@@ -39,6 +38,10 @@ const ATLAS = [
   "head-down",
   "body-h",
   "body-v",
+  "bend-ne",
+  "bend-nw",
+  "bend-se",
+  "bend-sw",
   "tail-left",
   "tail-right",
   "tail-up",
@@ -51,6 +54,10 @@ type Cropped = {
   y: number;
   w: number;
   h: number;
+  axleX: number;
+  axleY: number;
+  thick: number;
+  along: number;
 };
 type Skin = Record<string, Cropped | null>;
 
@@ -234,44 +241,105 @@ function loadSkinImage(name: string) {
 }
 
 function cropImage(img: HTMLImageElement): Cropped {
+  const whole = {
+    img,
+    x: 0,
+    y: 0,
+    w: img.width,
+    h: img.height,
+    axleX: img.width / 2,
+    axleY: img.height / 2,
+    thick: Math.min(img.width, img.height),
+    along: Math.max(img.width, img.height),
+  };
   const c = document.createElement("canvas");
   c.width = img.width;
   c.height = img.height;
   const ctx = c.getContext("2d", { willReadFrequently: true });
-  if (!ctx) return { img, x: 0, y: 0, w: img.width, h: img.height };
+  if (!ctx) return whole;
   ctx.drawImage(img, 0, 0);
   const data = ctx.getImageData(0, 0, img.width, img.height).data;
+  const rowW = new Int32Array(img.height);
+  const colA = new Int32Array(img.width);
+  const colB = new Int32Array(img.width);
+  colA.fill(-1);
   let minX = img.width;
   let minY = img.height;
   let maxX = 0;
   let maxY = 0;
-  for (let y = 0; y < img.height; y += 2) {
-    for (let x = 0; x < img.width; x += 2) {
+  for (let y = 0; y < img.height; y++) {
+    let a = -1;
+    let b = -1;
+    for (let x = 0; x < img.width; x++) {
       const i = (y * img.width + x) * 4;
-      if (data[i + 3] < 14) continue;
-      if (data[i] + data[i + 1] + data[i + 2] < 20) continue;
-      if (x < minX) minX = x;
-      if (y < minY) minY = y;
-      if (x > maxX) maxX = x;
-      if (y > maxY) maxY = y;
+      if (data[i + 3]! < 14) continue;
+      if (data[i]! + data[i + 1]! + data[i + 2]! < 20) continue;
+      if (a < 0) a = x;
+      b = x;
+      if (colA[x] < 0) colA[x] = y;
+      colB[x] = y;
     }
+    if (a < 0) continue;
+    rowW[y] = b - a;
+    if (a < minX) minX = a;
+    if (b > maxX) maxX = b;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
   }
-  if (maxX <= minX || maxY <= minY) {
-    return { img, x: 0, y: 0, w: img.width, h: img.height };
+  if (maxX <= minX || maxY <= minY) return whole;
+  let maxRow = 0;
+  let maxCol = 0;
+  for (let y = 0; y < img.height; y++) if (rowW[y]! > maxRow) maxRow = rowW[y]!;
+  for (let x = 0; x < img.width; x++) {
+    if (colA[x]! < 0) continue;
+    const span = colB[x]! - colA[x]!;
+    if (span > maxCol) maxCol = span;
   }
+  const wideY: number[] = [];
+  const tallX: number[] = [];
+  const narrowW: number[] = [];
+  for (let y = 0; y < img.height; y++) {
+    const w = rowW[y]!;
+    if (w > maxRow * 0.55) wideY.push(y);
+    else if (w > 8) narrowW.push(w);
+  }
+  for (let x = 0; x < img.width; x++) {
+    if (colA[x]! < 0) continue;
+    if (colB[x]! - colA[x]! > maxCol * 0.55) tallX.push(x);
+  }
+  const mid = (values: number[]) => values[Math.floor(values.length / 2)] ?? 0;
+  narrowW.sort((a, b) => a - b);
+  const cross = Math.min(maxRow, maxCol);
+  const opaqueH = maxY - minY;
   return {
     img,
     x: Math.max(0, minX - 2),
     y: Math.max(0, minY - 2),
     w: Math.min(img.width, maxX - minX + 6),
     h: Math.min(img.height, maxY - minY + 6),
+    axleX: tallX.length ? mid(tallX) : (minX + maxX) / 2,
+    axleY: wideY.length ? mid(wideY) : (minY + maxY) / 2,
+    thick: narrowW.length > opaqueH * 0.15 ? mid(narrowW) : cross,
+    along: Math.max(maxX - minX, maxY - minY),
   };
 }
 
 async function loadCropped(name: string) {
   const img = await loadSkinImage(name);
   if (!img) return null;
-  if (name === "bg") return { img, x: 0, y: 0, w: img.width, h: img.height };
+  if (name === "bg") {
+    return {
+      img,
+      x: 0,
+      y: 0,
+      w: img.width,
+      h: img.height,
+      axleX: img.width / 2,
+      axleY: img.height / 2,
+      thick: 1,
+      along: 1,
+    };
+  }
   return cropImage(img);
 }
 
@@ -290,6 +358,12 @@ async function loadAtlas(): Promise<Skin> {
 
 function skinPiece(skin: Skin, name: string) {
   return skin[name] ?? skin[spriteFallback(name)] ?? null;
+}
+
+function tubeRatio(skin: Skin) {
+  const ref = skin["body-h"];
+  if (!ref || ref.along <= 0 || ref.thick <= 0) return 0.55;
+  return ref.thick / ref.along;
 }
 
 function paint(
@@ -321,7 +395,7 @@ function paint(
   const stamp = (
     piece: Cropped | null,
     cell: { x: number; y: number },
-    kind: "head" | "body" | "tail" | "sat" | "dead",
+    kind: "head" | "body" | "bend" | "tail" | "sat" | "dead",
   ) => {
     const aspect = piece && piece.h > 0 ? piece.w / piece.h : 1;
     const box = stampSize(view.cell, kind, aspect);
@@ -346,6 +420,31 @@ function paint(
     }
   };
 
+  const ratio = tubeRatio(skin);
+  const stampTube = (piece: Cropped | null, cell: { x: number; y: number }) => {
+    const left = view.ox + cell.x * view.cell;
+    const top = view.oy + cell.y * view.cell;
+    if (!piece || piece.thick <= 0) {
+      ctx.fillStyle = FALLBACK;
+      ctx.fillRect(left, top, view.cell, view.cell);
+      return;
+    }
+    const scale = (view.cell * ratio) / piece.thick;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(left, top, view.cell, view.cell);
+    ctx.clip();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(
+      piece.img,
+      left + view.cell / 2 - piece.axleX * scale,
+      top + view.cell / 2 - piece.axleY * scale,
+      piece.img.width * scale,
+      piece.img.height * scale,
+    );
+    ctx.restore();
+  };
+
   if (game.sat.x >= 0) stamp(skin.sat ?? null, game.sat, "sat");
 
   const last = game.body.length - 1;
@@ -355,7 +454,7 @@ function paint(
   }
   for (let i = last - 1; i >= 1; i--) {
     const cell = game.body[i]!;
-    stamp(skinPiece(skin, bodySprite(segmentDir(game, i))), cell, "body");
+    stampTube(skinPiece(skin, bodyTile(game, i)), cell);
   }
   const head = game.body[0];
   if (head) {

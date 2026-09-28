@@ -16,18 +16,17 @@ import {
   noodleTapeText,
   queueDir,
   respawnNoodle,
-  segmentDir,
   noodleView,
   applyNoodleView,
   stampSize,
   headSprite,
   bodySprite,
+  bodyTile,
   tailSprite,
   tailPoint,
   spriteFallback,
   HEAD_SCALE,
   SAT_SCALE,
-  SEGMENT_OVERLAP,
   GRID_ALPHA,
   spawnNoodle,
   stepNoodle,
@@ -106,7 +105,7 @@ test("the last visible column is playable; one step past it is a wall", () => {
   assert.equal(game.body[0]?.x, view.cols - 1);
 });
 
-test("turning swaps head and tail faces; corners use the outbound body axis", () => {
+test("turning swaps head and tail faces; a corner is an L bend", () => {
   assert.equal(headSprite(DIRS.right), "head-right");
   assert.equal(headSprite(DIRS.left), "head-left");
   assert.equal(headSprite(DIRS.up), "head-up");
@@ -117,6 +116,7 @@ test("turning swaps head and tail faces; corners use the outbound body axis", ()
   assert.equal(tailSprite(DIRS.down), "tail-down");
   assert.equal(spriteFallback("head-up"), "head");
   assert.equal(spriteFallback("body-v"), "body");
+  assert.equal(spriteFallback("bend-ne"), "body");
   assert.equal(spriteFallback("tail-right"), "tail");
 
   const game = spawnNoodle(1);
@@ -128,7 +128,7 @@ test("turning swaps head and tail faces; corners use the outbound body axis", ()
     { x: 2, y: 4 },
   ];
   game.dir = { ...DIRS.right };
-  assert.equal(bodySprite(segmentDir(game, 2)), "body-h");
+  assert.equal(bodyTile(game, 2), "bend-se");
   assert.equal(tailSprite(tailPoint(game)), "tail-down");
   game.dir = { ...DIRS.up };
   game.body = [
@@ -140,6 +140,42 @@ test("turning swaps head and tail faces; corners use the outbound body axis", ()
   assert.equal(tailSprite(tailPoint(game)), "tail-down");
 });
 
+test("a box noodle uses an L bend, not an H stump into a V stump", () => {
+  const game = spawnNoodle(1);
+  game.dir = { ...DIRS.right };
+  game.body = [
+    { x: 3, y: 1 },
+    { x: 2, y: 1 },
+    { x: 1, y: 1 },
+    { x: 1, y: 2 },
+    { x: 1, y: 3 },
+  ];
+  assert.equal(bodyTile(game, 1), "body-h");
+  assert.equal(bodyTile(game, 2), "bend-se");
+  assert.equal(bodyTile(game, 3), "body-v");
+
+  game.body = [
+    { x: 2, y: 2 },
+    { x: 1, y: 2 },
+    { x: 1, y: 1 },
+  ];
+  assert.equal(bodyTile(game, 1), "bend-ne");
+
+  game.body = [
+    { x: 0, y: 2 },
+    { x: 1, y: 2 },
+    { x: 1, y: 1 },
+  ];
+  assert.equal(bodyTile(game, 1), "bend-nw");
+
+  game.body = [
+    { x: 0, y: 2 },
+    { x: 1, y: 2 },
+    { x: 1, y: 3 },
+  ];
+  assert.equal(bodyTile(game, 1), "bend-sw");
+});
+
 test("stamps overlap into one animal and the head wins", () => {
   const cell = 40;
   const head = stampSize(cell, "head", 1.6);
@@ -149,9 +185,14 @@ test("stamps overlap into one animal and the head wins", () => {
   assert.ok(HEAD_SCALE >= 1.25 && HEAD_SCALE <= 1.4);
   assert.ok(Math.abs(head.w / cell - HEAD_SCALE) < 0.05);
   assert.ok(head.w > body.w);
-  assert.equal(body.w, Math.round(cell * (1 + SEGMENT_OVERLAP)));
-  assert.ok(body.w - cell >= cell * 0.25);
+  assert.ok(body.w <= cell);
+  assert.ok(body.h <= cell);
   assert.ok(body.h < body.w);
+  const tall = stampSize(cell, "body", 0.5);
+  assert.ok(tall.h <= cell);
+  assert.ok(tall.w <= cell);
+  const bend = stampSize(cell, "bend", 1);
+  assert.ok(bend.w <= cell && bend.h <= cell);
   assert.ok(tail.h < tail.w);
   assert.equal(sat.w, Math.round(cell * SAT_SCALE));
   assert.equal(sat.h, sat.w);

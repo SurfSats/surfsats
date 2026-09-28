@@ -15,7 +15,7 @@ export const GRID_ALPHA = 0.1;
 
 export function stampSize(
   cell: number,
-  kind: "head" | "body" | "tail" | "sat" | "dead",
+  kind: "head" | "body" | "bend" | "tail" | "sat" | "dead",
   aspect = 1,
 ) {
   const c = Math.max(1, Math.floor(cell));
@@ -23,10 +23,14 @@ export function stampSize(
     const s = Math.max(1, Math.round(c * SAT_SCALE));
     return { w: s, h: s };
   }
+  const safe = aspect > 0 ? aspect : 1;
+  if (kind === "body" || kind === "bend") {
+    if (safe >= 1) return { w: c, h: Math.max(1, Math.round(c / safe)) };
+    return { w: Math.max(1, Math.round(c * safe)), h: c };
+  }
   const scale =
     kind === "head" || kind === "dead" ? HEAD_SCALE : 1 + SEGMENT_OVERLAP;
   const along = Math.max(1, Math.round(c * scale));
-  const safe = aspect > 0 ? aspect : 1;
   if (safe >= 1) {
     return { w: along, h: Math.max(1, Math.round(along / safe)) };
   }
@@ -44,6 +48,33 @@ export function bodySprite(dir: Dir) {
   return dir.y !== 0 && dir.x === 0 ? "body-v" : "body-h";
 }
 
+export function bodyTile(game: Noodle, index: number): string {
+  const here = game.body[index];
+  if (!here) return "body-h";
+  const ahead = game.body[index - 1];
+  const behind = game.body[index + 1];
+  if (!ahead || !behind) {
+    const other = ahead ?? behind;
+    return bodySprite(other ? toward(here, other) : game.dir);
+  }
+  const out = toward(here, ahead);
+  const into = toward(behind, here);
+  const sameAxis = (out.x !== 0 && into.x !== 0) || (out.y !== 0 && into.y !== 0);
+  if (sameAxis || (!out.x && !out.y) || (!into.x && !into.y)) {
+    const axis = out.x || out.y ? out : into;
+    return bodySprite(axis.x || axis.y ? axis : game.dir);
+  }
+  const arm = toward(here, behind);
+  const north = out.y < 0 || arm.y < 0;
+  const south = out.y > 0 || arm.y > 0;
+  const east = out.x > 0 || arm.x > 0;
+  const west = out.x < 0 || arm.x < 0;
+  if (north && east) return "bend-ne";
+  if (north && west) return "bend-nw";
+  if (south && east) return "bend-se";
+  return "bend-sw";
+}
+
 export function tailSprite(dir: Dir) {
   if (dir.x < 0) return "tail-left";
   if (dir.x > 0) return "tail-right";
@@ -53,7 +84,7 @@ export function tailSprite(dir: Dir) {
 
 export function spriteFallback(name: string) {
   if (name.startsWith("head-")) return "head";
-  if (name.startsWith("body-")) return "body";
+  if (name.startsWith("body-") || name.startsWith("bend-")) return "body";
   if (name.startsWith("tail-")) return "tail";
   return name;
 }
