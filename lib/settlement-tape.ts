@@ -1,3 +1,4 @@
+import { laserTapeText } from "./laser.ts";
 import { noodleTapeText } from "./noodle.ts";
 import { slabTapeText } from "./slab.ts";
 import { waveRunnerTapeText } from "./wave-runner.ts";
@@ -115,6 +116,23 @@ export function tapeFromNoodle(run: {
     machine: "arcade",
     actor,
     text: noodleTapeText(actor, run.score),
+    createdAt: run.createdAt ?? new Date().toISOString(),
+    href: "/arcade",
+  };
+}
+
+export function tapeFromLaser(run: {
+  callsign: string;
+  score: number;
+  createdAt?: string;
+  playId?: string;
+}): TapeEvent {
+  const actor = formatTapeActor(run.callsign);
+  return {
+    id: `arcade-laser:${run.playId || `${actor}-${Math.floor(run.score)}-${run.createdAt ?? ""}`}`,
+    machine: "arcade",
+    actor,
+    text: laserTapeText(actor, run.score),
     createdAt: run.createdAt ?? new Date().toISOString(),
     href: "/arcade",
   };

@@ -15,6 +15,7 @@ import {
   PLEB_BOX_STORAGE_KEY,
   isPlebBoxGameId,
   isPlayerId,
+  plebBoxPlayable,
   plebBoxView,
   plebInvoiceFromSubmit,
   sanitizeAlias,
@@ -187,7 +188,7 @@ export function PlebBoxApp({
           setWaiting(false);
           beginSettle(() => {
             setCredits(creditsNext);
-            setMode(creditsNext > 0 && game === "noodle" ? "ready" : "attract");
+            setMode(creditsNext > 0 && plebBoxPlayable(game) ? "ready" : "attract");
             setPaymentHash("");
             setPaymentRequest("");
           });
@@ -233,16 +234,12 @@ export function PlebBoxApp({
   function selectGame(id: PlebBoxGameId) {
     if (mode === "invoice") return;
     if (id === game) return;
-    if (mode === "playing" && game === "noodle" && id !== "noodle") {
-      void submitScore(score);
+    if (mode === "playing" && plebBoxPlayable(game)) {
+      void submitScore(score, game);
     }
     setGame(id);
     setError(null);
-    if (id === "noodle") {
-      setMode(credits > 0 ? "ready" : "attract");
-    } else {
-      setMode("attract");
-    }
+    setMode(plebBoxPlayable(id) && credits > 0 ? "ready" : "attract");
   }
 
   async function requestInvoice() {
@@ -284,7 +281,7 @@ export function PlebBoxApp({
         !data.payment_request.toLowerCase().startsWith("ln")
       ) {
         setError(data.error || "could not create invoice. try again");
-        setMode(credits > 0 && game === "noodle" ? "ready" : "attract");
+        setMode(credits > 0 && plebBoxPlayable(game) ? "ready" : "attract");
         return;
       }
       setPaymentRequest(data.payment_request);
@@ -298,14 +295,15 @@ export function PlebBoxApp({
       setMode("invoice");
     } catch {
       setError("could not create invoice. try again");
-      setMode(credits > 0 && game === "noodle" ? "ready" : "attract");
+      setMode(credits > 0 && plebBoxPlayable(game) ? "ready" : "attract");
     } finally {
       setPending(false);
     }
   }
 
   const submitScore = useCallback(
-    async (value: number) => {
+    async (value: number, which: PlebBoxGameId = game) => {
+      if (!plebBoxPlayable(which)) return;
       try {
         await fetch("/api/arcade/score", {
           method: "POST",
@@ -314,18 +312,18 @@ export function PlebBoxApp({
             playerId,
             playId: playIdRef.current ?? playId,
             score: value,
-            game: "noodle",
+            game: which,
           }),
         });
       } catch {
         // play is already recorded
       }
     },
-    [playId, playerId],
+    [game, playId, playerId],
   );
 
   const play = useCallback(async () => {
-    if (game !== "noodle") return;
+    if (!plebBoxPlayable(game)) return;
     if (mode === "invoice" || mode === "playing" || startLock.current) return;
     const next = sanitizeAlias(alias);
     if (!next.ok) {
@@ -345,7 +343,7 @@ export function PlebBoxApp({
       const response = await fetch("/api/arcade/play", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, game: "noodle" }),
+        body: JSON.stringify({ playerId, game }),
       });
       const data = (await response.json()) as {
         error?: string;
@@ -390,7 +388,7 @@ export function PlebBoxApp({
   }
 
   function cancelPay() {
-    setMode(credits > 0 && game === "noodle" ? "ready" : "attract");
+    setMode(credits > 0 && plebBoxPlayable(game) ? "ready" : "attract");
     setPaymentHash("");
     setPaymentRequest("");
     setQrSrc("");

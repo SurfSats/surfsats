@@ -3,6 +3,7 @@ import { ARCADE_GAME_ID, isPlayerId, normalizePlayGame } from "@/lib/arcade";
 import { arcadeLog } from "@/lib/arcade-log";
 import { arcadeStoreKind, getArcadePlayer, submitArcadeScore } from "@/lib/arcade-store";
 import {
+  announceLaserTape,
   announceNoodleTape,
   announceWaveRunnerTape,
 } from "@/lib/settlement-tape-announce";
@@ -52,6 +53,14 @@ export async function POST(request: Request) {
     if (game === "noodle") {
       const player = await getArcadePlayer(playerId);
       announceNoodleTape({
+        callsign: player?.alias || "anon",
+        score,
+        playId: playId || undefined,
+      });
+    }
+    if (game === "laser") {
+      const player = await getArcadePlayer(playerId);
+      announceLaserTape({
         callsign: player?.alias || "anon",
         score,
         playId: playId || undefined,

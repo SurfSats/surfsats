@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { LaserGame, type LaserHud, type LaserPhase } from "@/components/arcade/LaserGame";
 import { NoodleGame, type NoodlePhase } from "@/components/arcade/NoodleGame";
 import type { ArcadeScreenMode } from "@/components/arcade/ArcadeScreen";
 import { verbPressProps } from "@/lib/verb-press";
@@ -38,10 +40,12 @@ export function PlebBoxScreen({
 }) {
   const tab = plebBoxGame(game);
   const noodle = game === "noodle";
+  const laser = game === "laser";
+  const live = noodle || laser;
   const paying = mode === "invoice";
-  const playing = noodle && mode === "playing";
-  const result = noodle && mode === "result";
-  const ready = noodle && mode === "ready";
+  const playing = live && mode === "playing";
+  const result = live && mode === "result";
+  const ready = live && mode === "ready";
   const phase: NoodlePhase = playing
     ? "play"
     : result
@@ -49,6 +53,13 @@ export function PlebBoxScreen({
       : ready
         ? "ready"
         : "ghost";
+  const laserPhase: LaserPhase = phase;
+  const [laserHud, setLaserHud] = useState<LaserHud>({
+    time: 0,
+    sats: 0,
+    hp: 3,
+    score: 0,
+  });
 
   return (
     <div
@@ -56,7 +67,7 @@ export function PlebBoxScreen({
         "cab-crt",
         "cab-crt-photo",
         "cab-crt-pleb",
-        noodle ? "has-field" : "",
+        live ? "has-field" : "",
         playing || result ? "cab-crt-live" : "",
       ]
         .filter(Boolean)
@@ -71,6 +82,17 @@ export function PlebBoxScreen({
             onHud={onHud}
           />
         ) : null}
+        {laser ? (
+          <LaserGame
+            phase={laserPhase}
+            armed={armed}
+            onDie={onDie}
+            onHud={(hud) => {
+              setLaserHud(hud);
+              onHud(hud.score, hud.hp);
+            }}
+          />
+        ) : null}
       </div>
       <div className="cab-crt-glass" aria-hidden="true" />
       <div className="cab-crt-scan" aria-hidden="true" />
@@ -78,6 +100,12 @@ export function PlebBoxScreen({
       {noodle && (playing || result) ? (
         <p className="cab-crt-hud">
           SCORE {score} · LEN {length}
+        </p>
+      ) : null}
+
+      {laser && playing ? (
+        <p className="cab-crt-hud">
+          TIME {laserHud.time} · SATS {laserHud.sats} · HP {laserHud.hp}
         </p>
       ) : null}
 
@@ -95,7 +123,9 @@ export function PlebBoxScreen({
       {result ? (
         <div className="cab-crt-result">
           <p className="cab-crt-insert">SCORE {score}</p>
-          <p className="cab-crt-sub">LEN {length}</p>
+          <p className="cab-crt-sub">
+            {laser ? `TIME ${laserHud.time} · SATS ${laserHud.sats}` : `LEN ${length}`}
+          </p>
           <button
             type="button"
             className="cab-crt-next"
@@ -115,12 +145,12 @@ export function PlebBoxScreen({
         >
           <p className="cab-crt-insert cab-crt-blink">PRESS START</p>
           <p className="cab-crt-sub">
-            NOODLE · {credits} CREDIT{credits === 1 ? "" : "S"}
+            {laser ? "LASER" : "NOODLE"} · {credits} CREDIT{credits === 1 ? "" : "S"}
           </p>
         </button>
       ) : null}
 
-      {!noodle && !paying ? (
+      {!live && !paying ? (
         <div className="cab-crt-attract pleb-attract">
           <p className="cab-crt-insert">{tab.label}</p>
           <p className="cab-crt-sub">
@@ -129,7 +159,7 @@ export function PlebBoxScreen({
         </div>
       ) : null}
 
-      {noodle && !paying && !playing && !result && !ready ? (
+      {live && !paying && !playing && !result && !ready ? (
         <div className="cab-crt-attract pleb-attract">
           <button
             type="button"

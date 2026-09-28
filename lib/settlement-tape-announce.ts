@@ -6,6 +6,7 @@ import {
   publishTape,
   tapeFromArcade,
   tapeFromGraffiti,
+  tapeFromLaser,
   tapeFromNoodle,
   tapeFromRadio,
   tapeFromSlab,
@@ -28,6 +29,20 @@ export function announceNoodleTape(run: {
 }) {
   publishTape(
     tapeFromNoodle({
+      callsign: run.callsign,
+      score: run.score,
+      playId: run.playId,
+    }),
+  );
+}
+
+export function announceLaserTape(run: {
+  callsign: string;
+  score: number;
+  playId?: string;
+}) {
+  publishTape(
+    tapeFromLaser({
       callsign: run.callsign,
       score: run.score,
       playId: run.playId,

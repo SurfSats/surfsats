@@ -18,6 +18,7 @@ import {
   ARCADE_PRICE_SATS,
   PLEB_BOX_GAMES,
   PLEB_BOX_LABEL,
+  plebBoxPlayable,
   sanitizeAlias,
   type PlebBoxGameId,
 } from "@/lib/arcade";
@@ -62,7 +63,7 @@ export function PlebBoxCabinet({
   const playing = mode === "playing";
   const showInsert = credits < 1 && !paying && !playing;
   const canPlay =
-    game === "noodle" &&
+    plebBoxPlayable(game) &&
     credits > 0 &&
     !paying &&
     !playing &&

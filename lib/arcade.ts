@@ -128,12 +128,16 @@ export function plebInvoiceFromSubmit(
 
 export type PlebBoxView = "lobby" | "run";
 
+export function plebBoxPlayable(game?: string) {
+  return game === "noodle" || game === "laser";
+}
+
 export function plebBoxView(input: {
   credits: number;
   mode: "attract" | "invoice" | "ready" | "playing" | "result";
   game?: string;
 }): PlebBoxView {
-  if (input.game && input.game !== "noodle") return "lobby";
+  if (input.game && !plebBoxPlayable(input.game)) return "lobby";
   if (input.mode === "playing") return "run";
   if (input.mode === "result" && input.credits > 0) return "run";
   return "lobby";

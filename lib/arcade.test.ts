@@ -81,7 +81,27 @@ test("pleb box stays in the lobby until a credit is actually started", () => {
     "lobby",
   );
   assert.equal(
+    plebBoxView({ credits: 0, mode: "attract", game: "laser" }),
+    "lobby",
+  );
+  assert.equal(
+    plebBoxView({ credits: 3, mode: "ready", game: "laser" }),
+    "lobby",
+  );
+  assert.equal(
     plebBoxView({ credits: 2, mode: "playing", game: "laser" }),
+    "run",
+  );
+  assert.equal(
+    plebBoxView({ credits: 2, mode: "result", game: "laser" }),
+    "run",
+  );
+  assert.equal(
+    plebBoxView({ credits: 0, mode: "result", game: "laser" }),
+    "lobby",
+  );
+  assert.equal(
+    plebBoxView({ credits: 2, mode: "playing", game: "yeet" }),
     "lobby",
   );
 });
