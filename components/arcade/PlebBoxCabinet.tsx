@@ -23,10 +23,10 @@ import {
 } from "@/lib/arcade";
 
 const PLEB_MARQUEE = {
-  noodle: { src: "/arcade/pleb/marquee-noodle.png", focus: "center" },
-  laser: { src: "/arcade/pleb/marquee-laser.png", focus: "center" },
-  yeet: { src: "/arcade/pleb/marquee-yeet.png", focus: "center 26%" },
-} as const satisfies Record<PlebBoxGameId, { src: string; focus: string }>;
+  noodle: "/arcade/pleb/marquee-noodle.png",
+  laser: "/arcade/pleb/marquee-laser.png",
+  yeet: "/arcade/pleb/marquee-yeet.png",
+} as const satisfies Record<PlebBoxGameId, string>;
 
 export function PlebBoxCabinet({
   alias,
@@ -158,15 +158,17 @@ export function PlebBoxCabinet({
               {front ? (
                 <div className="pleb-marquee-board" aria-hidden="true">
                   <Image
-                    src={PLEB_MARQUEE[game].src}
+                    src={PLEB_MARQUEE[game]}
                     alt=""
                     fill
                     unoptimized
                     priority
                     sizes="(max-width: 900px) 70vw, 36rem"
+                    className="pleb-marquee-fill"
                     style={{
-                      objectFit: "cover",
-                      objectPosition: PLEB_MARQUEE[game].focus,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "fill",
                     }}
                   />
                 </div>

@@ -5306,6 +5306,12 @@ body:has(.graffiti-page) .site-watermark {
   pointer-events: none;
 }
 
+.cab-machine-pleb .pleb-marquee-board .pleb-marquee-fill {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
 .cab-machine-pleb .pleb-marquee {
   position: absolute;
   top: 16.8%;
