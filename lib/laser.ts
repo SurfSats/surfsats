@@ -7,6 +7,10 @@ export const LASER_SLIME_HP = 1;
 export const LASER_PRINTER_HP = 3;
 export const LASER_DEAD_BEAT = 0.45;
 export const LASER_DIR = "/arcade/pleb/laser";
+/** Stamped body height as a fraction of the short side. Eyes sit on that body. */
+export const LASER_BODY = 0.22;
+/** Drawn beam length as a fraction of the short side. The hit is still a point. */
+export const LASER_BEAM_VIS = 0.2;
 
 const PLAYER_SPEED = 0.42;
 const BEAM_SPEED = 1.15;
@@ -64,6 +68,14 @@ const FACE: Record<LaserFacing, { x: number; y: number }> = {
   left: { x: -1, y: 0 },
   up: { x: 0, y: -1 },
   down: { x: 0, y: 1 },
+};
+
+/** Eye on the stamped body, fraction of body height from center. Negative y is the head. */
+const EYE: Record<LaserFacing, { x: number; y: number }> = {
+  right: { x: 0, y: -0.38 },
+  left: { x: 0, y: -0.38 },
+  up: { x: 0, y: -0.42 },
+  down: { x: 0, y: -0.38 },
 };
 
 export function laserTapeText(actor: string, n: number) {
@@ -188,12 +200,23 @@ function ghostMove(time: number): LaserMove {
   };
 }
 
-function fireBeam(game: Laser) {
+export function laserMuzzle(game: Pick<Laser, "x" | "y" | "w" | "h" | "facing">) {
+  const u = Math.max(1, Math.min(game.w, game.h));
+  const body = u * LASER_BODY;
+  const eye = EYE[game.facing];
   const dir = FACE[game.facing];
-  const pad = radiiOf(game).player * 0.85;
+  const half = (u * LASER_BEAM_VIS) / 2;
+  return {
+    x: game.x + eye.x * body + dir.x * half,
+    y: game.y + eye.y * body + dir.y * half,
+  };
+}
+
+function fireBeam(game: Laser) {
+  const from = laserMuzzle(game);
   game.beams.push({
-    x: game.x + dir.x * pad,
-    y: game.y + dir.y * pad,
+    x: from.x,
+    y: from.y,
     facing: game.facing,
   });
 }

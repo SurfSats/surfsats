@@ -11,6 +11,7 @@ import {
   enemyKind,
   facingFrom,
   laserHeldMove,
+  laserMuzzle,
   laserPlayerSprite,
   laserScore,
   laserTapeText,
@@ -77,6 +78,19 @@ test("diagonal travel matches cardinal speed", () => {
   run(diag, 0.4);
   const traveled = Math.hypot(diag.x - p.x, diag.y - p.y);
   assert.ok(Math.abs(traveled - straight) < 1.5);
+});
+
+test("a beam leaves the eyes and still drops a slime", () => {
+  const game = spawnLaser(4, false, 480, 320);
+  const from = laserMuzzle(game);
+  assert.ok(from.y < game.y - 8);
+  assert.ok(from.x > game.x);
+  game.spawnAcc = -100;
+  game.enemies = [
+    { id: 1, kind: "slime", x: game.x + 90, y: game.y, hp: 1 },
+  ];
+  run(game, 0.6);
+  assert.equal(game.enemies.length, 0);
 });
 
 test("a beam drops a slime and a sat is worth one", () => {

@@ -17,7 +17,6 @@ import {
   ARCADE_CREDITS_PER_PAY,
   ARCADE_PRICE_SATS,
   PLEB_BOX_GAMES,
-  PLEB_BOX_LABEL,
   plebBoxPlayable,
   sanitizeAlias,
   type PlebBoxGameId,
@@ -140,7 +139,6 @@ export function PlebBoxCabinet({
         <div className="cab-body">
           {run ? null : (
             <>
-              <p className="cab-plate">{PLEB_BOX_LABEL}</p>
               <Image
                 src="/arcade-cabinet-wide.png"
                 alt="SurfSats Pleb Box arcade cabinet"
@@ -151,6 +149,23 @@ export function PlebBoxCabinet({
                 className="cab-art"
                 sizes="(max-width: 900px) 96vw, 58rem"
               />
+              <div className="pleb-marquee" role="tablist" aria-label="Pleb Box games">
+                {PLEB_BOX_GAMES.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={game === item.id}
+                    className={
+                      game === item.id ? "pleb-tab is-on" : "pleb-tab"
+                    }
+                    disabled={paying}
+                    onClick={() => onSelectGame(item.id)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </>
           )}
 
@@ -172,25 +187,27 @@ export function PlebBoxCabinet({
         </div>
 
         <div className="pleb-dock">
-          <div className="cab-games" role="tablist" aria-label="Pleb Box games">
-            {PLEB_BOX_GAMES.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={game === item.id}
-                className={
-                  game === item.id
-                    ? "cab-game-btn pleb-tab is-on"
-                    : "cab-game-btn pleb-tab"
-                }
-                disabled={paying}
-                onClick={() => onSelectGame(item.id)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+          {run ? (
+            <div className="cab-games" role="tablist" aria-label="Pleb Box games">
+              {PLEB_BOX_GAMES.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={game === item.id}
+                  className={
+                    game === item.id
+                      ? "cab-game-btn pleb-tab is-on"
+                      : "cab-game-btn pleb-tab"
+                  }
+                  disabled={paying}
+                  onClick={() => onSelectGame(item.id)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
 
           <div className="cab-coin cab-coin-plate" id="arcade-coin-pleb">
             <div className="cab-coin-top">

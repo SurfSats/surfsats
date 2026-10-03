@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, type PointerEvent } from "react";
 import {
+  LASER_BEAM_VIS,
+  LASER_BODY,
   LASER_DEAD_BEAT,
   LASER_DIR,
   laserHeldMove,
@@ -13,6 +15,9 @@ import {
   type Laser,
   type LaserFacing,
 } from "@/lib/laser";
+
+/** beam.png core to the right of the baked mark, so the shot is a thin line. */
+const BEAM_CORE = { x: 500, y: 316, w: 144, h: 26 };
 
 const ATLAS = [
   "bg",
@@ -123,10 +128,13 @@ export function LaserGame({
       last = now;
       const game = gameRef.current;
       const phaseNow = phaseRef.current;
+      const poster = phaseNow === "ghost";
       const parent = surface.parentElement;
-      game.w = Math.max(32, parent?.clientWidth ?? surface.clientWidth);
-      game.h = Math.max(32, parent?.clientHeight ?? surface.clientHeight);
+      const host = surface.clientWidth > 32 ? surface : parent;
+      game.w = Math.max(32, host?.clientWidth ?? surface.clientWidth);
+      game.h = Math.max(32, host?.clientHeight ?? surface.clientHeight);
       if (
+        !poster &&
         !game.dead &&
         game.time === 0 &&
         game.enemies.length === 0 &&
@@ -139,7 +147,7 @@ export function LaserGame({
       if (phaseNow === "play" && armedRef.current && heldRef.current.size > 0) {
         game.move = laserHeldMove(heldRef.current);
       }
-      if (phaseNow === "ghost" || (phaseNow === "play" && armedRef.current)) {
+      if (!poster && phaseNow === "play" && armedRef.current) {
         stepLaser(game, dt);
       }
       const hud = {
@@ -165,7 +173,7 @@ export function LaserGame({
         diedRef.current = true;
         onDieRef.current(hud.score);
       }
-      paint(surface, game, skinRef.current);
+      paint(surface, game, skinRef.current, poster);
     };
     raf = window.requestAnimationFrame(draw);
     return () => window.cancelAnimationFrame(raf);
@@ -217,15 +225,17 @@ export function LaserGame({
   }
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="laser-canvas"
-      aria-label="LASER. Arrows or WASD. Eyes fire."
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-    />
+    <div className="laser-stage">
+      <canvas
+        ref={canvasRef}
+        className="laser-canvas"
+        aria-label="LASER. Arrows or WASD. Eyes fire."
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      />
+    </div>
   );
 }
 
@@ -301,15 +311,29 @@ async function loadAtlas(): Promise<Skin> {
         skin[name] = null;
         return;
       }
-      skin[name] = name === "bg"
-        ? { img, x: 0, y: 0, w: img.width, h: img.height }
-        : cropImage(img);
+      if (name === "bg") {
+        skin[name] = { img, x: 0, y: 0, w: img.width, h: img.height };
+        return;
+      }
+      if (name === "beam") {
+        const x = Math.min(BEAM_CORE.x, Math.max(0, img.width - 1));
+        const y = Math.min(BEAM_CORE.y, Math.max(0, img.height - 1));
+        skin[name] = {
+          img,
+          x,
+          y,
+          w: Math.max(1, Math.min(BEAM_CORE.w, img.width - x)),
+          h: Math.max(1, Math.min(BEAM_CORE.h, img.height - y)),
+        };
+        return;
+      }
+      skin[name] = cropImage(img);
     }),
   );
   return skin;
 }
 
-function paint(canvas: HTMLCanvasElement, game: Laser, skin: Skin) {
+function paint(canvas: HTMLCanvasElement, game: Laser, skin: Skin, poster: boolean) {
   const cssW = Math.max(1, Math.floor(game.w));
   const cssH = Math.max(1, Math.floor(game.h));
   if (canvas.width !== cssW) canvas.width = cssW;
@@ -318,6 +342,10 @@ function paint(canvas: HTMLCanvasElement, game: Laser, skin: Skin) {
   if (!ctx) return;
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, cssW, cssH);
+  if (poster) {
+    paintPoster(ctx, skin, cssW, cssH);
+    return;
+  }
   const bg = skin.bg;
   if (bg) {
     const tile = Math.max(48, Math.round(Math.min(cssW, cssH) * 0.45));
@@ -349,10 +377,104 @@ function paint(canvas: HTMLCanvasElement, game: Laser, skin: Skin) {
     const piece = enemy.kind === "printer" ? skin.printer : skin.slime;
     stamp(piece, enemy.x, enemy.y, short * (enemy.kind === "printer" ? 0.2 : 0.12));
   }
-  for (const beam of game.beams) stampBeam(ctx, skin.beam, beam.x, beam.y, beam.facing, short * 0.16);
-  const body = short * 0.22;
+  const body = short * LASER_BODY;
   if (game.dead) stamp(skin.dead, game.x, game.y, body);
   else stamp(skin[laserPlayerSprite(game.facing)], game.x, game.y, body);
+  for (const beam of game.beams) {
+    stampBeam(ctx, skin.beam, beam.x, beam.y, beam.facing, short * LASER_BEAM_VIS);
+  }
+}
+
+function paintPoster(
+  ctx: CanvasRenderingContext2D,
+  skin: Skin,
+  cssW: number,
+  cssH: number,
+) {
+  ctx.fillStyle = "#100c09";
+  ctx.fillRect(0, 0, cssW, cssH);
+  const bg = skin.bg;
+  if (bg) {
+    ctx.globalAlpha = 0.5;
+    ctx.drawImage(bg.img, bg.x, bg.y, bg.w, bg.h, 0, 0, cssW, cssH);
+    ctx.globalAlpha = 1;
+  }
+  const margin = Math.round(Math.min(cssW, cssH) * 0.07);
+  const title = "LASER";
+  const line = "WALK · EYES FIRE";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#fff4d0";
+  const titleSize = fitFont(ctx, title, cssW - margin * 2, cssH * 0.2);
+  ctx.font = `800 ${titleSize}px "Arial Black", Impact, sans-serif`;
+  const titleY = margin + titleSize * 0.55;
+  ctx.fillText(title, cssW / 2, titleY);
+  ctx.fillStyle = "#7af4ff";
+  const lineSize = fitFont(ctx, line, cssW - margin * 2, cssH * 0.09);
+  ctx.font = `700 ${lineSize}px "Arial Black", Impact, sans-serif`;
+  const lineY = titleY + titleSize * 0.55 + lineSize * 0.7;
+  ctx.fillText(line, cssW / 2, lineY);
+
+  const player = skin["player-down"];
+  const top = lineY + lineSize * 0.85;
+  const ph = Math.max(8, (cssH - top - margin) * 0.96);
+  const aspect = player && player.h > 0 ? player.w / player.h : 0.37;
+  const pw = ph * aspect;
+  const px = cssW * 0.3;
+  const py = top + ph / 2;
+  const eyeX = px + pw * 0.34;
+  const eyeY = py - ph / 2 + ph * 0.13;
+  const slime = skin.slime;
+  const slimeH = Math.max(8, ph * 0.3);
+  const slimeAspect = slime && slime.h > 0 ? slime.w / slime.h : 1;
+  const slimeW = slimeH * slimeAspect;
+  const room = cssW - margin - slimeW - eyeX;
+  const beamLen = Math.max(16, Math.min(cssW * 0.34, room));
+  stampBeam(ctx, skin.beam, eyeX + beamLen / 2, eyeY, "right", beamLen);
+  if (player) {
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(
+      player.img,
+      player.x,
+      player.y,
+      player.w,
+      player.h,
+      px - pw / 2,
+      py - ph / 2,
+      pw,
+      ph,
+    );
+  }
+  if (slime) {
+    const sx = Math.min(cssW - margin - slimeW / 2, eyeX + beamLen + slimeW * 0.2);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(
+      slime.img,
+      slime.x,
+      slime.y,
+      slime.w,
+      slime.h,
+      sx - slimeW / 2,
+      eyeY - slimeH / 2,
+      slimeW,
+      slimeH,
+    );
+  }
+}
+
+function fitFont(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxW: number,
+  start: number,
+) {
+  let size = Math.max(8, Math.round(start));
+  while (size > 8) {
+    ctx.font = `800 ${size}px "Arial Black", Impact, sans-serif`;
+    if (ctx.measureText(text).width <= maxW) return size;
+    size -= 1;
+  }
+  return size;
 }
 
 function stampBeam(
@@ -364,15 +486,24 @@ function stampBeam(
   length: number,
 ) {
   if (!piece) return;
-  const aspect = piece.h > 0 ? piece.w / piece.h : 3;
-  const w = Math.max(1, Math.round(length));
-  const h = Math.max(1, Math.round(w / aspect));
+  const span = Math.max(8, Math.round(length));
+  const thick = Math.max(2, Math.round(span / 18));
   ctx.save();
   ctx.translate(x, y);
   ctx.imageSmoothingEnabled = false;
   if (facing === "left") ctx.scale(-1, 1);
   else if (facing === "up") ctx.rotate(-Math.PI / 2);
   else if (facing === "down") ctx.rotate(Math.PI / 2);
-  ctx.drawImage(piece.img, piece.x, piece.y, piece.w, piece.h, -w / 2, -h / 2, w, h);
+  ctx.drawImage(
+    piece.img,
+    piece.x,
+    piece.y,
+    piece.w,
+    piece.h,
+    -span / 2,
+    -thick / 2,
+    span,
+    thick,
+  );
   ctx.restore();
 }

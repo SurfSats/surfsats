@@ -67,6 +67,7 @@ export function PlebBoxScreen({
         "cab-crt",
         "cab-crt-photo",
         "cab-crt-pleb",
+        laser ? "is-laser" : "",
         live ? "has-field" : "",
         playing || result ? "cab-crt-live" : "",
       ]
@@ -96,6 +97,7 @@ export function PlebBoxScreen({
       </div>
       <div className="cab-crt-glass" aria-hidden="true" />
       <div className="cab-crt-scan" aria-hidden="true" />
+      {laser ? <div className="cab-crt-vignette" aria-hidden="true" /> : null}
 
       {noodle && (playing || result) ? (
         <p className="cab-crt-hud">
@@ -104,9 +106,18 @@ export function PlebBoxScreen({
       ) : null}
 
       {laser && playing ? (
-        <p className="cab-crt-hud">
-          TIME {laserHud.time} · SATS {laserHud.sats} · HP {laserHud.hp}
-        </p>
+        <div
+          className="cab-crt-hud laser-hud"
+          aria-label={`HP ${laserHud.hp}. Time ${laserHud.time}. Sats ${laserHud.sats}.`}
+        >
+          <span className="laser-pips">
+            {[0, 1, 2].map((pip) => (
+              <i key={pip} className={pip < laserHud.hp ? "is-on" : undefined} />
+            ))}
+          </span>
+          <GlassDigits value={laserHud.time} />
+          <GlassDigits value={laserHud.sats} />
+        </div>
       ) : null}
 
       {paying ? (
@@ -159,7 +170,7 @@ export function PlebBoxScreen({
         </div>
       ) : null}
 
-      {live && !paying && !playing && !result && !ready ? (
+      {noodle && !paying && !playing && !result && !ready ? (
         <div className="cab-crt-attract pleb-attract">
           <button
             type="button"
@@ -178,5 +189,18 @@ export function PlebBoxScreen({
         </div>
       ) : null}
     </div>
+  );
+}
+
+function GlassDigits({ value }: { value: number }) {
+  const text = String(Math.max(0, Math.floor(value))).padStart(2, "0");
+  return (
+    <span className="laser-glass-digits">
+      {text.split("").map((digit, index) => (
+        <span key={`${digit}-${index}`} className="laser-glass-digit">
+          {digit}
+        </span>
+      ))}
+    </span>
   );
 }
