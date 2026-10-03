@@ -22,6 +22,12 @@ import {
   type PlebBoxGameId,
 } from "@/lib/arcade";
 
+const PLEB_MARQUEE = {
+  noodle: { src: "/arcade/pleb/marquee-noodle.png", focus: "center" },
+  laser: { src: "/arcade/pleb/marquee-laser.png", focus: "center" },
+  yeet: { src: "/arcade/pleb/marquee-yeet.png", focus: "center 26%" },
+} as const satisfies Record<PlebBoxGameId, { src: string; focus: string }>;
+
 export function PlebBoxCabinet({
   alias,
   credits,
@@ -149,6 +155,22 @@ export function PlebBoxCabinet({
                 className="cab-art"
                 sizes="(max-width: 900px) 96vw, 58rem"
               />
+              {front ? (
+                <div className="pleb-marquee-board" aria-hidden="true">
+                  <Image
+                    src={PLEB_MARQUEE[game].src}
+                    alt=""
+                    fill
+                    unoptimized
+                    priority
+                    sizes="(max-width: 900px) 70vw, 36rem"
+                    style={{
+                      objectFit: "cover",
+                      objectPosition: PLEB_MARQUEE[game].focus,
+                    }}
+                  />
+                </div>
+              ) : null}
               <div className="pleb-marquee" role="tablist" aria-label="Pleb Box games">
                 {PLEB_BOX_GAMES.map((item) => (
                   <button

@@ -5295,19 +5295,30 @@ body:has(.graffiti-page) .site-watermark {
   pointer-events: none;
 }
 
+.cab-machine-pleb .pleb-marquee-board {
+  position: absolute;
+  z-index: 4;
+  top: 4.7%;
+  left: 17.6%;
+  width: 64.8%;
+  height: 11.5%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .cab-machine-pleb .pleb-marquee {
   position: absolute;
-  top: 6.5%;
+  top: 16.8%;
   left: 21%;
   z-index: 6;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 58%;
-  height: 8.2%;
+  height: 5.2%;
   margin: 0;
   padding: 0 0.2rem;
-  background: #090705;
+  background: transparent;
   box-shadow: none;
   pointer-events: auto;
 }
@@ -5324,7 +5335,7 @@ body:has(.graffiti-page) .site-watermark {
   cursor: pointer;
   text-shadow: 0 0 8px rgba(255, 140, 40, 0.28);
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(0.5rem, 1.7vw, 1.15rem);
+  font-size: clamp(0.42rem, 1.35vw, 0.78rem);
   font-weight: 800;
   letter-spacing: 0.12em;
   white-space: nowrap;
@@ -5346,7 +5357,8 @@ body:has(.graffiti-page) .site-watermark {
     0 0 28px rgba(255, 61, 246, 0.4);
 }
 
-.arcade-bay.is-back .pleb-marquee {
+.arcade-bay.is-back .pleb-marquee,
+.arcade-bay.is-back .pleb-marquee-board {
   display: none;
 }
 
