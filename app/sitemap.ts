@@ -18,6 +18,7 @@ const routes = [
   "/signal",
   "/tools",
   "/fiat",
+  "/salvador",
   "/story",
   "/glass",
   "/about",

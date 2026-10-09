@@ -10336,3 +10336,235 @@ body:has(.slab-page) .site-watermark {
     height: 1rem;
   }
 }
+
+.salvador-page {
+  background: #08080b;
+  color: #eceae4;
+  min-height: calc(100dvh - var(--site-chrome-h));
+  padding: 3.25rem 1.25rem 5rem;
+}
+
+.salvador-col {
+  width: min(100%, 40rem);
+  margin: 0 auto;
+}
+
+.salvador-hero {
+  text-align: center;
+}
+
+.salvador-kicker {
+  margin: 0 0 0.85rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+}
+
+.salvador-figure-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.salvador-figure {
+  color: inherit;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(3.1rem, 12vw, 6.25rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.88;
+  text-decoration: none;
+}
+
+.salvador-frac {
+  font-size: 0.38em;
+  letter-spacing: -0.03em;
+  color: rgb(236 234 228 / 0.72);
+}
+
+.salvador-unit {
+  margin-left: 0.28em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.16em;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+.salvador-sub {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+}
+
+.salvador-second {
+  margin: 1.15rem 0 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.55rem, 4vw, 2.35rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.salvador-second span {
+  display: block;
+  margin-top: 0.4rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.salvador-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 1.35rem 0 0;
+  border: 1px solid rgb(236 234 228 / 0.35);
+  border-radius: 999px;
+  padding: 0.28rem 0.75rem 0.22rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+
+.salvador-chip[data-state="live"]::before {
+  content: "";
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: var(--cyan);
+}
+
+.salvador-chip[data-state="stale"] {
+  color: var(--muted);
+}
+
+.salvador-panel {
+  position: relative;
+  margin-top: 2.75rem;
+  border: 1px solid rgb(236 234 228 / 0.28);
+  padding: 1.35rem 1rem 0.9rem;
+}
+
+.salvador-panel-label {
+  position: absolute;
+  top: 0;
+  left: 0.85rem;
+  margin: 0;
+  transform: translateY(-50%);
+  background: #08080b;
+  padding: 0 0.45rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(236 234 228 / 0.78);
+}
+
+.salvador-today {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.salvador-today-amt {
+  color: inherit;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.65rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+
+.salvador-quiet {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.salvador-txid {
+  color: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.salvador-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.salvador-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.62rem 0;
+  border-top: 1px solid rgb(236 234 228 / 0.1);
+}
+
+.salvador-row:first-child {
+  border-top: 0;
+  padding-top: 0.15rem;
+}
+
+.salvador-addr,
+.salvador-bal {
+  color: inherit;
+  text-decoration: none;
+}
+
+.salvador-bal {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.salvador-verify {
+  color: var(--cyan);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.salvador-chart-link {
+  display: block;
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.salvador-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.salvador-stale {
+  margin-left: 0.45rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sats);
+  vertical-align: middle;
+}
+
+.salvador-page a:hover,
+.salvador-page a:focus-visible {
+  color: var(--cyan);
+}

@@ -18,6 +18,7 @@ export const readoutNavLinks: NavLink[] = [
   { href: "/lineup", label: "Lineup" },
   { href: "/signal", label: "Signal" },
   { href: "/fiat", label: "DIRTY FIAT" },
+  { href: "/salvador", label: "Salvador" },
 ];
 
 export const kitNavLinks: NavLink[] = [

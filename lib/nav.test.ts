@@ -6,6 +6,7 @@ import {
   isReadoutPath,
   isWallPath,
   primaryNavLinks,
+  readoutNavLinks,
   wallNavLinks,
 } from "./nav.ts";
 
@@ -64,6 +65,22 @@ test("footer walls list is Graffiti then The Slab", () => {
     walls.links.map((link) => link.href),
     ["/graffiti", "/slab"],
   );
+});
+
+test("readouts nav reaches Salvador", () => {
+  const hit = readoutNavLinks.find((link) => link.href === "/salvador");
+  assert.ok(hit);
+  assert.equal(hit.label, "Salvador");
+  assert.equal(
+    primaryNavLinks.some((link) => link.href === "/salvador"),
+    false,
+  );
+  assert.equal(
+    wallNavLinks.some((link) => link.href === "/salvador"),
+    false,
+  );
+  assert.equal(isReadoutPath("/salvador"), true);
+  assert.equal(isWallPath("/salvador"), false);
 });
 
 test("machines nav has one radio/jukebox/music entry", () => {
