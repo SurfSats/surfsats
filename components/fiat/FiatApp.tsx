@@ -14,15 +14,18 @@ import {
   formatPrinterSpeed,
 } from "@/lib/fiat";
 import { formatDate } from "@/lib/format";
+import { FIAT_CHART, fiatChartLines, linePoints, type FiatPriceHistory } from "@/lib/fiat-chart";
 import { formatInteger, type TimechainSnapshot } from "@/lib/timechain";
 import { MoneyRain } from "@/components/fiat/MoneyRain";
 
 export function FiatApp({
   initialDebt,
   initialChain,
+  history,
 }: {
   initialDebt: FiatDebtSnapshot | null;
   initialChain: TimechainSnapshot | null;
+  history: FiatPriceHistory | null;
 }) {
   const { snapshot } = useTimechainSnapshot(initialChain);
   const [debt, setDebt] = useState<FiatDebtSnapshot | null>(initialDebt);
@@ -214,6 +217,8 @@ export function FiatApp({
           ) : null}
         </div>
 
+        <FiatChart history={history} />
+
         <p className="fiat-cite">
           Source: U.S. Treasury Debt to the Penny
           {debt ? (
@@ -230,6 +235,30 @@ export function FiatApp({
           No extra macro fanfic. Just the receipt, spinning.
         </p>
       </Container>
+    </div>
+  );
+}
+
+function FiatChart({ history }: { history: FiatPriceHistory | null }) {
+  if (!history) return null;
+  const lines = fiatChartLines(history.points);
+  if (!lines) return null;
+  return (
+    <div className="fiat-chart">
+      <p className="fiat-chart-key">
+        <span className="fiat-key-price">Price</span>
+        <span className="fiat-key-moscow">Moscow Time</span>
+        {history.stale ? <span className="fiat-chart-stale">stale</span> : null}
+      </p>
+      <svg
+        className="fiat-chart-svg"
+        viewBox={`0 0 ${FIAT_CHART.width} ${FIAT_CHART.height}`}
+        role="img"
+        aria-label="BTC-USD price and Moscow Time, log scale"
+      >
+        <polyline className="fiat-line-price" points={linePoints(lines.price)} />
+        <polyline className="fiat-line-moscow" points={linePoints(lines.moscow)} />
+      </svg>
     </div>
   );
 }

@@ -8787,6 +8787,59 @@ body:has(.story-page) .site-watermark {
   color: rgba(255, 122, 24, 0.85);
 }
 
+.fiat-chart {
+  margin-top: 1.15rem;
+  padding: 0.7rem 0.75rem 0.45rem;
+  border: 1px solid rgba(61, 255, 243, 0.28);
+  background: rgba(6, 6, 10, 0.78);
+}
+
+.fiat-chart-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: baseline;
+  margin: 0 0 0.35rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.fiat-key-price {
+  color: var(--cyan);
+}
+
+.fiat-key-moscow {
+  color: var(--magenta);
+}
+
+.fiat-chart-stale {
+  color: var(--sats);
+}
+
+.fiat-chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fiat-line-price,
+.fiat-line-moscow {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.fiat-line-price {
+  stroke: var(--cyan);
+}
+
+.fiat-line-moscow {
+  stroke: var(--magenta);
+}
+
 @media (max-width: 640px) {
   .fiat-bleed-img {
     object-position: 8% 48%;

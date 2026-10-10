@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { FiatApp } from "@/components/fiat/FiatApp";
 import { ReadoutShell } from "@/components/layout/ReadoutShell";
 import { getFiatDebt } from "@/lib/fiat";
+import { getFiatHistory } from "@/lib/fiat-history";
 import { pageMeta } from "@/lib/seo";
 import { getTimechainSnapshot } from "@/lib/timechain";
 
@@ -14,9 +15,10 @@ export const metadata: Metadata = pageMeta({
 });
 
 export default async function FiatPage() {
-  const [debt, chain] = await Promise.all([
+  const [debt, chain, history] = await Promise.all([
     getFiatDebt(),
     getTimechainSnapshot(),
+    getFiatHistory(),
   ]);
 
   return (
@@ -24,7 +26,7 @@ export default async function FiatPage() {
       name="fiat"
       strip={<p>dirty fiat · the printer · btc does not print</p>}
     >
-      <FiatApp initialDebt={debt} initialChain={chain} />
+      <FiatApp initialDebt={debt} initialChain={chain} history={history} />
     </ReadoutShell>
   );
 }
