@@ -142,6 +142,25 @@ export function SalvadorDeskView({ desk }: { desk: SalvadorDesk }) {
           )}
         </section>
 
+        <section className="salvador-panel salvador-stack-panel" aria-labelledby="salvador-stack">
+          <h2 id="salvador-stack" className="salvador-panel-label">
+            Stack
+          </h2>
+          {desk.steps.length > 1 ? (
+            <>
+              <SalvadorStack steps={stackViews(desk.steps, desk.priceUsd)} usdReady={desk.priceUsd !== null} />
+              {desk.historyStale ? <StaleMark /> : null}
+            </>
+          ) : (
+            <p className="salvador-quiet">
+              {desk.historyKnown && !desk.historyStale
+                ? "No confirmed movement."
+                : "Stack unavailable."}
+              {desk.historyStale ? <StaleMark /> : null}
+            </p>
+          )}
+        </section>
+
         <section className="salvador-panel" aria-labelledby="salvador-addresses">
           <h2 id="salvador-addresses" className="salvador-panel-label">
             Addresses
@@ -172,25 +191,6 @@ export function SalvadorDeskView({ desk }: { desk: SalvadorDesk }) {
               );
             })}
           </ul>
-        </section>
-
-        <section className="salvador-panel salvador-stack-panel" aria-labelledby="salvador-stack">
-          <h2 id="salvador-stack" className="salvador-panel-label">
-            Stack
-          </h2>
-          {desk.steps.length > 1 ? (
-            <>
-              <SalvadorStack steps={stackViews(desk.steps, desk.priceUsd)} usdReady={desk.priceUsd !== null} />
-              {desk.historyStale ? <StaleMark /> : null}
-            </>
-          ) : (
-            <p className="salvador-quiet">
-              {desk.historyKnown && !desk.historyStale
-                ? "No confirmed movement."
-                : "Stack unavailable."}
-              {desk.historyStale ? <StaleMark /> : null}
-            </p>
-          )}
         </section>
       </div>
     </div>

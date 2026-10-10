@@ -10337,14 +10337,41 @@ body:has(.slab-page) .site-watermark {
   }
 }
 
+body:has(.salvador-page) .site-watermark {
+  display: none;
+}
+
 .salvador-page {
-  background: #08080b;
+  position: relative;
+  isolation: isolate;
+  background-color: #061433;
+  background-image: url("/salvador/pop.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: #eceae4;
   min-height: calc(100dvh - var(--site-chrome-h));
   padding: 3.25rem 1.25rem 5rem;
 }
 
+.salvador-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 34rem 78% at 50% 32%,
+    rgb(4 8 22 / 0.9) 0%,
+    rgb(4 8 22 / 0.62) 46%,
+    rgb(4 8 22 / 0) 74%
+  );
+}
+
 .salvador-col {
+  position: relative;
+  z-index: 1;
   width: min(100%, 40rem);
   margin: 0 auto;
 }
@@ -10372,19 +10399,19 @@ body:has(.slab-page) .site-watermark {
 }
 
 .salvador-figure {
-  color: inherit;
+  color: #f3d48a;
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(3.1rem, 12vw, 6.25rem);
-  font-weight: 600;
-  letter-spacing: -0.045em;
-  line-height: 0.88;
+  font-size: clamp(4.4rem, 16vw, 8.75rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.82;
   text-decoration: none;
 }
 
 .salvador-frac {
   font-size: 0.38em;
   letter-spacing: -0.03em;
-  color: rgb(236 234 228 / 0.72);
+  color: #e7c36a;
 }
 
 .salvador-unit {
@@ -10436,12 +10463,19 @@ body:has(.slab-page) .site-watermark {
   letter-spacing: 0.16em;
 }
 
+.salvador-chip[data-state="live"] {
+  border: 2px solid #f4f7fb;
+  border-radius: 0;
+  background: #0f47af;
+  color: #fff;
+}
+
 .salvador-chip[data-state="live"]::before {
   content: "";
   width: 0.42rem;
   height: 0.42rem;
   border-radius: 999px;
-  background: var(--cyan);
+  background: #fff;
 }
 
 .salvador-chip[data-state="stale"] {
@@ -10451,22 +10485,49 @@ body:has(.slab-page) .site-watermark {
 .salvador-panel {
   position: relative;
   margin-top: 2.75rem;
-  border: 1px solid rgb(236 234 228 / 0.28);
-  padding: 1.35rem 1rem 0.9rem;
+  border: 3px solid #e7c36a;
+  border-radius: 0;
+  background: #070d1c;
+  padding: 1.55rem 1.1rem 1.05rem;
+}
+
+.salvador-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 8px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgb(231 195 106 / 0.92) 1px, transparent 1.2px) 0 0 / 5px 5px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.salvador-panel > :not(.salvador-panel-label) {
+  position: relative;
+  z-index: 1;
 }
 
 .salvador-panel-label {
   position: absolute;
   top: 0;
   left: 0.85rem;
+  z-index: 2;
   margin: 0;
   transform: translateY(-50%);
-  background: #08080b;
+  background: #070d1c;
   padding: 0 0.45rem;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.2em;
+  font-variant-caps: all-small-caps;
   text-transform: uppercase;
   color: rgb(236 234 228 / 0.78);
 }
@@ -10579,6 +10640,7 @@ body:has(.slab-page) .site-watermark {
 
 .salvador-chart-wrap {
   position: relative;
+  background: #070d1c;
 }
 
 .salvador-chart {
@@ -10650,4 +10712,9 @@ body:has(.slab-page) .site-watermark {
 .salvador-page a:hover,
 .salvador-page a:focus-visible {
   color: var(--cyan);
+}
+
+.salvador-page a.salvador-figure:hover,
+.salvador-page a.salvador-figure:focus-visible {
+  color: #f3d48a;
 }
