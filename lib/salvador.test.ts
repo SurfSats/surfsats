@@ -26,6 +26,7 @@ import {
   type SalvadorDesk,
   type WalletTx,
 } from "./salvador.ts";
+import { stackChartMarks, stackChartPaths, stepAtX, windowBalance } from "./salvador-chart.ts";
 
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const SET = new Set<string>(ONBTC_ADDRESSES);
@@ -205,6 +206,7 @@ test("a failed address does not become zero, and last good numbers stay marked s
   assert.equal(fresh.streakDays, 1);
   assert.equal(fresh.latest?.amountSats, ONE_BTC_SATS);
   assert.equal(fresh.stack.at(-1)?.balanceSats, fresh.totalSats);
+  assert.equal(fresh.steps.at(-1)?.balanceSats, fresh.totalSats);
   assert.equal(mempoolAddressUrl(ONBTC_ADDRESSES[0]).includes("mempool.space/address/"), true);
   assert.equal(mempoolTxUrl(txid(1)).includes("mempool.space/tx/"), true);
 
@@ -241,6 +243,55 @@ test("a failed address does not become zero, and last good numbers stay marked s
   assert.equal(kept.historyStale, true);
   assert.equal(kept.streakDays, fresh.streakDays);
   assert.equal(kept.latest?.txid, fresh.latest?.txid);
+  assert.equal(kept.steps.at(-1)?.balanceSats, fresh.totalSats);
+});
+
+test("30-day stack stays off zero and a 1 BTC day is a tall step", () => {
+  const now = Math.floor(Date.parse("2026-10-10T18:00:00Z") / 1000);
+  const day = 24 * 60 * 60;
+  const txs = [confirmed(txid(1), now - 40 * day, 7_770 * SATS_PER_BTC)];
+  for (let age = 30; age >= 1; age -= 1) {
+    txs.push(confirmed(txid(age + 1), now - age * day, ONE_BTC_SATS));
+  }
+  const steps = windowBalance(txs, now);
+  assert.ok(steps);
+  const end = steps[steps.length - 1];
+  assert.ok(end);
+  assert.equal(end.balanceSats, 7_800 * SATS_PER_BTC);
+  assert.equal(steps[0]?.balanceSats, 7_770 * SATS_PER_BTC);
+  assert.equal(steps.filter((step) => step.deltaSats === ONE_BTC_SATS).length, 30);
+
+  const drawn = stackChartMarks(steps);
+  assert.ok(drawn);
+  assert.ok(drawn.yMin > 7_000 * SATS_PER_BTC);
+  assert.ok(drawn.yMax < 8_000 * SATS_PER_BTC);
+  const firstBuy = steps.findIndex((step) => step.txid === txid(31));
+  const buy = drawn.marks[firstBuy];
+  const before = drawn.marks[firstBuy - 1];
+  assert.ok(buy && before);
+  const dy = Math.abs(buy.y - before.y);
+  assert.ok(dy >= 5);
+
+  const paths = stackChartPaths(drawn.marks);
+  assert.ok(paths);
+  assert.match(paths.line, / H/);
+  assert.match(paths.line, / V/);
+  assert.equal(stepAtX(steps, drawn.marks, buy.x + 1), firstBuy);
+
+  const quiet = windowBalance(
+    [
+      confirmed(txid(1), now - 40 * day, 5 * SATS_PER_BTC),
+      confirmed(txid(2), now - day, 0),
+      confirmed(txid(3), now - 3600, ONE_BTC_SATS),
+    ],
+    now,
+  );
+  assert.ok(quiet);
+  assert.equal(quiet[quiet.length - 1]?.balanceSats, 6 * SATS_PER_BTC);
+  assert.deepEqual(
+    quiet.filter((step) => step.txid).map((step) => step.txid),
+    [txid(3)],
+  );
 });
 
 test("history that does not add up to the confirmed total is not drawn", () => {

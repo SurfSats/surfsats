@@ -7,12 +7,14 @@ import {
   formatUsd,
   mempoolAddressUrl,
   mempoolTxUrl,
+  reserveUsd,
   SALVADOR_POPULATION,
   truncateMiddle,
+  type BalanceStep,
   type SalvadorDesk,
-  type StackPoint,
 } from "@/lib/salvador";
 import { ONBTC_WALLET_URL } from "@/lib/onbtc";
+import { SalvadorStack, type StackViewStep } from "@/components/salvador/SalvadorStack";
 
 function OutLink({
   href,
@@ -48,43 +50,33 @@ function BtcFigure({ sats }: { sats: number }) {
   );
 }
 
-function StackChart({ points }: { points: StackPoint[] }) {
-  if (points.length === 0) return null;
-  const width = 640;
-  const height = 220;
-  const padX = 4;
-  const padY = 12;
-  let min = 0;
-  let max = 0;
-  for (const point of points) {
-    if (point.balanceSats < min) min = point.balanceSats;
-    if (point.balanceSats > max) max = point.balanceSats;
-  }
-  const span = max - min || 1;
-  const first = points[0];
-  const last = points[points.length - 1];
-  const dt = last.time - first.time || 1;
-  const coords = points.map((point) => ({
-    x: padX + ((point.time - first.time) / dt) * (width - padX * 2),
-    y: height - padY - ((point.balanceSats - min) / span) * (height - padY * 2),
-  }));
-  const d = coords
-    .map((coord, index) => `${index === 0 ? "M" : "L"}${coord.x.toFixed(2)} ${coord.y.toFixed(2)}`)
-    .join(" ");
-  const end = coords[coords.length - 1];
-  const label = `Summed balance from ${formatBtc(first.balanceSats)} BTC to ${formatBtc(last.balanceSats)} BTC`;
+function signedBtc(sats: number) {
+  if (sats > 0) return `+${formatBtc(sats)} BTC`;
+  return `${formatBtc(sats)} BTC`;
+}
 
-  return (
-    <svg
-      className="salvador-chart"
-      viewBox={`0 0 ${width} ${height}`}
-      role="img"
-      aria-label={label}
-    >
-      <path d={d} fill="none" stroke="currentColor" strokeWidth="2" />
-      {end ? <circle cx={end.x} cy={end.y} r="3" fill="currentColor" /> : null}
-    </svg>
-  );
+function signedUsd(amount: number) {
+  if (amount > 0) return `+${formatUsd(amount)}`;
+  return formatUsd(amount);
+}
+
+function stackViews(steps: readonly BalanceStep[], priceUsd: number | null): StackViewStep[] {
+  return steps.map((step) => ({
+    time: step.time,
+    balanceSats: step.balanceSats,
+    txid: step.txid,
+    href: step.txid ? mempoolTxUrl(step.txid) : null,
+    label: step.txid ? truncateMiddle(step.txid, 8, 8) : null,
+    when: step.txid ? formatSvTime(step.time) : null,
+    deltaBtc: step.deltaSats === null ? null : signedBtc(step.deltaSats),
+    balanceBtc: `${formatBtc(step.balanceSats)} BTC`,
+    deltaUsd:
+      step.deltaSats === null || priceUsd === null
+        ? null
+        : signedUsd(reserveUsd(step.deltaSats, priceUsd)),
+    balanceUsd: priceUsd === null ? null : formatUsd(reserveUsd(step.balanceSats, priceUsd)),
+    gain: (step.deltaSats ?? 0) > 0,
+  }));
 }
 
 export function SalvadorDeskView({ desk }: { desk: SalvadorDesk }) {
@@ -182,15 +174,15 @@ export function SalvadorDeskView({ desk }: { desk: SalvadorDesk }) {
           </ul>
         </section>
 
-        <section className="salvador-panel" aria-labelledby="salvador-stack">
+        <section className="salvador-panel salvador-stack-panel" aria-labelledby="salvador-stack">
           <h2 id="salvador-stack" className="salvador-panel-label">
             Stack
           </h2>
-          {desk.stack.length > 0 ? (
-            <OutLink href={ONBTC_WALLET_URL} className="salvador-chart-link">
-              <StackChart points={desk.stack} />
+          {desk.steps.length > 1 ? (
+            <>
+              <SalvadorStack steps={stackViews(desk.steps, desk.priceUsd)} usdReady={desk.priceUsd !== null} />
               {desk.historyStale ? <StaleMark /> : null}
-            </OutLink>
+            </>
           ) : (
             <p className="salvador-quiet">
               {desk.historyKnown && !desk.historyStale

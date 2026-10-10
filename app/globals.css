@@ -10541,16 +10541,99 @@ body:has(.slab-page) .site-watermark {
   white-space: nowrap;
 }
 
-.salvador-chart-link {
-  display: block;
-  color: var(--cyan);
-  text-decoration: none;
+.salvador-stack-panel {
+  padding-top: 1.5rem;
+}
+
+.salvador-stack {
+  position: relative;
+}
+
+.salvador-toggle {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  margin: 0 0 0.35rem;
+}
+
+.salvador-toggle button {
+  border: 1px solid rgb(236 234 228 / 0.28);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  padding: 0.22rem 0.55rem 0.16rem;
+}
+
+.salvador-toggle button[aria-pressed="true"] {
+  border-color: rgb(231 195 106 / 0.7);
+  background: rgb(231 195 106 / 0.14);
+  color: #e7c36a;
+}
+
+.salvador-toggle button:disabled {
+  opacity: 0.4;
+}
+
+.salvador-chart-wrap {
+  position: relative;
 }
 
 .salvador-chart {
   display: block;
   width: 100%;
   height: auto;
+  touch-action: manipulation;
+}
+
+.salvador-step-fill {
+  fill: #6e5420;
+  stroke: none;
+}
+
+.salvador-step-line {
+  fill: none;
+  stroke: #e7c36a;
+  stroke-width: 2;
+}
+
+.salvador-step-end {
+  stroke: #e7c36a;
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.salvador-step-dot {
+  fill: #f3d48a;
+  stroke: none;
+}
+
+.salvador-tip {
+  position: absolute;
+  z-index: 2;
+  width: max-content;
+  max-width: 16rem;
+  transform: translate(-8%, calc(-100% - 0.55rem));
+  border: 1px solid rgb(231 195 106 / 0.45);
+  background: #12110e;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.salvador-tip p {
+  margin: 0;
+}
+
+.salvador-tip a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.salvador-tip-gain {
+  color: #3ecf8e;
 }
 
 .salvador-stale {

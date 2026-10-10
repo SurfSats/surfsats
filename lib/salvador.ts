@@ -1,7 +1,10 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { windowBalance, type BalanceStep } from "./salvador-chart.ts";
 import { ONBTC_ADDRESSES, ONBTC_WALLET_URL } from "./onbtc.ts";
+
+export type { BalanceStep };
 
 /**
  * Public API first. On paths where that anycast prefix drops TCP/443, the desk
@@ -81,6 +84,7 @@ export type SalvadorDesk = {
   latest: SalvadorInflow | null;
   addresses: AddressRow[];
   stack: StackPoint[];
+  steps: BalanceStep[];
 };
 
 type CacheEntry = {
@@ -364,6 +368,7 @@ function blankDesk(fetchedAt: number): SalvadorDesk {
       stale: true,
     })),
     stack: [],
+    steps: [],
   };
 }
 
@@ -415,6 +420,7 @@ export function assembleSalvadorDesk(input: {
   let streakDays: number | null = null;
   let latest: SalvadorInflow | null = null;
   let stack: StackPoint[] = [];
+  let steps: BalanceStep[] = [];
   let historyKnown = false;
   let historyStale = false;
 
@@ -426,18 +432,22 @@ export function assembleSalvadorDesk(input: {
     }
     const unique = dedupeWalletTxs(flat);
     const stacked = unique ? stackFromTxs(unique) : null;
+    const windowed = unique ? windowBalance(unique, input.nowSec) : null;
     const matches =
       unique !== null &&
       stacked !== null &&
+      windowed !== null &&
       totalSats !== null &&
       stacked.endSats === totalSats &&
+      windowed[windowed.length - 1]?.balanceSats === totalSats &&
       !totalStale;
 
-    if (matches && unique && stacked) {
+    if (matches && unique && stacked && windowed) {
       const hits = oneBtcInflows(unique);
       streakDays = countStreakDays(hits, input.nowSec);
       latest = latestOneBtcInflow(hits);
       stack = stacked.points;
+      steps = windowed;
       historyKnown = true;
       historyStale = false;
     }
@@ -447,6 +457,7 @@ export function assembleSalvadorDesk(input: {
     streakDays = input.previous.streakDays;
     latest = input.previous.latest ? { ...input.previous.latest } : null;
     stack = input.previous.stack.slice();
+    steps = input.previous.steps.map((step) => ({ ...step }));
     historyKnown = true;
     historyStale = true;
   } else if (!historyKnown) {
@@ -467,6 +478,7 @@ export function assembleSalvadorDesk(input: {
     latest,
     addresses,
     stack,
+    steps,
   };
 }
 
