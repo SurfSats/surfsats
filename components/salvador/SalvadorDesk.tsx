@@ -1,4 +1,5 @@
 import {
+  formatAsOf,
   formatBtc,
   formatPopulation,
   formatSats,
@@ -110,6 +111,7 @@ export function SalvadorDeskView({ desk }: { desk: SalvadorDesk }) {
           <p className="salvador-chip" data-state={chipLive ? "live" : "stale"} role="status">
             {chip}
           </p>
+          <p className="salvador-asof">{formatAsOf(desk.fetchedAt)}</p>
         </header>
 
         <section className="salvador-panel" aria-labelledby="salvador-today">

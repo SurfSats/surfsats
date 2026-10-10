@@ -10482,6 +10482,15 @@ body:has(.salvador-page) .site-watermark {
   color: var(--muted);
 }
 
+.salvador-asof {
+  margin: 0.7rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .salvador-panel {
   position: relative;
   margin-top: 2.75rem;

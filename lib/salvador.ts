@@ -30,8 +30,8 @@ export const SALVADOR_POPULATION = 6_300_000;
 
 /** El Salvador civil time is UTC-6 year round. */
 const SV_SHIFT_MS = 6 * 60 * 60 * 1000;
-const FRESH_MS = 120_000;
-const RETRY_MS = 30_000;
+/** A visit inside this window is served from the last pull and does not call mempool. */
+export const SALVADOR_REVALIDATE_MS = 6 * 60 * 60 * 1000;
 const PAGE_CAP = 120;
 const POOL = 2;
 const READ_ATTEMPTS = MEMPOOL_ROOTS.length;
@@ -86,14 +86,6 @@ export type SalvadorDesk = {
   stack: StackPoint[];
   steps: BalanceStep[];
 };
-
-type CacheEntry = {
-  at: number;
-  ttl: number;
-  desk: SalvadorDesk;
-};
-
-let cache: CacheEntry | null = null;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -327,6 +319,11 @@ const svTime = new Intl.DateTimeFormat("en-GB", {
 
 export function formatSvTime(unixSec: number) {
   return `${svTime.format(new Date(unixSec * 1000))} SV`;
+}
+
+export function formatAsOf(fetchedAtMs: number) {
+  if (!Number.isFinite(fetchedAtMs)) return "as of —";
+  return `as of ${formatSvTime(Math.floor(fetchedAtMs / 1000))}`;
 }
 
 export function truncateMiddle(value: string, head: number, tail: number) {
@@ -739,18 +736,18 @@ export function parseSavedHistory(payload: unknown): SavedHistory | null {
   };
 }
 
-function readSaved() {
+function readSaved(path: string) {
   try {
-    const parsed: unknown = JSON.parse(readFileSync(CACHE_PATH, "utf8"));
+    const parsed: unknown = JSON.parse(readFileSync(path, "utf8"));
     return parseSavedHistory(parsed);
   } catch {
     return null;
   }
 }
 
-function writeSaved(saved: SavedHistory) {
+function writeSaved(path: string, saved: SavedHistory) {
   try {
-    writeFileSync(CACHE_PATH, JSON.stringify(saved));
+    writeFileSync(path, JSON.stringify(saved));
   } catch {
     // The desk still renders. The next request fetches again.
   }
@@ -833,7 +830,6 @@ function staleDesk(previous: SalvadorDesk | null, now: number) {
   if (!previous) return blankDesk(now);
   return {
     ...previous,
-    fetchedAt: now,
     totalStale: true,
     priceStale: true,
     historyStale: true,
@@ -844,25 +840,40 @@ function staleDesk(previous: SalvadorDesk | null, now: number) {
   };
 }
 
-export async function getSalvadorDesk() {
-  const now = Date.now();
-  if (cache && now - cache.at < cache.ttl) return cache.desk;
+type DeskSlot = {
+  storedAt: number;
+  desk: SalvadorDesk | null;
+  pending: Promise<SalvadorDesk> | null;
+};
 
-  const saved = readSaved();
+const deskSlots = new Map<string, DeskSlot>();
+
+function slotFor(path: string) {
+  const found = deskSlots.get(path);
+  if (found) return found;
+  const created: DeskSlot = { storedAt: 0, desk: null, pending: null };
+  deskSlots.set(path, created);
+  return created;
+}
+
+async function readOrPull(
+  now: number,
+  fetchImpl: typeof fetch,
+  path: string,
+  previousHint: SalvadorDesk | null,
+) {
+  const saved = readSaved(path);
   const savedDesk = saved ? deskFromSaved(saved, now) : null;
-  const previous = cache?.desk ?? savedDesk;
-
   if (
     saved &&
     savedDesk &&
-    !cache &&
-    now - saved.fetchedAt < FRESH_MS &&
+    now - saved.fetchedAt < SALVADOR_REVALIDATE_MS &&
     !deskStale(savedDesk)
   ) {
-    cache = { at: saved.fetchedAt, ttl: FRESH_MS, desk: savedDesk };
-    return savedDesk;
+    return { desk: savedDesk, storedAt: saved.fetchedAt };
   }
 
+  const previous = previousHint ?? savedDesk;
   const known = new Map<string, readonly WalletTx[]>();
   if (saved) {
     for (const load of saved.loads) {
@@ -872,10 +883,14 @@ export async function getSalvadorDesk() {
 
   let desk: SalvadorDesk;
   try {
-    const synced = await syncSalvador(previous, now, fetch, known);
+    const synced = await syncSalvador(previous, now, fetchImpl, known);
     desk = synced.desk;
-    if (!deskStale(desk) && desk.historyKnown && synced.loads.every((load) => load.txs && load.balanceSats !== null)) {
-      writeSaved({
+    if (
+      !deskStale(desk) &&
+      desk.historyKnown &&
+      synced.loads.every((load) => load.txs && load.balanceSats !== null)
+    ) {
+      writeSaved(path, {
         fetchedAt: desk.fetchedAt,
         priceUsd: desk.priceUsd,
         loads: synced.loads,
@@ -885,10 +900,37 @@ export async function getSalvadorDesk() {
     desk = staleDesk(previous, now);
   }
 
-  cache = {
-    at: now,
-    ttl: deskStale(desk) ? RETRY_MS : FRESH_MS,
-    desk,
-  };
-  return desk;
+  if (previous && deskStale(desk)) {
+    return { desk: { ...desk, fetchedAt: previous.fetchedAt }, storedAt: now };
+  }
+  return { desk, storedAt: now };
+}
+
+export function clearSalvadorCache(path: string) {
+  deskSlots.delete(path);
+}
+
+export async function getSalvadorDesk(override?: {
+  now?: number;
+  fetchImpl?: typeof fetch;
+  cachePath?: string;
+}) {
+  const path = override?.cachePath ?? CACHE_PATH;
+  const now = override?.now ?? Date.now();
+  const fetchImpl = override?.fetchImpl ?? fetch;
+  const slot = slotFor(path);
+
+  if (slot.desk && now - slot.storedAt < SALVADOR_REVALIDATE_MS) return slot.desk;
+  if (slot.pending) return slot.pending;
+
+  slot.pending = readOrPull(now, fetchImpl, path, slot.desk)
+    .then((result) => {
+      slot.desk = result.desk;
+      slot.storedAt = result.storedAt;
+      return result.desk;
+    })
+    .finally(() => {
+      slot.pending = null;
+    });
+  return slot.pending;
 }

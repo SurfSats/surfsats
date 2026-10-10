@@ -1,13 +1,19 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 import { ONBTC_ADDRESSES, ONBTC_WALLET_URL } from "./onbtc.ts";
 import {
   assembleSalvadorDesk,
   countStreakDays,
   parseSavedHistory,
+  formatAsOf,
   formatBtc,
   formatStreakChip,
+  clearSalvadorCache,
+  getSalvadorDesk,
   loadSalvadorDesk,
   mempoolAddressUrl,
   mempoolTxUrl,
@@ -18,6 +24,7 @@ import {
   previousSvDay,
   reserveUsd,
   SALVADOR_POPULATION,
+  SALVADOR_REVALIDATE_MS,
   satsPerSalvadoran,
   SATS_PER_BTC,
   stackFromTxs,
@@ -448,4 +455,95 @@ test("anycast connect failure falls through to a mempool.space backend", async (
   assert.equal(desk.historyKnown, true);
   assert.equal(hosts.has("mempool.space"), true);
   assert.equal(hosts.has("node202.va1.mempool.space"), true);
+});
+
+test("a second load serves the cached desk and does not call mempool", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "salvador-desk-"));
+  const cachePath = join(dir, "desk.json");
+  const calls = { n: 0, tips: 0 };
+  const fetchImpl: typeof fetch = async (input) => {
+    calls.n += 1;
+    const url = String(input);
+    if (url.includes("blocks/tip/height")) {
+      calls.tips += 1;
+      return Response.json(900_000);
+    }
+    if (url.includes("BTC-USD")) {
+      return Response.json({ data: { amount: "50000", base: "BTC", currency: "USD" } });
+    }
+    const chain = url.match(/\/address\/([^/]+)\/txs\/chain/);
+    if (chain) {
+      const address = chain[1] ?? "";
+      const index = ONBTC_ADDRESSES.findIndex((item) => item === address);
+      if (index < 0) return new Response("no", { status: 404 });
+      return Response.json([
+        {
+          txid: txid(index + 1),
+          status: { confirmed: true, block_time: NOW - 3600 },
+          vin: [{ prevout: { scriptpubkey_address: "1outside", value: ONE_BTC_SATS } }],
+          vout: [{ scriptpubkey_address: address, value: ONE_BTC_SATS }],
+        },
+      ]);
+    }
+    if (url.includes("/txs/mempool")) return Response.json([]);
+    return Response.json({
+      chain_stats: { funded_txo_sum: ONE_BTC_SATS, spent_txo_sum: 0 },
+    });
+  };
+  const now = NOW * 1000;
+
+  try {
+    const [first, twin] = await Promise.all([
+      getSalvadorDesk({ now, fetchImpl, cachePath }),
+      getSalvadorDesk({ now, fetchImpl, cachePath }),
+    ]);
+    assert.equal(calls.tips, 1);
+    assert.equal(first.totalStale, false);
+    assert.equal(first.historyStale, false);
+    assert.equal(first.totalSats, ONBTC_ADDRESSES.length * ONE_BTC_SATS);
+    assert.equal(twin.fetchedAt, first.fetchedAt);
+    assert.equal(formatAsOf(first.fetchedAt), "as of 10 Oct 2026, 12:00 SV");
+    const pulled = calls.n;
+
+    const second = await getSalvadorDesk({ now: now + 60_000, fetchImpl, cachePath });
+    assert.equal(calls.n, pulled);
+    assert.equal(second.totalSats, first.totalSats);
+    assert.equal(second.fetchedAt, first.fetchedAt);
+
+    clearSalvadorCache(cachePath);
+    const fromFile = await getSalvadorDesk({ now: now + 120_000, fetchImpl, cachePath });
+    assert.equal(calls.n, pulled);
+    assert.equal(fromFile.totalSats, first.totalSats);
+    assert.equal(fromFile.fetchedAt, first.fetchedAt);
+
+    const fail: typeof fetch = async (input) => {
+      calls.n += 1;
+      if (String(input).includes("BTC-USD")) {
+        return Response.json({ data: { amount: "50000", base: "BTC", currency: "USD" } });
+      }
+      throw new TypeError("fetch failed", { cause: { code: "UND_ERR_CONNECT_TIMEOUT" } });
+    };
+    const stale = await getSalvadorDesk({
+      now: now + SALVADOR_REVALIDATE_MS + 1,
+      fetchImpl: fail,
+      cachePath,
+    });
+    assert.equal(stale.totalSats, first.totalSats);
+    assert.equal(stale.totalStale, true);
+    assert.equal(stale.historyStale, true);
+    assert.equal(stale.fetchedAt, first.fetchedAt);
+    const afterFail = calls.n;
+
+    const held = await getSalvadorDesk({
+      now: now + SALVADOR_REVALIDATE_MS + 5_000,
+      fetchImpl: fail,
+      cachePath,
+    });
+    assert.equal(calls.n, afterFail);
+    assert.equal(held.totalStale, true);
+    assert.equal(held.fetchedAt, first.fetchedAt);
+  } finally {
+    clearSalvadorCache(cachePath);
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
